@@ -1,34 +1,25 @@
-.. OpenCDA documentation master file, created by
-   sphinx-quickstart on Fri Jul  2 11:48:53 2021.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
 
-Welcome to OpenCDA's documentation!
+Welcome to OpenCOOD's documentation!
 ===================================
-OpenCDA is a **SIMULATION** tool integrated with a prototype cooperative driving automation (CDA; see SAE J3216) pipeline as
-well as regular automated driving components (e.g., perception, localization, planning, control). The tool integrates automated driving simulation (CARLA), traffic simulation (SUMO), and Co-simulation (CARLA + SUMO).
-OpenCDA builds upon standard automated driving system (ADS) platforms and focuses on various classes of data exchanges and cooperation between vehicles, infrastructure, and other road users (e.g., pedestrians).
+OpenCOOD is an open-source cooperative detection framework for autonomous driving. It provides SOTA cooperative detection algorithms,
+convenient APIs for the large-scale simulated V2V perception dataset `OPV2V <https://mobility-lab.seas.ucla.edu/opv2v/>`_, and a set of useful tools for log replay.
 
-OpenCDA is **all in Python**. The purpose is to enable researchers to fast-prototype, simulate, and test CDA algorithms and functions.  By applying our simulation tool, users can conveniently conduct both task-specific evaluation (e.g. object detection accuracy) and pipeline-level assessment (e.g. traffic safety) on their customized algorithms.
+In collaboration with `OpenCDA <https://github.com/ucla-mobility/OpenCDA>`_ , OpenCOOD is mainly focus on offline cooperative perception training and testing. If you are
+interested in online cooperative perception and the corresponding closed-loop simulation test, OpenCDA will be the best tool.
 
-In collaboration with `U.S.DOT CDA Research <https://its.dot.gov/cda/>`_ and the `FHWA CARMA Program <https://highways.dot.gov/research/operations/CARMA>`_, OpenCDA, as an open-source project, makes a unique contribution from the perspective of initial-stage development and testing using simulation. OpenCDA is designed and built to support **initial algorithmic testing** for CDA Features. Through collaboration with CARMA Collaborative, this tool provides a unique capability to the CDA research community and will interface with the `CARMA XiL tools <https://github.com/usdot-fhwa-stol/carma-simulation>`_ being developed by U.S.DOT to support more advanced simulation testing of CDA Features.
-
-OpenCDA is a work in progress. Many features on the roadmap are being continuously developed. We welcome your contribution and please visit our Github repo
+OpenCOOD is a work in progress. Many features on the roadmap are being continuously developed. We welcome your contribution and please visit our Github repo
 for the latest release.
 
-    `OpenCDA source code on  Github <https://github.com/ucla-mobility/OpenCDA>`_
+    `OpenCDA source code on  Github <https://github.com/DerrickXuNu/OpenCOOD>`_
 
-**Citing OpenCDA**\ :
+**Citing OpenCOOD**\ :
 
-If you are using our OpenCDA framework or codes for your development, please cite the following paper::
+If you are using our OpenCOOD framework or codes for your development, please cite the following paper::
 
-    @inproceedings{xu2021opencda,
-      author = {Runsheng Xu, Yi Guo, Xu Han, Xin Xia, Hao Xiang, Jiaqi Ma},
-      title = {OpenCDA:  An  Open  Cooperative  Driving  Automation
-      Framework Integrated  with  Co-Simulation},
-      booktitle = {2021 IEEE Intelligent Transportation Systems Conference (ITSC)},
-      year = {2021}}
+    @inproceedings{xu2022opencood,
+      author = {Runsheng Xu, Hao Xiang, Xin Xia, Xu Han, Jinlong Li, Jiaqi Ma},
+      title = {OPV2V: An Open Benchmark Dataset and Fusion Pipeline for Perception with Vehicle-to-Vehicle Communication},
+      booktitle = {2022 IEEE International Conference on Robotics and Automation (ICRA)},
+      year = {2022}}
 
-Our paper can be accessed by arxiv: https://arxiv.org/abs/2107.06260
-
-Also, under this LICENSE, OpenCDA is for non-commercial research only. Researchers can modify the source code for their own research only. Contracted work that generates corporate revenues and other general commercial use are prohibited under this LICENSE. See the LICENSE file for details and possible opportunities for commercial use.
+Also, under this LICENSE, OpenCOOD is for non-commercial research only. Researchers can modify the source code for their own research only.
