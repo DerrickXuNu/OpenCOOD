@@ -10,7 +10,14 @@ interested in online cooperative perception and the corresponding closed-loop si
 OpenCOOD is a work in progress. Many features on the roadmap are being continuously developed. We welcome your contribution and please visit our Github repo
 for the latest release.
 
-    `OpenCDA source code on  Github <https://github.com/DerrickXuNu/OpenCOOD>`_
+    `OpenCOOD source code on  Github <https://github.com/DerrickXuNu/OpenCOOD>`_
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Getting Started
+
+   md_files/installation.md
+
 
 **Citing OpenCOOD**\ :
 
