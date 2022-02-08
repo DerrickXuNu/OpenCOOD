@@ -1,6 +1,6 @@
 # OpenCOOD
 
-OpenCOOD is an <strong>Open</strong> <strong>COO</strong>perative <strong>D</strong>etection framework in autonomous driving. It is also the official implementation of the <strong> ICRA 2022  </strong>
+OpenCOOD is an <strong>Open</strong> <strong>COO</strong>perative <strong>D</strong>etection framework for autonomous driving. It is also the official implementation of the <strong> ICRA 2022  </strong>
 paper [OPV2V.](https://arxiv.org/abs/2109.07644)
 
 <p align="center">
@@ -9,7 +9,7 @@ paper [OPV2V.](https://arxiv.org/abs/2109.07644)
 </p>
 
 ## Features
-- **Provide easy data API for the Vehicle-to-Vehicle (V2V) multi-modal [OPV2V](https://mobility-lab.seas.ucla.edu/opv2v/) dataset**
+- **Provide easy data API for the Vehicle-to-Vehicle (V2V) multi-modal perception dataset [OPV2V](https://mobility-lab.seas.ucla.edu/opv2v/)**
 
     It currently provides easy API to load LiDAR data from multiple agents simultaneously in a structured format and
 convert to PyTorch Tesnor directly for model use. 
