@@ -1,5 +1,5 @@
 # OpenCOOD
-<img src="images/opv2v.png" width="3096" alt="" class="img-responsive"></div>
+<img src="images/logo.png" alt="" class="img-responsive"></div>
 
 OpenCOOD is an opensource framework for <strong>Cooperative Detection </strong>
 in autonomous driving. It is also the official implementation of the <strong> ICRA 2022  </strong>
