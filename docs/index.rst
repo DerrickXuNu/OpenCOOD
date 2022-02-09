@@ -15,9 +15,8 @@ for the latest release.
 .. toctree::
    :maxdepth: 1
    :caption: Getting Started
-
+   md_files/data_intro.md
    md_files/installation.md
-
 
 **Citing OpenCOOD**\ :
 

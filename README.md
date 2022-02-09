@@ -9,6 +9,8 @@ paper [OPV2V.](https://arxiv.org/abs/2109.07644)
 </p>
 
 ## Features
+
+---
 - **Provide easy data API for the Vehicle-to-Vehicle (V2V) multi-modal perception dataset [OPV2V](https://mobility-lab.seas.ucla.edu/opv2v/)**
 
     It currently provides easy API to load LiDAR data from multiple agents simultaneously in a structured format and
@@ -30,3 +32,19 @@ convert to PyTorch Tesnor directly for model use.
     without changing the origin data distribution.
 
 
+## Installation
+
+---
+Please refer to [data introduction](https://opencood.readthedocs.io/en/latest/md_files/data_intro.html)
+and [installation](https://opencood.readthedocs.io/en/latest/md_files/installation.html) guide to prepare
+data and install OpenCOOD.
+
+## Citation
+ If you are using our OpenCOOD framework or OPV2V dataset for your research, please cite the following paper:
+ ```bibtex
+@inproceedings{xu2022opencood,
+  author = {Runsheng Xu, Hao Xiang, Xin Xia, Xu Han, Jinlong Li, Jiaqi Ma},
+  title = {OPV2V: An Open Benchmark Dataset and Fusion Pipeline for Perception with Vehicle-to-Vehicle Communication},
+  booktitle = {2022 IEEE International Conference on Robotics and Automation (ICRA)},
+  year = {2022}}
+```
