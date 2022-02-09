@@ -50,4 +50,11 @@ upgrade to spconv 2.0 in the short future. To install spconv 1.2.1, please follo
 1. make sure your cmake version >= 3.13.2
 2. CUDNN and CUDA runtime library (use `nvcc --version` to check) needs to be installed on your machine.
 
+### 4. Bbx IOU cuda version compile
+Install bbx nms calculation cuda version
+  
+  ```bash
+  python opencood/utils/setup.py build_ext --inplace
+  ```
+
 

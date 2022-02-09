@@ -1,0 +1,7 @@
+matplotlib
+numpy
+open3d
+opencv-python
+cython
+tensorboardX
+shapely
