@@ -31,7 +31,7 @@ Next we create a conda environment and install the requirements.
 ```sh
 conda env create -f environment.yml
 conda activate opencood
-python setup.py opencood
+python setup.py develop
 ```
 
 If conda install failed,  install through pip

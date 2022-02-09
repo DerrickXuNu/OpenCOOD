@@ -1,5 +1,6 @@
 """
-Convert lidar to voxel
+Convert lidar to voxel. This class was manually designed, and we recommend
+to use sp_voxel_preprocessor.
 """
 import sys
 

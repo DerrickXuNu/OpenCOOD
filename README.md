@@ -33,7 +33,19 @@ convert to PyTorch Tesnor directly for model use.
 ## Installation
 Please refer to [data introduction](https://opencood.readthedocs.io/en/latest/md_files/data_intro.html)
 and [installation](https://opencood.readthedocs.io/en/latest/md_files/installation.html) guide to prepare
-data and install OpenCOOD.
+data and install OpenCOOD. To see more details of OPV2V data, please check [our website.](https://mobility-lab.seas.ucla.edu/opv2v/)
+
+## Quick Start
+### Data sequence visualization
+To quickly visualize the LiDAR stream in the OPV2V dataset, first modify the `validate_dir`
+in your `opencood/hypes_yaml/visualization.yaml` to the opv2v data path on your local machine, e.g. `opv2v/validate`,
+and the run the following commond:
+```python
+python opencood/visualization/vis_data_sequence.py 
+```
+### Train your model
+
+
 
 ## Citation
  If you are using our OpenCOOD framework or OPV2V dataset for your research, please cite the following paper:
