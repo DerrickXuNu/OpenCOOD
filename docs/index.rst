@@ -18,6 +18,9 @@ for the latest release.
    md_files/data_intro.md
    md_files/installation.md
 
+
+
+
 **Citing OpenCOOD**\ :
 
 If you are using our OpenCOOD framework or codes for your development, please cite the following paper::
@@ -29,3 +32,10 @@ If you are using our OpenCOOD framework or codes for your development, please ci
       year = {2022}}
 
 Also, under this LICENSE, OpenCOOD is for non-commercial research only. Researchers can modify the source code for their own research only.
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
