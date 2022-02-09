@@ -1,14 +1,10 @@
 # Installation
 
 * [__System/Hardware Requirements__](#requirements)
-* [__Local Installation__](#local-installation)
-    * [__1. CARLA installation__](#1-carla-installation0911-required)
-	    * [1.1 Package installation](#11-package-installation)  
-	    * [1.2 Build from source](#12-build-from-source)  
-
-    * [__2. Install OpenCDA__](#opencda-installation)
-    * [__3. Install Pytorch and Yolov5 (Optional)__](#3-install-pytorch-and-yolov5optional)
-    * [__4. Install Sumo (Optional)__](#4-install-sumooptional)
+* [__Installation__](#installation)
+    * [__1. Dependency Installation__](#1-dependency-installation)
+    * [__2. Install Pytorch__](#2-pytorch-installation-18)
+    * [__3. Install Spconv__](#3-spconv-121-requred)
 
 
 
