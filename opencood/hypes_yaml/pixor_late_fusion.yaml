@@ -1,8 +1,6 @@
 name: pixor_post_fusion
 
 yaml_parser: "load_bev_params"
-#root_dir: '/home/runshengxu/project/OpenCDA/data_dumping'
-#root_dir: '/Users/xh/code/mobility/data_dumping'
 root_dir: "/home/hao/code/mobility/data/train"
 validate_dir: "/home/hao/code/mobility/data/validate"
 train_params:

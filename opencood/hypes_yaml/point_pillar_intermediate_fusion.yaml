@@ -19,7 +19,7 @@ preprocess:
   # options: BasePreprocessor, VoxelPreprocessor, BevPreprocessor
   core_method: 'SpVoxelPreprocessor'
   args:
-    voxel_size: &voxel_size [0.4, 0.4, 4]
+    voxel_size: &voxel_size [0.2, 0.2, 4]
     max_points_per_voxel: 32
     max_voxel_train: 32000
     max_voxel_test: 70000
