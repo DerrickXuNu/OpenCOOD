@@ -53,7 +53,7 @@ postprocess:
     score_threshold: 0.10
   order: 'hwl' # hwl or lwh
   max_num: 100 # maximum number of objects in a single frame. use this number to make sure different frames has the same dimension in the same batch
-  nms_thresh: 0.15
+  nms_thresh: 0.20
 
 # model related
 model:
