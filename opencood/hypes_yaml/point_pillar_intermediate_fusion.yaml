@@ -1,7 +1,6 @@
-name: point_pillar_intermediate_fusion_low_res
-#root_dir: '/home/runshengxu/project/Cooperative_perception/opencood/tmp'
-root_dir: '/home/runshengxu/project/OpenCDA/data_dumping/train'
-validate_dir: '/home/runshengxu/project/OpenCDA/data_dumping/validate'
+name: point_pillar_intermediate_fusion
+root_dir: "opv2v_data_dumping/train"
+validate_dir: "opv2v_data_dumping/validate"
 
 yaml_parser: "load_point_pillar_params"
 train_params:

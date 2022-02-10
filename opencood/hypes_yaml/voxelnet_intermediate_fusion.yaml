@@ -1,9 +1,8 @@
 name: voxelnet_intermediate_fusion_compression_4
 
 yaml_parser: "load_voxel_params"
-#root_dir: '/home/runshengxu/project/Cooperative_perception/opencood/tmp'
-root_dir: '/home/runshengxu/project/OpenCDA/data_dumping/train'
-validate_dir: '/home/runshengxu/project/OpenCDA/data_dumping/validate'
+root_dir: "opv2v_data_dumping/train"
+validate_dir: "opv2v_data_dumping/validate"
 
 train_params:
   batch_size: &batch_size 2

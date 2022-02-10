@@ -131,3 +131,4 @@ logs/
 *.c
 *.so
 
+opv2v_data_dumping

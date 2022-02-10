@@ -41,6 +41,7 @@ To quickly visualize the LiDAR stream in the OPV2V dataset, first modify the `va
 in your `opencood/hypes_yaml/visualization.yaml` to the opv2v data path on your local machine, e.g. `opv2v/validate`,
 and the run the following commond:
 ```python
+cd ~/OpenCOOD
 python opencood/visualization/vis_data_sequence.py 
 ```
 ### Train your model

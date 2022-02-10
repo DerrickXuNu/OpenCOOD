@@ -1,8 +1,5 @@
 import argparse
 import os
-
-os.environ["CUDA_VISIBLE_DEVICES"]="1"
-
 import statistics
 
 import torch
@@ -134,7 +131,6 @@ def main():
         scheduler.step(epoch)
 
     print('Training Finished, checkpoints saved to %s' % saved_path)
-
 
 
 if __name__ == '__main__':

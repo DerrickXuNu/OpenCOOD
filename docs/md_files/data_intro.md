@@ -5,7 +5,7 @@ To use OpenCOOD, users need to first download the data from our [google drive](h
 and make the file structured as following:
 ```sh
 OpenCOOD # root of your OpenCOOD
-├── opv2v_data # the downloaded opv2v data
+├── opv2v_data_dumping # the downloaded opv2v data
 │   ├── train
 │   ├── validate
 │   ├── test
@@ -22,7 +22,7 @@ OpenCOOD # root of your OpenCOOD
 OPV2V data is structured as following:
 
 ```sh
-opv2v_data
+opv2v_data_dumping
 ├── train # data for training
 │   ├── 2021_08_22_21_41_24  # scenario folder
 │     ├── data_protocol.yaml # the simulation parameters used to collect the data in Carla

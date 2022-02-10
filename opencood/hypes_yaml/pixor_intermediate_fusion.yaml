@@ -1,10 +1,8 @@
 name: pixor_intermediate_fusion
 
 yaml_parser: "load_bev_params"
-#root_dir: '/home/runshengxu/project/OpenCDA/data_dumping'
-#root_dir: '/Users/xh/code/mobility/data_dumping'
-root_dir: "/home/hao/code/mobility/data/train"
-validate_dir: "/home/hao/code/mobility/data/test"
+root_dir: "opv2v_data_dumping/train"
+validate_dir: "opv2v_data_dumping/validate"
 train_params:
   batch_size: &batch_size 2
   epoches: 100
