@@ -23,7 +23,11 @@ for the latest release.
    md_files/data_intro.md
    md_files/installation.md
 
+.. toctree::
+   :maxdepth: 1
+   :caption: Tutorials
 
+   md_files/config_tutorial.md
 
 
 **Citing OpenCOOD**\ :

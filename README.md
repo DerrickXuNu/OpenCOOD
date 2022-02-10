@@ -45,8 +45,16 @@ cd ~/OpenCOOD
 python opencood/visualization/vis_data_sequence.py 
 ```
 ### Train your model
-
-
+OpenCOOD uses yaml file to configure all the parameters for training. To train your own model
+from scratch or a continued checkpoint, run the following commonds:
+```python
+python opencood/tools/train.py --hypes_yaml ${CONFIG_FILE} [--model_dir  ${CHECKPOINT_FOLDER}]
+```
+Arguments Explanation:
+- `hypes_yaml`: the path of the training configuration file, e.g. `opencood/hypes_yaml/second_early_fusion.yaml`, meaning you want to train
+an early fusion model which utilizes SECOND as the backbone. See [Tutorial 1: Config System](https://opencood.readthedocs.io/en/latest/md_files/config_tutorial.html) to learn more about the rules of the yaml files.
+- `model_dir` (optional) : the path of the checkpoints. This is used to fine-tune the trained models. When the `model_dir` is
+given, the trainer will discard the `hypes_yaml` and load the `config.yaml` in the checkpoint folder.
 
 ## Citation
  If you are using our OpenCOOD framework or OPV2V dataset for your research, please cite the following paper:
