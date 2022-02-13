@@ -20,6 +20,7 @@ from opencood.utils.pcd_utils import \
     downsample_lidar_minimum
 from opencood.utils.transformation_utils import x1_to_x2
 
+
 class LateFusionDataset(basedataset.BaseDataset):
     """
     This class is for intermediate fusion where each vehicle transmit the
@@ -266,17 +267,3 @@ class LateFusionDataset(basedataset.BaseDataset):
         gt_box_tensor = self.post_processor.generate_gt_bbx(data_dict)
 
         return pred_box_tensor, pred_score, gt_box_tensor
-
-
-if __name__ == '__main__':
-    params = load_yaml('../../hypes_yaml/voxelnet_late_fusion.yaml')
-
-    opencda_dataset = LateFusionDataset(params, train=False, visualize=True)
-    # opencda_dataset.__getitem__(40)
-    data_loader = DataLoader(opencda_dataset, batch_size=1, num_workers=4,
-                             collate_fn=opencda_dataset.collate_batch_test,
-                             shuffle=False,
-                             pin_memory=False)
-
-    for j, batch_data in enumerate(data_loader):
-        print('test')

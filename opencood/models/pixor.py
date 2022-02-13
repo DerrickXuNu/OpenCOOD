@@ -3,25 +3,6 @@ import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import numpy as np
-
-
-def maskFOV_on_BEV(shape, fov=88.0):
-    height = shape[0]
-    width = shape[1]
-
-    fov = fov / 2
-
-    x = np.arange(width)
-    y = np.arange(-height // 2, height // 2)
-
-    xx, yy = np.meshgrid(x, y)
-    angle = np.arctan2(yy, xx) * 180 / np.pi
-
-    in_fov = np.abs(angle) < fov
-    in_fov = torch.from_numpy(in_fov.astype(np.float32))
-
-    return in_fov
 
 
 def conv3x3(in_planes, out_planes, stride=1, bias=False):
@@ -152,7 +133,7 @@ class BackBone(nn.Module):
         self.deconv2 = nn.ConvTranspose2d(128, 96, kernel_size=3, stride=2,
                                           padding=1, output_padding=(1, p))
 
-    def forward(self, x):
+    def encode(self, x):
         x = self.conv1(x)
         if self.use_bn:
             x = self.bn1(x)
@@ -162,18 +143,27 @@ class BackBone(nn.Module):
         if self.use_bn:
             x = self.bn2(x)
         c1 = self.relu(x)
-        
+
         # bottom up layers
         c2 = self.block2(c1)
         c3 = self.block3(c2)
         c4 = self.block4(c3)
         c5 = self.block5(c4)
 
+        return c3, c4, c5
+
+    def decode(self, c3, c4, c5):
         l5 = self.latlayer1(c5)
         l4 = self.latlayer2(c4)
         p5 = l4 + self.deconv1(l5)
         l3 = self.latlayer3(c3)
         p4 = l3 + self.deconv2(p5)
+
+        return p4
+
+    def forward(self, x):
+        c3, c4, c5 = self.encode(x)
+        p4 = self.decode(c3, c4, c5)
 
         return p4
 
@@ -190,9 +180,8 @@ class BackBone(nn.Module):
             downsample = nn.Conv2d(self.in_planes, planes * block.expansion,
                                    kernel_size=1, stride=2, bias=True)
 
-        layers = []
-        layers.append(
-            block(self.in_planes, planes, stride=2, downsample=downsample))
+        layers = [
+            block(self.in_planes, planes, stride=2, downsample=downsample)]
 
         self.in_planes = planes * block.expansion
         for i in range(1, num_blocks):
@@ -201,7 +190,7 @@ class BackBone(nn.Module):
         return nn.Sequential(*layers)
 
     def _upsample_add(self, x, y):
-        '''Upsample and add two feature maps.
+        """Upsample and add two feature maps.
         Args:
           x: (Variable) top feature map to be upsampled.
           y: (Variable) lateral feature map.
@@ -215,7 +204,7 @@ class BackBone(nn.Module):
         conv2d feature map size: [N,_,8,8] ->
         upsampled feature map size: [N,_,16,16]
         So we choose bilinear upsample which supports arbitrary output sizes.
-        '''
+        """
         _, _, H, W = y.size()
         return F.upsample(x, size=(H, W), mode='bilinear') + y
 
@@ -285,7 +274,6 @@ class PIXOR(nn.Module):
         use_bn = args["use_bn"]
         self.backbone = BackBone(Bottleneck, [3, 6, 6, 3], geom, use_bn)
         self.header = Header(use_bn)
-        self.cam_fov_mask = maskFOV_on_BEV(geom['label_shape'])
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -304,16 +292,10 @@ class PIXOR(nn.Module):
     def forward(self, data_dict):
         bev_input = data_dict['processed_lidar']["bev_input"]
 
-        # x = x.permute(0, 3, 1, 2)
-        # Torch Takes Tensor of shape (Batch_size, channels, height, width)
-
         features = self.backbone(bev_input)
         # cls -- (N, 1, W/4, L/4)
         # reg -- (N, 6, W/4, L/4)
         cls, reg = self.header(features)
-        # todo: consider using the maks in a different place.
-        # self.cam_fov_mask = self.cam_fov_mask.to(device)
-        # cls = cls * self.cam_fov_mask
 
         output_dict = {
             "cls": cls,
@@ -321,49 +303,3 @@ class PIXOR(nn.Module):
         }
 
         return output_dict
-
-
-def test_decoder(decode=True):
-    geom = {
-        "L1": -40.0,
-        "L2": 40.0,
-        "W1": 0.0,
-        "W2": 70.0,
-        "H1": -2.5,
-        "H2": 1.0,
-        "input_shape": [800, 700, 36],
-        "label_shape": [200, 175, 7]
-    }
-    print("Testing PIXOR decoder")
-    net = PIXOR(geom, use_bn=False)
-    net.set_decode(decode)
-    preds = net(torch.autograd.Variable(torch.randn(2, 36, 800, 700)))
-
-    print("Predictions output size", preds.size())
-
-
-def test_model():
-    from torch.utils.data import DataLoader
-    from opencood.hypes_yaml.yaml_utils import load_yaml
-    from opencood.data_utils.datasets.late_fusion_dataset import \
-        LateFusionDataset
-
-    params = load_yaml('./opencood/hypes_yaml/pixor_post_fusion.yaml')
-    opencda_dataset = LateFusionDataset(params, visualize=True)
-    data_loader = DataLoader(opencda_dataset,
-                             batch_size=params['train_params']['batch_size'],
-                             num_workers=4,
-                             collate_fn=opencda_dataset.collate_batch_train,
-                             shuffle=False,
-                             pin_memory=False)
-
-    model = PIXOR(params['model']['args'])
-
-    for j, batch_data in enumerate(data_loader):
-        output_dict = model(batch_data['ego']['processed_lidar'])
-        print('debug')
-
-
-if __name__ == "__main__":
-    # test_decoder()
-    test_model()

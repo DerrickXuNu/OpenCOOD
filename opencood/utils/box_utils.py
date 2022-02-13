@@ -118,7 +118,8 @@ def boxes2d_to_corners2d(boxes2d, order="lwh"):
         (..., 4, 2), the 4 corners of the bounding box.
 
     """
-    assert order == "lwh", "boxes2d_to_corners_2d only supports lwh order for now."
+    assert order == "lwh", \
+        "boxes2d_to_corners_2d only supports lwh order for now."
     boxes2d, is_numpy = common_utils.check_numpy_to_torch(boxes2d)
     template = boxes2d.new_tensor((
         [1, -1], [1, 1], [-1, 1], [-1, -1]
@@ -802,16 +803,3 @@ def project_points_by_matrix_torch(points, transformation_matrix):
 
     return projected_points[:, :3] if not is_numpy \
         else projected_points[:, :3].numpy()
-
-
-if __name__ == "__main__":
-    x = np.arange(-5, 5, 0.1)
-    y = np.arange(-5, 5, 0.1)
-    xx, yy = np.meshgrid(x, y)
-    points = np.concatenate([xx.reshape(-1, 1), yy.reshape(-1, 1)], axis=-1)
-    box_corners = np.array([
-        [2, -2], [2, 2], [-2, 2], [-2, -2]
-    ])
-    temp = get_points_in_rotated_box(points, box_corners)
-    assert np.all(np.logical_and(temp[:, 0] >= -2, temp[:, 0] <= 2))
-    assert np.all(np.logical_and(temp[:, 1] >= -2, temp[:, 1] <= 2))

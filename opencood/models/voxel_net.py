@@ -6,6 +6,7 @@ from torch.autograd import Variable
 from opencood.models.sub_modules.pillar_vfe import PillarVFE
 from opencood.utils.common_utils import torch_tensor_to_numpy
 
+
 # conv2d + bn + relu
 class Conv2d(nn.Module):
 
@@ -172,9 +173,9 @@ class VoxelNet(nn.Module):
     def __init__(self, args):
         super(VoxelNet, self).__init__()
         self.svfe = PillarVFE(args['pillar_vfe'],
-                                    num_point_features=4,
-                                    voxel_size=args['voxel_size'],
-                                    point_cloud_range=args['lidar_range'])
+                              num_point_features=4,
+                              voxel_size=args['voxel_size'],
+                              point_cloud_range=args['lidar_range'])
 
         # self.svfe = SVFE(args['T'])
         self.cml = CML()
@@ -226,25 +227,3 @@ class VoxelNet(nn.Module):
                        'rm': rm}
 
         return output_dict
-
-
-if __name__ == '__main__':
-    from torch.utils.data import DataLoader
-    from opencood.hypes_yaml.yaml_utils import load_yaml
-    from opencood.data_utils.datasets.late_fusion_dataset import \
-        LateFusionDataset
-
-    params = load_yaml('../hypes_yaml/voxelnet_late_fusion.yaml')
-    opencda_dataset = LateFusionDataset(params, visualize=True)
-    data_loader = DataLoader(opencda_dataset,
-                             batch_size=params['train_params']['batch_size'],
-                             num_workers=4,
-                             collate_fn=opencda_dataset.collate_batch_train,
-                             shuffle=False,
-                             pin_memory=False)
-    model = VoxelNet(params['model']['args'])
-    model.cuda()
-
-    for j, batch_data in enumerate(data_loader):
-        output_dict = model(batch_data['ego']['processed_lidar'])
-        print('debug')
