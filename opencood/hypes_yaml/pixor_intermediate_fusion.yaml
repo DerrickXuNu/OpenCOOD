@@ -33,7 +33,7 @@ postprocess:
     res: *res
     downsample_rate: *downsample_rate # pixor downsample ratio
   target_args:
-    score_threshold: 0.5
+    score_threshold: 0.7
 
 
   order: 'lwh' # hwl or lwh

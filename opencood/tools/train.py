@@ -91,7 +91,8 @@ def main():
 
             batch_data = train_utils.to_device(batch_data, device)
 
-            # case1 : late fusion train --> only ego needed
+            # case1 : late fusion train --> only ego needed,
+            # and ego is random selected
             # case2 : early fusion train --> all data projected to ego
             # case3 : intermediate fusion --> ['ego']['processed_lidar']
             # becomes a list, which containing all data from other cavs

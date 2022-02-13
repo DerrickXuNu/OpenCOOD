@@ -64,11 +64,12 @@ The LiDAR data is saved with Open3d package and has a postfix ".pcd" in the name
 Each CAV is equipped with 4 RGB cameras (check https://mobility-lab.seas.ucla.edu/opv2v/ to see the mounted positions of these cameras) to capture the 360 degree of view of the surrounding scene.
 `camera0`, `camera1`, `camera2`, and `camera3` represent the front, right rear, left rear, and back cameras respectively.
 
-#### 3.3 Metadata
+#### 3.3  Data Annotation
 All the metadata is saved in yaml files. It records the following important information at the current timestamp:
 - **ego information**:  Current ego pose with and without GPS noise under Carla world coordinates, ego speed in km/h, the LiDAR pose, and future planning trajectories. 
 - **calibration**: The intrinsic matrix and extrinsic matrix from each camera to the LiDAR sensor.
 - **objects annotation**: The pose and velocity of each surrounding human driving vehicle that has at least one point hit by the agent's LiDAR sensor.
+See [data annotation section](data_annotation_tutorial.md) for more details. 
 
 ### 4. Data Collection Protocol
 Besides agent contents, every scenario database also has a yaml file named `data_protocol.yaml`. 

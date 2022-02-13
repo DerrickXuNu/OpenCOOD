@@ -130,5 +130,6 @@ dmypy.json
 logs/
 *.c
 *.so
+.idea
 
 opv2v_data_dumping

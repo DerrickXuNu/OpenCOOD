@@ -13,13 +13,18 @@ class ScaledDotProductAttention(nn.Module):
         dim (int): dimention of attention
         mask (torch.Tensor): tensor containing indices to be masked
     Inputs: query, key, value, mask
-        - **query** (batch, q_len, d_model): tensor containing projection vector for decoder.
-        - **key** (batch, k_len, d_model): tensor containing projection vector for encoder.
-        - **value** (batch, v_len, d_model): tensor containing features of the encoded input sequence.
+        - **query** (batch, q_len, d_model): tensor containing projection
+          vector for decoder.
+        - **key** (batch, k_len, d_model): tensor containing projection
+          vector for encoder.
+        - **value** (batch, v_len, d_model): tensor containing features of the
+          encoded input sequence.
         - **mask** (-): tensor containing indices to be masked
     Returns: context, attn
-        - **context**: tensor containing the context vector from attention mechanism.
-        - **attn**: tensor containing the attention (alignment) from the encoder outputs.
+        - **context**: tensor containing the context vector from
+          attention mechanism.
+        - **attn**: tensor containing the attention (alignment) from the
+          encoder outputs.
     """
 
     def __init__(self, dim):

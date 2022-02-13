@@ -28,7 +28,20 @@ for the latest release.
    :caption: Tutorials
 
    md_files/config_tutorial.md
+   md_files/data_annotation_tutorial.md
+   md_files/logic_flow.md
 
+.. toctree::
+   :maxdepth: 1
+   :caption: Benchmarks
+
+   md_files/lidar_benchmark.md
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Additional Information
+
+   md_files/contributor.md
 
 **Citing OpenCOOD**\ :
 

@@ -311,19 +311,3 @@ class IntermediateFusionDataset(basedataset.BaseDataset):
         gt_box_tensor = self.post_processor.generate_gt_bbx(data_dict)
 
         return pred_box_tensor, pred_score, gt_box_tensor
-
-
-if __name__ == '__main__':
-    params = load_yaml('./opencood/hypes_yaml/pixor_intermediate_fusion.yaml')
-
-    opencda_dataset = IntermediateFusionDataset(params,
-                                                train=True,
-                                                visualize=True)
-    data_loader = DataLoader(opencda_dataset, batch_size=2, num_workers=0,
-                             collate_fn=opencda_dataset.collate_batch_train,
-                             shuffle=False,
-                             pin_memory=False)
-
-    for j, batch_data in enumerate(data_loader):
-        print('test')
-

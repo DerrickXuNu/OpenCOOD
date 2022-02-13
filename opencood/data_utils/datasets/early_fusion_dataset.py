@@ -278,10 +278,3 @@ class EarlyFusionDataset(basedataset.BaseDataset):
         gt_box_tensor = self.post_processor.generate_gt_bbx(data_dict)
 
         return pred_box_tensor, pred_score, gt_box_tensor
-
-
-if __name__ == '__main__':
-    params = load_yaml('../../hypes_yaml/voxelnet_early_fusion.yaml')
-
-    opencda_dataset = EarlyFusionDataset(params, train=True, visualize=True)
-    opencda_dataset.__getitem__(10)
