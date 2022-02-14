@@ -4,7 +4,7 @@
 ### Results on OPV2V dataset (AP@0.5/0.7)
 
 |                    | Backbone   | Fusion Strategy  | Default Towns    |Culver City| Download |
-|--------------------|-------|--------|--------|---------|-----|
+|--------------------| --------   | ---------------  | -------------    |-----------| -------- |
 | Naive Late         | PointPillar        | Late      |   0.858/0.781        | 0.799/0.668         |    [url](https://drive.google.com/file/d/1WTKooW6k0exLqoIE5Czqy6ptycYlgKZz/view?usp=sharing)   |
 | [Cooper](https://arxiv.org/abs/1905.05265)       | PointPillar        | Early        | 0.891/0.800         | 0.829/0.696       | [url](https://drive.google.com/file/d/1N1p6syxGSKD18ELgtBQoSuUzR8tX1JeE/view?usp=sharing)     | 
 | [Attentive Fusion](https://arxiv.org/abs/2109.07644)         | PointPillar        | Intermediate       | **0.908**/**0.815**       | **0.854**/**0.735**         | [url](https://drive.google.com/file/d/1QBcNQso1zISqf4Fw18FvWLQdDL6Rx-Sr/view?usp=sharing)     | 
