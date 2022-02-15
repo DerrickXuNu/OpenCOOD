@@ -1,5 +1,5 @@
 # OpenCOOD
-[![Documentation Status](https://readthedocs.org/projects/opencood-documentation/badge/?version=latest)](https://opencood-documentation.readthedocs.io/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/opencood/badge/?version=latest)](https://opencood.readthedocs.io/en/latest/?badge=latest)
 
 OpenCOOD is an <strong>Open</strong> <strong>COO</strong>perative <strong>D</strong>etection framework for autonomous driving. It is also the official implementation of the <strong> ICRA 2022  </strong>
 paper [OPV2V.](https://arxiv.org/abs/2109.07644)
