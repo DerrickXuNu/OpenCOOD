@@ -77,7 +77,7 @@ Arguments Explanation:
 The evaluation results  will be dumped in the model directory.
 
 ## Benchmark and model zoo
-We currently provide 3D LiDAR detection benchmark on OPV2V dataset, please refer to [benchmark](https://opencood.readthedocs.io/en/latest/md_files/lidar_benchmark.html). More
+We currently provide 3D LiDAR detection benchmark on OPV2V dataset, please refer to [benchmark](docs/md_files/lidar_benchmark.md). More
 benchmark results of different data modalities/tasks will be revealed soon.
 
 ## Tutorials
