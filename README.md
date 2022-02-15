@@ -97,7 +97,7 @@ We have a series of tutorials to help you understand OpenCOOD more. Please check
 ## Future Plans
 - [ ] Provide camera APIs for OPV2V
 - [ ] Provide the log replay toolbox
-- [ ] More SOTA models
+- [ ] More SOTA models, such as [DiscoNet](https://arxiv.org/pdf/2111.00643.pdf) and [V2VNet](https://arxiv.org/abs/2008.07519).
 
 
 ## Contributors
