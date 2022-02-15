@@ -33,12 +33,6 @@ for the latest release.
 
 .. toctree::
    :maxdepth: 1
-   :caption: Benchmarks
-
-   md_files/lidar_benchmark.md
-
-.. toctree::
-   :maxdepth: 1
    :caption: Additional Information
 
    md_files/contributor.md
