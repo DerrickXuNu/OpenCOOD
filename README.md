@@ -101,7 +101,8 @@ We have a series of tutorials to help you understand OpenCOOD more. Please check
 
 
 ## Contributors
-OpenCOOD is supported by the [UCLA Mobility Lab](https://mobility-lab.seas.ucla.edu/). <br>
+OpenCOOD is supported by the [UCLA Mobility Lab](https://mobility-lab.seas.ucla.edu/). We also appreciate the great work from [OpenPCDet](https://github.com/open-mmlab/OpenPCDet), as 
+part of our works use their framework.<br>
 
 ### Lab Principal Investigator:
 - Dr. Jiaqi Ma ([linkedin](https://www.linkedin.com/in/jiaqi-ma-17037838/),
