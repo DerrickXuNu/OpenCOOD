@@ -6,8 +6,7 @@ modify the model/training/inference parameters. Specifically, we use **yaml** fi
 important parameters.
 
 ### Config File Location
-All the yaml files should be saved in `opencood/hypes_yaml`, and users should use the `load_yaml()` function in `opencood/hypes_yaml/yaml_utils.py` to load
-the parameters into a dictionary. 
+All the yaml files should be saved in `opencood/hypes_yaml`, and users should use the `load_yaml()` function in [`opencood/hypes_yaml/yaml_utils.py`](https://github.com/DerrickXuNu/OpenCOOD/blob/main/opencood/hypes_yaml/yaml_utils.py#L8) to load the parameters into a dictionary. 
 
 ### Config Name Style
 We follow the below style to name config yaml files.
@@ -19,7 +18,7 @@ We follow the below style to name config yaml files.
 Now let's go through the `point_pillar_intermediate_fusion.yaml` as an example.
 
 ```yaml
-name: point_pillar_intermediate_fusion # this parameter together with the current timestamp will  define the name of the saved older for the model. 
+name: point_pillar_intermediate_fusion # this parameter together with the current timestamp will  define the name of the saved folder for the model. 
 root_dir: "opv2v_data_dumping/train" # this is where the training data locate
 validate_dir: "opv2v_data_dumping/validate" # during training, it defines the validation folder. during testing, it defines the testing folder path.
 
@@ -31,7 +30,7 @@ train_params: # the common training parameters
   save_freq: 1
 
 fusion:
-  core_method: 'IntermediateFusionDataset' # LateFusionDataset, EarlyFusionDataset, IntermediateFusionDataset supported
+  core_method: 'IntermediateFusionDataset' # LateFusionDataset, EarlyFusionDataset, and IntermediateFusionDataset are supported
   args: []
 
 # preprocess-related
@@ -59,21 +58,21 @@ data_augment:
 
 # post processing related.
 postprocess:
-  core_method: 'VoxelPostprocessor' # VoxelPostprocessor, BevPostprocessor supported
+  core_method: 'VoxelPostprocessor' # VoxelPostprocessor and BevPostprocessor are supported
   anchor_args: # anchor generator parameters
     cav_lidar_range: *cav_lidar # the range is consistent with the lidar cropping range to generate the correct ancrhors
     l: 3.9 # the default length of the anchor
     w: 1.6 # the default width
     h: 1.56 # the default height
     r: [0, 90] # the yaw angles. 0, 90 meaning for each voxel, two anchors will be generated with 0 and 90 degree yaw angle
-    feature_stride: 2 # the feature map is shrink twice compared the input voxel tensor
+    feature_stride: 2 # the feature map is shrank twice compared the input voxel tensor
     num: &achor_num 2 # for each location in the feature map, 2 anchors will be generated
   target_args: # used to generate positive and negative samples for object detection
     pos_threshold: 0.6 
     neg_threshold: 0.45
     score_threshold: 0.20
   order: 'hwl' # hwl or lwh
-  max_num: 100 # maximum number of objects in a single frame. use this number to make sure different frames has the same dimension in the same batch
+  max_num: 100 # maximum number of objects in a single frame. use this number to make sure different frames have the same dimension in the same batch
   nms_thresh: 0.15
 
 # model related
@@ -103,7 +102,7 @@ model:
     anchor_num: *achor_num
 
 loss: # loss function
-  core_method: point_pillar_loss # trainer will load the loss function wit the same name
+  core_method: point_pillar_loss # trainer will load the loss function with the same name
   args:
     cls_weight: 1.0 # classification weights
     reg: 2.0 # regression weights
@@ -116,7 +115,7 @@ optimizer: # optimzer setup
     weight_decay: 1e-4
 
 lr_scheduler: # learning rate schedular
-  core_method: multistep #step, multistep and Exponential support
+  core_method: multistep #step, multistep and Exponential are supported
   gamma: 0.1
   step_size: [15, 30]
 
