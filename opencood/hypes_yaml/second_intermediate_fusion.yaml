@@ -1,5 +1,4 @@
 name: second_intermediate_fusion
-#root_dir: '/home/runshengxu/project/Cooperative_perception/opencood/tmp'
 root_dir: "opv2v_data_dumping/train"
 validate_dir: "opv2v_data_dumping/validate"
 

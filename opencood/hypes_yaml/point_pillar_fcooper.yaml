@@ -1,16 +1,17 @@
-name: second_early_fusion
-root_dir: "opv2v_data_dumping/train"
-validate_dir: "opv2v_data_dumping/validate"
+name: point_pillar_fcooper
+root_dir: 'opv2v_data_dumping/train'
+validate_dir: 'opv2v_data_dumping/validate'
 
-yaml_parser: "load_second_params"
+yaml_parser: "load_point_pillar_params"
 train_params:
-  batch_size: &batch_size 2
-  epoches: 30
+  batch_size: &batch_size 4
+  epoches: 60
   eval_freq: 1
   save_freq: 1
+  max_cav: &max_cav 5
 
 fusion:
-  core_method: 'EarlyFusionDataset' # LateFusionDataset, EarlyFusionDataset, IntermediateFusionDataset supported
+  core_method: 'IntermediateFusionDataset' # LateFusionDataset, EarlyFusionDataset, IntermediateFusionDataset supported
   args: []
 
 # preprocess-related
@@ -18,8 +19,8 @@ preprocess:
   # options: BasePreprocessor, VoxelPreprocessor, BevPreprocessor
   core_method: 'SpVoxelPreprocessor'
   args:
-    voxel_size: &voxel_size [0.1, 0.1, 0.1]
-    max_points_per_voxel: 5
+    voxel_size: &voxel_size [0.4, 0.4, 4]
+    max_points_per_voxel: 32
     max_voxel_train: 32000
     max_voxel_test: 70000
   # lidar range for each individual cav.
@@ -44,7 +45,7 @@ postprocess:
     w: 1.6
     h: 1.56
     r: [0, 90]
-    feature_stride: 8
+    feature_stride: 2
     num: &achor_num 2
   target_args:
     pos_threshold: 0.6
@@ -56,28 +57,35 @@ postprocess:
 
 # model related
 model:
-  core_method: second
+  core_method: point_pillar_fcooper
   args:
-    batch_size: *batch_size
     voxel_size: *voxel_size
     lidar_range: *cav_lidar
     anchor_number: *achor_num
-    mean_vfe:
-      feature_points: 4
+    max_cav: *max_cav
+    compression: 0 # compression rate
+    backbone_fix: false
 
-    backbone_3d: []
-
-    height_compression:
-      feature_num: 256
+    pillar_vfe:
+      use_norm: true
+      with_distance: false
+      use_absolute_xyz: true
+      num_filters: [64]
+    point_pillar_scatter:
+      num_features: 64
 
     base_bev_backbone:
-      layer_nums: [5, 5]
-      layer_strides: [1, 2]
-      num_filters: [128, 256]
-      upsample_strides: [1, 2]
-      num_upsample_filter: [256, 256]
-
-    anchor_num: *achor_num
+      layer_nums: [3, 5, 8]
+      layer_strides: [2, 2, 2]
+      num_filters: [64, 128, 256]
+      upsample_strides: [1, 2, 4]
+      num_upsample_filter: [128, 128, 128]
+    shrink_header:
+      kernal_size: [ 1 ]
+      stride: [ 1 ]
+      padding: [ 0 ]
+      dim: [ 256 ]
+      input_dim: 384 # 128 * 3
 
 loss:
   core_method: point_pillar_loss
@@ -87,7 +95,7 @@ loss:
 
 optimizer:
   core_method: Adam
-  lr: 0.002
+  lr: 0.001
   args:
     eps: 1e-10
     weight_decay: 1e-4
