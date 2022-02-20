@@ -18,5 +18,7 @@
 | Naive Late         | PIXOR        | Late      |    0.769/0.578       |  0.622/0.360      | [url]()      |
 | Cooper    | PIXOR        | Early        |   0.810/0.678      | **0.734/0.558**      | [url](https://drive.google.com/file/d/1ZDLjtizZCuV6D92LloEPKRIw-LqxfE1j/view?usp=sharing)     | 
 | Attentive         | PIXOR        | Intermediate       |  **0.815/0.687**      | 0.716/0.546       | [url]()      |
+
+
 **Note**: We suggest using **PointPillar** as the backbone when you are creating your method and try to compare with
 our benchmark, as we implement most of the SOTA methods with this backbone only.
