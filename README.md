@@ -10,6 +10,8 @@ paper [OPV2V.](https://arxiv.org/abs/2109.07644)
 </p>
 
 ## News
+**02/20/2022**: [F-Cooper](https://arxiv.org/abs/1909.06459) now is supported and the results/traiend model is in the [benchmark](docs/md_files/lidar_benchmark.md) page.
+
 **01/31/2022**: Our paper *OPV2V: An Open Benchmark Dataset and Fusion Pipeline for Perception with Vehicle-to-Vehicle Communication* has been accpted by ICRA2022!
 
 **09/21/2021**: OPV2V dataset is public available: https://mobility-lab.seas.ucla.edu/opv2v/
@@ -78,8 +80,8 @@ Arguments Explanation:
 The evaluation results  will be dumped in the model directory.
 
 ## Benchmark and model zoo
-We currently provide 3D LiDAR detection benchmark on OPV2V dataset, please refer to [benchmark](docs/md_files/lidar_benchmark.md). More
-benchmark results of different data modalities/tasks will be revealed soon.
+We currently provide 3D LiDAR detection benchmark on OPV2V dataset, please refer to [benchmark](docs/md_files/lidar_benchmark.md). Note that we keep updating the benchmark, 
+so there are more methods there than in the paper. We suggest using the benchmark page when you try to compare with your own method in your research. 
 
 ## Tutorials
 We have a series of tutorials to help you understand OpenCOOD more. Please check the series of our [tutorials](https://opencood.readthedocs.io/en/latest/md_files/config_tutorial.html).

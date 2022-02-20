@@ -4,8 +4,8 @@ yaml_parser: "load_bev_params"
 root_dir: "opv2v_data_dumping/train"
 validate_dir: "opv2v_data_dumping/validate"
 train_params:
-  batch_size: &batch_size 8
-  epoches: 100
+  batch_size: &batch_size 2
+  epoches: 15
   eval_freq: 1
   save_freq: 1
 fusion:
