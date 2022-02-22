@@ -23,8 +23,8 @@ To get started, the following requirements should be fulfilled.
 ### 1. Dependency Installation
 First, download OpenCOOD github to your local folder if you haven't done it yet.
 ```sh
-git clonehttps://github.com/DerrickXuNu/OpenCOOD.git
-cd OenCOOD
+git clone https://github.com/DerrickXuNu/OpenCOOD.git
+cd OpenCOOD
 ```
 Next we create a conda environment and install the requirements.
 
@@ -36,7 +36,7 @@ python setup.py develop
 
 If conda install failed,  install through pip
 ```sh
-pip install -r requirement.txt
+pip install -r requirements.txt
 ```
 
 ### 2. Pytorch Installation (>=1.8)

@@ -5,9 +5,8 @@ import torch
 from torch.utils.data import DataLoader
 
 import opencood.hypes_yaml.yaml_utils as yaml_utils
-from opencood.tools import train_utils, infrence_utils
+from opencood.tools import train_utils, inference_utils
 from opencood.data_utils.datasets import build_dataset
-from opencood.visualization import vis_utils
 from opencood.utils import eval_utils
 
 
@@ -68,17 +67,17 @@ def main():
             batch_data = train_utils.to_device(batch_data, device)
             if opt.fusion_method == 'late':
                 pred_box_tensor, pred_score, gt_box_tensor = \
-                    infrence_utils.inference_late_fusion(batch_data,
+                    inference_utils.inference_late_fusion(batch_data,
                                                          model,
                                                          opencood_dataset)
             elif opt.fusion_method == 'early':
                 pred_box_tensor, pred_score, gt_box_tensor = \
-                    infrence_utils.inference_early_fusion(batch_data,
+                    inference_utils.inference_early_fusion(batch_data,
                                                           model,
                                                           opencood_dataset)
             elif opt.fusion_method == 'intermediate':
                 pred_box_tensor, pred_score, gt_box_tensor = \
-                    infrence_utils.inference_intermediate_fusion(batch_data,
+                    inference_utils.inference_intermediate_fusion(batch_data,
                                                                  model,
                                                                  opencood_dataset)
             else:
