@@ -7,8 +7,8 @@
 |--------------------| --------   | ---------------  | ---------------                | -------------    |-----------| -------- |
 | Naive Late         | PointPillar        | Late      |    **0.024**/**0.024** |   0.781/0.781        | 0.668/0.668         |    [url](https://drive.google.com/file/d/1WTKooW6k0exLqoIE5Czqy6ptycYlgKZz/view?usp=sharing)   |
 | [Cooper](https://arxiv.org/abs/1905.05265)       | PointPillar        | Early  |   7.68/7.68   | 0.800/invalid         | 0.696/invalid       | [url](https://drive.google.com/file/d/1N1p6syxGSKD18ELgtBQoSuUzR8tX1JeE/view?usp=sharing)     | 
-| [Attentive Fusion](https://arxiv.org/abs/2109.07644)         | PointPillar        | Intermediate  | 126.8/1.981     | **0.815**       | **0.735**         | [url](https://drive.google.com/file/d/1QBcNQso1zISqf4Fw18FvWLQdDL6Rx-Sr/view?usp=sharing)     | 
-| [F-Cooper](https://arxiv.org/abs/1909.06459)         | PointPillar        | Intermediate  |     | 0.790     | 0.728        | [url](https://drive.google.com/file/d/1CjXu9Y2ZTzJA6Oo3hnqFhbTqBVKq3mQb/view?usp=sharing)     | 
+| [Attentive Fusion](https://arxiv.org/abs/2109.07644)         | PointPillar        | Intermediate  | 126.8/1.98   | **0.815**/**0.810**       | **0.735**/**0.731**        | [url](https://drive.google.com/file/d/1QBcNQso1zISqf4Fw18FvWLQdDL6Rx-Sr/view?usp=sharing)     | 
+| [F-Cooper](https://arxiv.org/abs/1909.06459)         | PointPillar        | Intermediate  | 72.08/1.12    | 0.790     | 0.728        | [url](https://drive.google.com/file/d/1CjXu9Y2ZTzJA6Oo3hnqFhbTqBVKq3mQb/view?usp=sharing)     | 
 | Naive Late         | VoxelNet        | Late  |    | 0.738          | 0.588        | [url]()    |
 | Cooper    | VoxelNet        | Early   |     | 0.758        | .677        | [url](https://drive.google.com/file/d/14WD7iLLyyCJJ3lApbYYdr5KOUM1ACnve/view?usp=sharing)     | 
 | Attentive Fusion        | VoxelNet        | Intermediate |      | **0.864**        | **0.775**        | [url](https://drive.google.com/file/d/1QoEvuZtXfC5U5-HAbnyeJKAiAN54MidY/view?usp=sharing)      | 
