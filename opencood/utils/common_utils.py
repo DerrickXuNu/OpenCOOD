@@ -139,6 +139,26 @@ def compute_iou(box, boxes):
     return np.array(iou, dtype=np.float32)
 
 
+def compute_ious(boxes1, boxes2):
+    """
+    Compute ious between boxes1 and boxes2 list
+    Parameters
+    ----------
+    boxes1, boxes2 : list
+        List of shapely.geometry.Polygon. The two lists must have the same length
+
+    Returns
+    -------
+    ious : np.ndarray
+        Array of ious between boxes1 and boxes2.
+
+    """
+    # Calculate intersection areas
+    iou = [box.intersection(b).area / box.union(b).area for b in boxes]
+
+    return np.array(iou, dtype=np.float32)
+
+
 def convert_format(boxes_array):
     """
     Convert boxes array to shapely.geometry.Polygon format.

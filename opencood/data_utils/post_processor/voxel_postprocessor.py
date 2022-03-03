@@ -144,7 +144,7 @@ class VoxelPostprocessor(BasePostprocessor):
         id_pos, id_pos_gt = \
             np.where(iou >
                      self.params['target_args']['pos_threshold'])
-        #  find anchors iou  params['neg_iou']
+        #  find anchors iou < params['neg_iou']
         id_neg = np.where(np.sum(iou <
                                  self.params['target_args']['neg_threshold'],
                                  axis=1) == iou.shape[1])[0]

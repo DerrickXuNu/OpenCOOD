@@ -354,6 +354,11 @@ class BaseDataset(Dataset):
                                    'object_bbx_mask': object_bbx_mask,
                                    'processed_lidar': processed_lidar_torch_dict,
                                    'label_dict': label_torch_dict})
+
+        # iou prediction needs anchors to generate targets dynamicly
+        if 'predict_iou' in self.params['postprocess'] and self.params['postprocess']['predict_iou']:
+            output_dict['ego']['anchor_box'] = torch.from_numpy(batch[0]['ego']['anchor_box']) # all sample has the same anchor boxes
+
         if self.visualize:
             origin_lidar = \
                 np.array(downsample_lidar_minimum(pcd_np_list=origin_lidar))
