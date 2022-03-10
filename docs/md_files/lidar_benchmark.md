@@ -14,12 +14,16 @@
 | Attentive Fusion        | VoxelNet        | Intermediate |   576.71/1.12   | **0.864**/**0.852**        | **0.775**/**0.746**       | [url](https://drive.google.com/file/d/16q8CfcB8dS4EVhJMvvEfn0gM2ynxZB3E/view?usp=sharing)      | 
 | Naive Late         | SECOND        | Late |  **0.024**/**0.024**    |  0.775/0.775        |0.682/0.682        | [url](https://drive.google.com/file/d/1VG_FKe1mKagPVGXH7UGHpyaM5q3cxtD8/view?usp=sharing)      |
 | Cooper    | SECOND        | Early  |   7.68/7.68   |  0.813/x       |  0.738/x     | [url](https://drive.google.com/file/d/1Z9io1VNcU-urcRW8l0ogWCTVCB53mw4N/view?usp=sharing)     | 
-| Attentive         | SECOND        | Intermediate |      |   **0.826**     | **0.760**     | [url](https://drive.google.com/file/d/107005eltMD9bmb1RHz4ZWWZQT1TP6Gp0/view?usp=sharing)      | 
-| Naive Late         | PIXOR        | Late |     |    0.578       |  0.360      | [url]()      |
-| Cooper    | PIXOR        | Early |       |   0.678      | **0.558**      | [url](https://drive.google.com/file/d/1ZDLjtizZCuV6D92LloEPKRIw-LqxfE1j/view?usp=sharing)     | 
-| Attentive         | PIXOR        | Intermediate  |     |  **0.687**      | 0.546       | [url]()      |
+| Attentive         | SECOND        | Intermediate |  63.4/0.99     |   **0.826**/**0.783**     | **0.760**/**0.760**    | [url](https://drive.google.com/file/d/1zEB8EyZ0X-WQykHFOM0pVwI8jXunRz1Z/view?usp=sharing)      | 
+| Naive Late         | PIXOR        | Late |    **0.024**/**0.024** |    0.578/0.578       |  0.360/0.360      | [url]()      |
+| Cooper    | PIXOR        | Early |   7.68/7.68    |   0.678/x      | **0.558**/x      | [url](https://drive.google.com/file/d/1ZDLjtizZCuV6D92LloEPKRIw-LqxfE1j/view?usp=sharing)     | 
+| Attentive         | PIXOR        | Intermediate  |   313.75/1.22  |  **0.687**/**0.612**      | 0.546/**0.492**       | [url]()      |
 
 
 **Note**: 
 * We suggest using **PointPillar** as the backbone when you are creating your method and try to compare with
 our benchmark, as we implement most of the SOTA methods with this backbone only.
+* We assume the transimssion rate is 27Mbp/s. Considering the frequency of LiDAR is 10Hz, the 
+bandwidth requirement should be less than **2.7Mbp** to avoid severe delay. 
+* A 'x' in the benchmark table represents the bandwidth requirement is too large, which 
+can not be considered to employ in practice.
