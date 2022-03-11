@@ -11,7 +11,9 @@ paper [OPV2V.](https://arxiv.org/abs/2109.07644)
 </p>
 
 ## News
-**02/20/2022**: [F-Cooper](https://arxiv.org/abs/1909.06459) now is supported and the results/traiend model is in the [benchmark](docs/md_files/lidar_benchmark.md) page.
+**03/10/2022**: Results and pretrained weights for intermeidate Fusion with **compression** are provided.
+
+**02/20/2022**: [F-Cooper](https://arxiv.org/abs/1909.06459) now is supported and the results/traiend model can be found in the benchmark table.
 
 **01/31/2022**: Our paper *OPV2V: An Open Benchmark Dataset and Fusion Pipeline for Perception with Vehicle-to-Vehicle Communication* has been accpted by ICRA2022!
 
@@ -81,9 +83,32 @@ Arguments Explanation:
 The evaluation results  will be dumped in the model directory.
 
 ## Benchmark and model zoo
-We currently provide 3D LiDAR detection benchmark on OPV2V dataset, please refer to [benchmark](docs/md_files/lidar_benchmark.md). Note that we keep updating the benchmark, 
-so there are more methods there than in the paper. We suggest using the benchmark page when you try to compare with your own method in your research. 
+### Results on OPV2V dataset (AP@0.7 for no-compression/ compression)
 
+|                    | Backbone   | Fusion Strategy  | Bandwidth (Megabit), <br/> before/after compression| Default Towns    |Culver City| Download |
+|--------------------| --------   | ---------------  | ---------------                | -------------    |-----------| -------- |
+| Naive Late         | PointPillar        | Late      |    **0.024**/**0.024** |   0.781/0.781        | 0.668/0.668         |    [url](https://drive.google.com/file/d/1WTKooW6k0exLqoIE5Czqy6ptycYlgKZz/view?usp=sharing)   |
+| [Cooper](https://arxiv.org/abs/1905.05265)       | PointPillar        | Early  |   7.68/7.68   | 0.800/x         | 0.696/x       | [url](https://drive.google.com/file/d/1N1p6syxGSKD18ELgtBQoSuUzR8tX1JeE/view?usp=sharing)     | 
+| [Attentive Fusion](https://arxiv.org/abs/2109.07644)         | PointPillar        | Intermediate  | 126.8/1.98   | **0.815**/**0.810**       | **0.735**/**0.731**        | [url](https://drive.google.com/file/d/1u4w13SDzdGq6Irh2PHxT-qIlNXRT3z6Z/view?usp=sharing)     | 
+| [F-Cooper](https://arxiv.org/abs/1909.06459)         | PointPillar        | Intermediate  | 72.08/1.12    | 0.790/0.788     | 0.728/0.726        | [url](https://drive.google.com/file/d/1CjXu9Y2ZTzJA6Oo3hnqFhbTqBVKq3mQb/view?usp=sharing)     | 
+| Naive Late         | VoxelNet        | Late  | **0.024**/**0.024**    | 0.738/0.738          | 0.588/0.588        | [url]()    |
+| Cooper    | VoxelNet        | Early   |   7.68/7.68  | 0.758/x        | 0.677/x        | [url](https://drive.google.com/file/d/14WD7iLLyyCJJ3lApbYYdr5KOUM1ACnve/view?usp=sharing)     | 
+| Attentive Fusion        | VoxelNet        | Intermediate |   576.71/1.12   | **0.864**/**0.852**        | **0.775**/**0.746**       | [url](https://drive.google.com/file/d/16q8CfcB8dS4EVhJMvvEfn0gM2ynxZB3E/view?usp=sharing)      | 
+| Naive Late         | SECOND        | Late |  **0.024**/**0.024**    |  0.775/0.775        |0.682/0.682        | [url](https://drive.google.com/file/d/1VG_FKe1mKagPVGXH7UGHpyaM5q3cxtD8/view?usp=sharing)      |
+| Cooper    | SECOND        | Early  |   7.68/7.68   |  0.813/x       |  0.738/x     | [url](https://drive.google.com/file/d/1Z9io1VNcU-urcRW8l0ogWCTVCB53mw4N/view?usp=sharing)     | 
+| Attentive         | SECOND        | Intermediate |  63.4/0.99     |   **0.826**/**0.783**     | **0.760**/**0.760**    | [url](https://drive.google.com/file/d/1zEB8EyZ0X-WQykHFOM0pVwI8jXunRz1Z/view?usp=sharing)      | 
+| Naive Late         | PIXOR        | Late |    **0.024**/**0.024** |    0.578/0.578       |  0.360/0.360      | [url]()      |
+| Cooper    | PIXOR        | Early |   7.68/7.68    |   0.678/x      | **0.558**/x      | [url](https://drive.google.com/file/d/1ZDLjtizZCuV6D92LloEPKRIw-LqxfE1j/view?usp=sharing)     | 
+| Attentive         | PIXOR        | Intermediate  |   313.75/1.22  |  **0.687**/**0.612**      | 0.546/**0.492**       | [url]()      |
+
+
+**Note**: 
+* We suggest using **PointPillar** as the backbone when you are creating your method and try to compare with
+our benchmark, as we implement most of the SOTA methods with this backbone only.
+* We assume the transimssion rate is 27Mbp/s. Considering the frequency of LiDAR is 10Hz, the 
+bandwidth requirement should be less than **2.7Mbp** to avoid severe delay. 
+* A 'x' in the benchmark table represents the bandwidth requirement is too large, which 
+can not be considered to employ in practice.
 ## Tutorials
 We have a series of tutorials to help you understand OpenCOOD more. Please check the series of our [tutorials](https://opencood.readthedocs.io/en/latest/md_files/config_tutorial.html).
 
