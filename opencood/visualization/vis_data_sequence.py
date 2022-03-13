@@ -20,4 +20,4 @@ if __name__ == '__main__':
 
     vis_utils.visualize_sequence_dataloader(data_loader,
                                             params['postprocess']['order'],
-                                            color_mode='intensity')
+                                            color_mode='constant')

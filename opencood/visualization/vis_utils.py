@@ -3,7 +3,9 @@ import time
 import cv2
 import numpy as np
 import open3d as o3d
+import matplotlib
 import matplotlib.pyplot as plt
+
 from matplotlib import cm
 
 from opencood.utils import box_utils
@@ -154,20 +156,36 @@ def color_encoding(intensity, mode='intensity'):
         Lidar intensity, shape (n,)
 
     mode : str
-        The color rendering mode.
+        The color rendering mode. intensity, z-value and constant are
+        supported.
 
     Returns
     -------
     color : np.ndarray
         Encoded Lidar color, shape (n, 3)
     """
+    assert mode in ['intensity', 'z-value', 'constant']
+
     if mode == 'intensity':
         intensity_col = 1.0 - np.log(intensity) / np.log(np.exp(-0.004 * 100))
         int_color = np.c_[
             np.interp(intensity_col, VID_RANGE, VIRIDIS[:, 0]),
             np.interp(intensity_col, VID_RANGE, VIRIDIS[:, 1]),
             np.interp(intensity_col, VID_RANGE, VIRIDIS[:, 2])]
-    else:
+
+    elif mode =='z-value':
+        min_value = -1.5
+        max_value = 0.5
+        norm = matplotlib.colors.Normalize(vmin=min_value, vmax=max_value)
+        cmap = cm.jet
+        m = cm.ScalarMappable(norm=norm, cmap=cmap)
+
+        colors = m.to_rgba(intensity)
+        colors[:, [2, 1, 0, 3]] = colors[:, [0, 1, 2, 3]]
+        colors[:, 3] = 0.5
+        int_color = colors[:, :3]
+
+    elif mode == 'constant':
         # regard all point cloud the same color
         int_color = np.ones((intensity.shape[0], 3))
         int_color[:, 0] *= 247 / 255
@@ -206,7 +224,8 @@ def visualize_single_sample_output_gt(pred_tensor,
     if not isinstance(pcd, np.ndarray):
         origin_lidar = common_utils.torch_tensor_to_numpy(pcd)
 
-    origin_lidar_intcolor = color_encoding(origin_lidar[:, -1])
+    origin_lidar_intcolor = color_encoding(origin_lidar[:, -1],
+                                           mode='intensity')
     # left -> right hand
     origin_lidar[:, :1] = -origin_lidar[:, :1]
 
@@ -333,7 +352,9 @@ def visualize_single_sample_dataloader(batch_data,
     # we only visualize the first cav for single sample
     if len(origin_lidar.shape) > 2:
         origin_lidar = origin_lidar[0]
-    origin_lidar_intcolor = color_encoding(origin_lidar[:, -1], mode=mode)
+    origin_lidar_intcolor = \
+        color_encoding(origin_lidar[:, -1] if mode == 'intensity'
+                       else origin_lidar[:, 2], mode=mode)
 
     # left -> right hand
     origin_lidar[:, :1] = -origin_lidar[:, :1]
