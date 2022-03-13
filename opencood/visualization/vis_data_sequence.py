@@ -19,4 +19,5 @@ if __name__ == '__main__':
                              pin_memory=False)
 
     vis_utils.visualize_sequence_dataloader(data_loader,
-                                            params['postprocess']['order'])
+                                            params['postprocess']['order'],
+                                            color_mode='intensity')
