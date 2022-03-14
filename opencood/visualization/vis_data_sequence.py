@@ -7,6 +7,7 @@ from opencood.visualization import vis_utils
 from opencood.data_utils.datasets.early_fusion_vis_dataset import \
     EarlyFusionVisDataset
 
+
 def vis_parser():
     parser = argparse.ArgumentParser(description="data visualization")
     parser.add_argument('--color_mode', type=str, default="intensity",
