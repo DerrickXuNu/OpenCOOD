@@ -54,8 +54,12 @@ in your `opencood/hypes_yaml/visualization.yaml` to the opv2v data path on your 
 and the run the following commond:
 ```python
 cd ~/OpenCOOD
-python opencood/visualization/vis_data_sequence.py 
+python opencood/visualization/vis_data_sequence.py [--color_mode ${COLOR_RENDERING_MODE}]
 ```
+Arguments Explanation:
+- `color_mode` : str type, indicating the lidar color rendering mode. You can choose from 'constant', 'intensity' or 'z-value'.
+
+
 ### Train your model
 OpenCOOD uses yaml file to configure all the parameters for training. To train your own model
 from scratch or a continued checkpoint, run the following commonds:
@@ -73,12 +77,13 @@ Before you run the following command, first make sure the `validation_dir` in co
 refers to the testing dataset path, e.g. `opv2v_data_dumping/test`.
 
 ```python
-python opencood/tools/inference.py --model_dir ${CHECKPOINT_FOLDER} --fusion_method ${FUSION_STRATEGY} [--show_vis]
+python opencood/tools/inference.py --model_dir ${CHECKPOINT_FOLDER} --fusion_method ${FUSION_STRATEGY} [--show_vis] [--show_sequence]
 ```
 Arguments Explanation:
 - `model_dir`: the path to your saved model.
 - `fusion_method`: indicate the fusion strategy, currently support 'early', 'late', and 'intermediate'.
-- `show_vis`: whether to visualize the detection overlay with point cloud. 
+- `show_vis`: whether to visualize the detection overlay with point cloud.
+- `show_sequence` : the detection results will visualized in a video stream. It can NOT be set with `show_vis` at the same time.
 
 The evaluation results  will be dumped in the model directory.
 
