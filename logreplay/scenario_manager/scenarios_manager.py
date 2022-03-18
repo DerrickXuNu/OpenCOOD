@@ -70,7 +70,7 @@ class ScenariosManager:
 if __name__ == '__main__':
     scene_params = {'root_dir':
                         '/home/runshengxu/project/OpenCOOD/'
-                        'opv2v_data_dumping/test'}
+                        'opv2v_data_dumping/tmp'}
     scenarion_manager = ScenariosManager(scenario_params=scene_params)
     scenarion_manager.tick()
     print('test passed')

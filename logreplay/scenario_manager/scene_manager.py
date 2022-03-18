@@ -164,6 +164,9 @@ class SceneManager:
                                       self.structure_transform_bg_veh(
                                           bg_veh_content['location'],
                                           bg_veh_content['angle']))
+        # remove the vehicles that are not in any cav's scope
+        self.destroy_vehicle(cur_timestamp)
+
         self.cur_count += 1
         self.world.tick()
 
@@ -298,6 +301,19 @@ class SceneManager:
         actor_list = self.world.get_actors()
         for actor in actor_list:
             actor.destroy()
+
+    def destroy_vehicle(self, cur_timestamp):
+        """
+        This is used to destroy the vehicles that are out of any cav's scope.
+        """
+        destroy_list = []
+        for veh_id, veh_content in self.veh_dict.items():
+            if veh_content['cur_count'] != cur_timestamp:
+                veh_content['actor'].destroy()
+                destroy_list.append(veh_id)
+
+        for veh_id in destroy_list:
+            self.veh_dict.pop(veh_id)
 
     def structure_transform_cav(self, pose):
         """

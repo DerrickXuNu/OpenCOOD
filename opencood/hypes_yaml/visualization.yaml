@@ -3,7 +3,7 @@ name: visualization
 
 yaml_parser: "load_voxel_params"
 root_dir: "opv2v_data_dumping/train"
-validate_dir: "opv2v_data_dumping/validate"
+validate_dir: "opv2v_data_dumping/tmp"
 
 train_params:
   batch_size: &batch_size 4
