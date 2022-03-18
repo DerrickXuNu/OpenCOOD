@@ -5,15 +5,12 @@ from opencood.models.sub_modules.point_pillar_scatter import PointPillarScatter
 from opencood.models.sub_modules.base_bev_backbone import BaseBEVBackbone
 from opencood.models.sub_modules.downsample_conv import DownsampleConv
 from opencood.models.sub_modules.naive_compress import NaiveCompressor
-from opencood.models.fuse_modules.f_cooper_fuse import SpatialFusion
+from opencood.models.fuse_modules.v2v_fuse import V2VNetFusion
 
 
-class PointPillarFCooper(nn.Module):
-    """
-    F-Cooper implementation with point pillar backbone.
-    """
+class PointPillarV2VNet(nn.Module):
     def __init__(self, args):
-        super(PointPillarFCooper, self).__init__()
+        super(PointPillarV2VNet, self).__init__()
 
         self.max_cav = args['max_cav']
         # PIllar VFE
@@ -23,6 +20,7 @@ class PointPillarFCooper(nn.Module):
                                     point_cloud_range=args['lidar_range'])
         self.scatter = PointPillarScatter(args['point_pillar_scatter'])
         self.backbone = BaseBEVBackbone(args['base_bev_backbone'], 64)
+        
         # used to downsample the feature map for efficient computation
         self.shrink_flag = False
         if 'shrink_header' in args:
@@ -34,13 +32,12 @@ class PointPillarFCooper(nn.Module):
             self.compression = True
             self.naive_compressor = NaiveCompressor(256, args['compression'])
 
-        self.fusion_net = SpatialFusion()
+        self.fusion_net = V2VNetFusion(args['v2vfusion'])
 
         self.cls_head = nn.Conv2d(128 * 2, args['anchor_number'],
                                   kernel_size=1)
         self.reg_head = nn.Conv2d(128 * 2, 7 * args['anchor_number'],
                                   kernel_size=1)
-
         if args['backbone_fix']:
             self.backbone_fix()
 
@@ -75,6 +72,8 @@ class PointPillarFCooper(nn.Module):
         voxel_num_points = data_dict['processed_lidar']['voxel_num_points']
         record_len = data_dict['record_len']
 
+        pairwise_t_matrix = data_dict['pairwise_t_matrix']
+
         batch_dict = {'voxel_features': voxel_features,
                       'voxel_coords': voxel_coords,
                       'voxel_num_points': voxel_num_points,
@@ -92,8 +91,9 @@ class PointPillarFCooper(nn.Module):
         # compressor
         if self.compression:
             spatial_features_2d = self.naive_compressor(spatial_features_2d)
-
-        fused_feature = self.fusion_net(spatial_features_2d, record_len)
+        fused_feature = self.fusion_net(spatial_features_2d,
+                                        record_len,
+                                        pairwise_t_matrix)
 
         psm = self.cls_head(fused_feature)
         rm = self.reg_head(fused_feature)

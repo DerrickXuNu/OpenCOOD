@@ -29,6 +29,15 @@ class IntermediateFusionDataset(basedataset.BaseDataset):
     def __init__(self, params, visualize, train=True):
         super(IntermediateFusionDataset, self). \
             __init__(params, visualize, train)
+
+        # if project first, cav's lidar will first be projected to
+        # the ego's coordinate frame. otherwise, the feature will be
+        # projected instead.
+        self.proj_first = True
+        if 'proj_first' in params['fusion']['args'] and \
+            not params['fusion']['args']['proj_first']:
+            self.proj_first = False
+
         self.pre_processor = build_preprocessor(params['preprocess'],
                                                 train)
         self.post_processor = post_processor.build_postprocessor(
@@ -50,10 +59,15 @@ class IntermediateFusionDataset(basedataset.BaseDataset):
                 ego_id = cav_id
                 ego_lidar_pose = cav_content['params']['lidar_pose']
                 break
+
         assert cav_id == list(base_data_dict.keys())[
             0], "The first element in the OrderedDict must be ego"
         assert ego_id != -1
         assert len(ego_lidar_pose) > 0
+
+        pairwise_t_matrix = \
+            self.get_pairwise_transformation(base_data_dict,
+                                             self.params['train_params']['max_cav'])
 
         processed_features = []
         object_stack = []
@@ -121,7 +135,8 @@ class IntermediateFusionDataset(basedataset.BaseDataset):
              'anchor_box': anchor_box,
              'processed_lidar': merged_feature_dict,
              'label_dict': label_dict,
-             'cav_num': cav_num})
+             'cav_num': cav_num,
+             'pairwise_t_matrix': pairwise_t_matrix})
 
         if self.visualize:
             processed_data_dict['ego'].update({'origin_lidar':
@@ -163,9 +178,10 @@ class IntermediateFusionDataset(basedataset.BaseDataset):
         # remove points that hit itself
         lidar_np = mask_ego_points(lidar_np)
         # project the lidar to ego space
-        lidar_np[:, :3] = \
-            box_utils.project_points_by_matrix_torch(lidar_np[:, :3],
-                                                     transformation_matrix)
+        if self.proj_first:
+            lidar_np[:, :3] = \
+                box_utils.project_points_by_matrix_torch(lidar_np[:, :3],
+                                                         transformation_matrix)
         lidar_np = mask_points_by_range(lidar_np,
                                         self.params['preprocess'][
                                             'cav_lidar_range'])
@@ -222,6 +238,9 @@ class IntermediateFusionDataset(basedataset.BaseDataset):
         record_len = []
         label_dict_list = []
 
+        # pairwise transformation matrix
+        pairwise_t_matrix_list = []
+
         if self.visualize:
             origin_lidar = []
 
@@ -234,6 +253,7 @@ class IntermediateFusionDataset(basedataset.BaseDataset):
             processed_lidar_list.append(ego_dict['processed_lidar'])
             record_len.append(ego_dict['cav_num'])
             label_dict_list.append(ego_dict['label_dict'])
+            pairwise_t_matrix_list.append(ego_dict['pairwise_t_matrix'])
 
             if self.visualize:
                 origin_lidar.append(ego_dict['origin_lidar'])
@@ -247,10 +267,14 @@ class IntermediateFusionDataset(basedataset.BaseDataset):
         merged_feature_dict = self.merge_features_to_dict(processed_lidar_list)
         processed_lidar_torch_dict = \
             self.pre_processor.collate_batch(merged_feature_dict)
-        # [2, 3, 4, ..., M], M <= 5
+        # [2, 3, 4, ..., M], M <= max_cav
         record_len = torch.from_numpy(np.array(record_len, dtype=int))
         label_torch_dict = \
             self.post_processor.collate_batch(label_dict_list)
+
+        # (B, max_cav)
+        pairwise_t_matrix = torch.from_numpy(np.array(pairwise_t_matrix_list))
+
         # object id is only used during inference, where batch size is 1.
         # so here we only get the first element.
         output_dict['ego'].update({'object_bbx_center': object_bbx_center,
@@ -258,7 +282,8 @@ class IntermediateFusionDataset(basedataset.BaseDataset):
                                    'processed_lidar': processed_lidar_torch_dict,
                                    'record_len': record_len,
                                    'label_dict': label_torch_dict,
-                                   'object_ids': object_ids[0]})
+                                   'object_ids': object_ids[0],
+                                   'pairwise_t_matrix': pairwise_t_matrix})
 
         if self.visualize:
             origin_lidar = \
@@ -311,3 +336,45 @@ class IntermediateFusionDataset(basedataset.BaseDataset):
         gt_box_tensor = self.post_processor.generate_gt_bbx(data_dict)
 
         return pred_box_tensor, pred_score, gt_box_tensor
+
+    def get_pairwise_transformation(self, base_data_dict, max_cav):
+        """
+        Get pair-wise transformation matrix accross different agents.
+
+        Parameters
+        ----------
+        base_data_dict : dict
+            Key : cav id, item: transformation matrix to ego, lidar points.
+
+        max_cav : int
+            The maximum number of cav, default 5
+
+        Return
+        ------
+        pairwise_t_matrix : np.array
+            The pairwise transformation matrix across each cav.
+            shape: (L, L, 4, 4)
+        """
+        pairwise_t_matrix = np.zeros((max_cav, max_cav, 4, 4))
+
+        if self.proj_first:
+            # if lidar projected to ego first, then the pairwise matrix
+            # becomes identity
+            pairwise_t_matrix[:, :] = np.identity(4)
+        else:
+            t_list = []
+
+            # save all transformation matrix in a list in order first.
+            for cav_id, cav_content in base_data_dict.items():
+                t_list.append(cav_content['params']['transformation_matrix'])
+
+            for i in range(len(t_list)):
+                for j in range(len(t_list)):
+                    # identity matrix to self
+                    if i == j:
+                        continue
+                    # i->j: TiPi=TjPj, Tj^(-1)TiPi = Pj
+                    t_matrix = np.dot(np.linalg.inv(t_list[j]), t_list[i])
+                    pairwise_t_matrix[i, j] = t_matrix
+
+        return pairwise_t_matrix

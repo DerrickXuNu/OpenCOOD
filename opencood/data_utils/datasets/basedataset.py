@@ -66,6 +66,11 @@ class BaseDataset(Dataset):
         else:
             root_dir = params['validate_dir']
 
+        if 'max_cav' not in params['train_params']:
+            self.max_cav = 7
+        else:
+            self.max_cav = params['train_params']['max_cav']
+
         # first load all paths of different scenarios
         scenario_folders = sorted([os.path.join(root_dir, x)
                                    for x in os.listdir(root_dir) if
@@ -87,6 +92,9 @@ class BaseDataset(Dataset):
 
             # loop over all CAV data
             for (j, cav_id) in enumerate(cav_list):
+                if j > self.max_cav - 1:
+                    print('too many cavs')
+                    break
                 self.scenario_database[i][cav_id] = OrderedDict()
 
                 # save all yaml files to the dictionary
