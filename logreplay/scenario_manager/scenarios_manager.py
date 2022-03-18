@@ -40,7 +40,8 @@ class ScenariosManager:
             # load the collection yaml file
             protocol_yml = [x for x in os.listdir(scenario_folder)
                             if x.endswith('.yaml')]
-            collection_params = load_yaml(protocol_yml)
+            collection_params = load_yaml(os.path.join(scenario_folder,
+                                                       protocol_yml[0]))
 
             # create the corresponding scene manager
             cur_sg = SceneManager(scenario_folder,
@@ -49,8 +50,30 @@ class ScenariosManager:
             self.scenario_database[scene_name].update({'scene_manager':
                                                        cur_sg})
 
+    def tick(self):
+        """
+        Tick for every scene manager to do the log replay.
+        """
+        for scene_name, scene_content in self.scenario_database.items():
+            print('log replay %s' % scene_name)
+            scene_manager = scene_content['scene_manager']
+            run_flag = True
+
+            scene_manager.start_simulator()
+
+            while run_flag:
+                run_flag = scene_manager.tick()
+
+            scene_manager.close()
 
 
+if __name__ == '__main__':
+    scene_params = {'root_dir':
+                        '/home/runshengxu/project/OpenCOOD/'
+                        'opv2v_data_dumping/test'}
+    scenarion_manager = ScenariosManager(scenario_params=scene_params)
+    scenarion_manager.tick()
+    print('test passed')
 
 
 

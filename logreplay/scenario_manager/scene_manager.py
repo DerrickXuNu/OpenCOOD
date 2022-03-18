@@ -1,12 +1,14 @@
 import os
+import random
 import sys
 from collections import OrderedDict
 
 import carla
 import numpy as np
 
-from logreplay.assets.utils import find_town
+from logreplay.assets.utils import find_town, find_blue_print
 from logreplay.assets.presave_lib import bcolors
+from opencood.hypes_yaml.yaml_utils import load_yaml
 
 
 class SceneManager:
@@ -24,9 +26,15 @@ class SceneManager:
     collection_params : dict
         The collecting protocol information.
     """
+
     def __init__(self, folder, scene_name, collection_params):
         self.town_name = find_town(scene_name)
         self.collection_params = collection_params
+        self.cav_id_list = []
+
+        if 'seed' in collection_params['world']:
+            np.random.seed(collection_params['world']['seed'])
+            random.seed(collection_params['world']['seed'])
 
         # at least 1 cav should show up
         cav_list = sorted([x for x in os.listdir(folder)
@@ -36,7 +44,7 @@ class SceneManager:
 
         self.database = OrderedDict()
         # we want to save timestamp as the parent keys for cavs
-        cav_sample = cav_list[0]
+        cav_sample = os.path.join(folder, cav_list[0])
 
         yaml_files = \
             sorted([os.path.join(cav_sample, x)
@@ -49,6 +57,9 @@ class SceneManager:
             self.database[timestamp] = OrderedDict()
             # loop over all cavs
             for (j, cav_id) in enumerate(cav_list):
+                if cav_id not in self.cav_id_list:
+                    self.cav_id_list.append(str(cav_id))
+
                 self.database[timestamp][cav_id] = OrderedDict()
                 cav_path = os.path.join(folder, cav_id)
 
@@ -107,19 +118,58 @@ class SceneManager:
             self.world.set_weather(weather)
         # get map
         self.carla_map = self.world.get_map()
+        # spectator
+        self.spectator = self.world.get_spectator()
 
     def tick(self):
         """
         Spawn the vehicle to the correct position
         """
+        if self.cur_count >= len(self.timestamps):
+            return False
+
         cur_timestamp = self.timestamps[self.cur_count]
         cur_database = self.database[cur_timestamp]
 
-        for cav_id, cav_content in cur_database.items():
-            if cav_id not in self.veh_dict:
-                self.spawn_cav(cav_id, cav_content)
+        for i, (cav_id, cav_yml) in enumerate(cur_database.items()):
+            cav_content = load_yaml(cav_yml['yaml'])
 
-    def spawn_cav(self, cav_id, cav_content):
+            if cav_id not in self.veh_dict:
+                self.spawn_cav(cav_id, cav_content, cur_timestamp)
+            else:
+                self.move_vehicle(cav_id,
+                                  cur_timestamp,
+                                  self.structure_transform_cav(
+                                      (cav_content['true_ego_pos'])))
+            # set the spectator to the first cav
+            if i == 0:
+                transform = self.structure_transform_cav(
+                    cav_content['true_ego_pos'])
+                self.spectator.set_transform(
+                    carla.Transform(transform.location +
+                                    carla.Location(
+                                        z=70),
+                                    carla.Rotation(
+                                        pitch=-90
+                                        )))
+
+            for bg_veh_id, bg_veh_content in cav_content['vehicles'].items():
+                if str(bg_veh_id) not in self.veh_dict:
+                    self.spawn_bg_vehicles(bg_veh_id,
+                                           bg_veh_content,
+                                           cur_timestamp)
+                else:
+                    self.move_vehicle(str(bg_veh_id),
+                                      cur_timestamp,
+                                      self.structure_transform_bg_veh(
+                                          bg_veh_content['location'],
+                                          bg_veh_content['angle']))
+        self.cur_count += 1
+        self.world.tick()
+
+        return True
+
+    def spawn_cav(self, cav_id, cav_content, cur_timestamp):
         """
         Spawn the cav based on current content.
 
@@ -130,18 +180,168 @@ class SceneManager:
 
         cav_content : dict
             The information in the cav's folder.
+
+        cur_timestamp : str
+            This is used to judge whether this vehicle has been already
+            called in this timestamp.
         """
+
         # cav always use lincoln
-        model = 'vehicle.lincoln.mkz2017'
+        model = 'vehicle.lincoln.mkz_2017'
+
+        # retrive the blueprint library
+        blueprint_library = self.world.get_blueprint_library()
+        cav_bp = blueprint_library.find(model)
+        # cav is always green
+        color = '0, 0, 255'
+        cav_bp.set_attribute('color', color)
+
         cur_pose = cav_content['true_ego_pos']
         # convert to carla needed format
-        cur_pose = carla.Transform(carla.Location(x=cur_pose[0],
-                                                  y=cur_pose[1],
-                                                  z=cur_pose[2]),
-                                   carla.Rotation(roll=cur_pose[3],
-                                                  yaw=cur_pose[4],
-                                                  pitch=cur_pose[5]))
+        cur_pose = self.structure_transform_cav(cur_pose)
 
+        # spawn the vehicle
+        vehicle = \
+            self.world.try_spawn_actor(cav_bp, cur_pose)
+
+        while not vehicle:
+            cur_pose.location.z += 0.01
+            vehicle = \
+                self.world.try_spawn_actor(cav_bp, cur_pose)
+
+        self.veh_dict.update({str(cav_id): {
+            'cur_pose': cur_pose,
+            'model': model,
+            'color': color,
+            'actor_id': vehicle.id,
+            'actor': vehicle,
+            'cur_count': cur_timestamp
+        }})
+
+    def spawn_bg_vehicles(self, bg_veh_id, bg_veh_content, cur_timestamp):
+        """
+        Spawn the background vehicle.
+
+        Parameters
+        ----------
+        bg_veh_id : str
+            The id of the bg vehicle.
+        bg_veh_content : dict
+            The contents of the bg vehicle
+        cur_timestamp : str
+            This is used to judge whether this vehicle has been already
+            called in this timestamp.
+        """
+        # retrieve the blueprint library
+        blueprint_library = self.world.get_blueprint_library()
+
+        cur_pose = self.structure_transform_bg_veh(bg_veh_content['location'],
+                                                   bg_veh_content['angle'])
+        if str(bg_veh_id) in self.cav_id_list:
+            model = 'vehicle.lincoln.mkz_2017'
+            veh_bp = blueprint_library.find(model)
+            color = '0, 0, 255'
+        else:
+            model = find_blue_print(bg_veh_content['extent'])
+            if not model:
+                print('model net found for %s' % bg_veh_id)
+            veh_bp = blueprint_library.find(model)
+
+            color = random.choice(
+                    veh_bp.get_attribute('color').recommended_values)
+
+        veh_bp.set_attribute('color', color)
+
+        # spawn the vehicle
+        vehicle = \
+            self.world.try_spawn_actor(veh_bp, cur_pose)
+
+        while not vehicle:
+            cur_pose.location.z += 0.01
+            vehicle = \
+                self.world.try_spawn_actor(veh_bp, cur_pose)
+
+        self.veh_dict.update({str(bg_veh_id): {
+            'cur_pose': cur_pose,
+            'model': model,
+            'color': color,
+            'actor_id': vehicle.id,
+            'actor': vehicle,
+            'cur_count': cur_timestamp
+        }})
+
+    def move_vehicle(self, veh_id, cur_timestamp, transform):
+        """
+        Move the
+
+        Parameters
+        ----------
+        veh_id : str
+            Vehicle's id
+
+        cur_timestamp : str
+            Current timestamp
+
+        transform : carla.Transform
+            Current pose/
+        """
+        # this represent this vehicle is already moved in this round
+        if self.veh_dict[veh_id]['cur_count'] == cur_timestamp:
+            return
+
+        self.veh_dict[veh_id]['actor'].set_transform(transform)
+        self.veh_dict[veh_id]['cur_count'] = cur_timestamp
+        self.veh_dict[veh_id]['cur_pose'] = transform
+
+    def close(self):
+        self.world.apply_settings(self.origin_settings)
+        actor_list = self.world.get_actors()
+        for actor in actor_list:
+            actor.destroy()
+
+    def structure_transform_cav(self, pose):
+        """
+        Convert the pose saved in list to transform format.
+
+        Parameters
+        ----------
+        pose : list
+            x, y, z, roll, yaw, pitch
+
+        Returns
+        -------
+        carla.Transform
+        """
+        cur_pose = carla.Transform(carla.Location(x=pose[0],
+                                                  y=pose[1],
+                                                  z=pose[2]),
+                                   carla.Rotation(roll=pose[3],
+                                                  yaw=pose[4],
+                                                  pitch=pose[5]))
+
+
+        return cur_pose
+
+    def structure_transform_bg_veh(self, location, rotation):
+        """
+        Convert the location and rotation in list to carla transform format.
+
+        Parameters
+        ----------
+        location : list
+        rotation : list
+        Returns
+        -------
+        carla.Transform
+        """
+        cur_pose = carla.Transform(carla.Location(x=location[0],
+                                                  y=location[1],
+                                                  z=location[2]),
+                                   carla.Rotation(roll=rotation[0],
+                                                  yaw=rotation[1],
+                                                  pitch=rotation[2]))
+
+        return cur_pose
 
     @staticmethod
     def extract_timestamps(yaml_files):
@@ -194,5 +394,3 @@ class SceneManager:
             wetness=weather_settings['wetness']
         )
         return weather
-
-
