@@ -38,7 +38,7 @@ data_augment:
 
 # anchor box related
 postprocess:
-  core_method: 'VoxelPostprocessor' # VoxelPostprocessor, BevPostprocessor supported
+  core_method: 'CiassdPostprocessor' # VoxelPostprocessor, BevPostprocessor supported
   predict_iou: true
   anchor_args:
     cav_lidar_range: *cav_lidar
@@ -51,7 +51,7 @@ postprocess:
   target_args:
     pos_threshold: 0.6
     neg_threshold: 0.45
-    score_threshold: 0.96
+    score_threshold: 0.3
   order: 'hwl' # hwl or lwh
   max_num: 100 # maximum number of objects in a single frame. use this number to make sure different frames has the same dimension in the same batch
   nms_thresh: 0.20

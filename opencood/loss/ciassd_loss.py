@@ -38,7 +38,7 @@ class CiassdLoss(nn.Module):
         # cls loss
         cls_preds = preds_dict["cls_preds"].view(batch_size, -1,  self.num_cls - 1)
         cls_weights = positives * self.pos_cls_weight + negatives * 1.0
-        cls_weights /= torch.clamp(num_normalizer, min=1.0)
+        cls_weights /= torch.clamp(pos_normalizer, min=1.0)
         cls_loss = sigmoid_focal_loss(cls_preds, cls_labls, weights=cls_weights, **self.cls)
         cls_loss_reduced = cls_loss.sum() * self.cls['weight'] / batch_size
 
@@ -164,6 +164,7 @@ def one_hot_f(tensor, depth, dim=-1, on_value=1.0, dtype=torch.float32):
 def sigmoid_focal_loss(preds, targets, weights=None, **kwargs):
     assert 'gamma' in kwargs and 'alpha' in kwargs
     # sigmoid cross entropy with logits
+    # more details: https://www.tensorflow.org/api_docs/python/tf/nn/sigmoid_cross_entropy_with_logits
     per_entry_cross_ent = torch.clamp(preds, min=0) - preds * targets.type_as(preds)
     per_entry_cross_ent += torch.log1p(torch.exp(-torch.abs(preds)))
     # focal loss

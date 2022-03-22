@@ -43,7 +43,7 @@ class SSFA(nn.Module):
                                                   stride=[1, 1, 1], padding=[0, 1, 1], sequential=False)
         self.bottom_up_block_0 = nn.Sequential(*seq)
         self.bottom_up_block_1 = get_conv_layers('Conv2d', 128, 256, n_layers=3, kernel_size=[3, 3, 3],
-                                                  stride=[2, 1, 1], padding=[1, 1, 1]) # [200, 176] -> [100, 88]
+                                                  stride=[2, 1, 1], padding=[1, 1, 1])
 
         self.trans_0 = get_conv_layers('Conv2d', 128, 128, n_layers=1, kernel_size=[1], stride=[1], padding=[0])
         self.trans_1 = get_conv_layers('Conv2d', 256, 256, n_layers=1, kernel_size=[1], stride=[1], padding=[0])
