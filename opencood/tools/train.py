@@ -53,7 +53,7 @@ def main():
     # we assume gpu is necessary
     if torch.cuda.is_available():
         # model.to(device)
-        model = torch.nn.DataParallel(model)
+        model = torch.nn.DataParallel(model, device_ids=[0, 1])
 
     # define the loss
     criterion = train_utils.create_loss(hypes)
