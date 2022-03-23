@@ -5,7 +5,7 @@ root_dir: "/workspace/koko/data/OPV2V/train" # "/media/hdd/yuan/data/OPV2V/train
 validate_dir: "/workspace/koko/data/OPV2V/validate"
 
 train_params:
-  batch_size: &batch_size 16
+  batch_size: &batch_size 8
   epoches: 100
   eval_freq: 2
   save_freq: 2
