@@ -48,11 +48,11 @@ def main():
 
     print('Creating Model')
     model = train_utils.create_model(hypes)
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
     # we assume gpu is necessary
     if torch.cuda.is_available():
-        # model.to(device)
+        model.to(device)
         model = torch.nn.DataParallel(model, device_ids=[0, 1])
 
     # define the loss
