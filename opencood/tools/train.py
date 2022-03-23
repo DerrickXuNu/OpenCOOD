@@ -85,6 +85,7 @@ def main():
         for param_group in optimizer.param_groups:
             print('learning rate %f' % param_group["lr"])
         for i, batch_data in enumerate(train_loader):
+            print('test')
             # the model will be evaluation mode during validation
             model.train()
             model.zero_grad()
