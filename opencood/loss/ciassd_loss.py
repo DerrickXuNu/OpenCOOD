@@ -32,8 +32,8 @@ class CiassdLoss(nn.Module):
         cls_labls = target_dict['pos_equal_one'].view(batch_size, -1,  self.num_cls - 1)
         positives = cls_labls > 0
         negatives = cls_labls == 0
-        num_normalizer = positives.sum(1, keepdim=True) + negatives.sum(1, keepdim=True)
-        pos_normalizer = positives.sum(1, keepdim=True)
+        # num_normalizer = positives.sum(1, keepdim=True) + negatives.sum(1, keepdim=True)
+        pos_normalizer = positives.sum(1, keepdim=True).float()
 
         # cls loss
         cls_preds = preds_dict["cls_preds"].permute(0, 2, 3, 1).contiguous() \

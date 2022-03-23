@@ -68,3 +68,5 @@
    68  cd ..
    69  python setup.py develop
    70  python opencood/utils/setup.py build_ext --inplace
+   
+git clone --branch v1.2.1 https://github.com/traveller59/spconv.git --recursive
