@@ -10,7 +10,7 @@ from opencood.utils.transformation_utils import dist_to_continuous
 from opencood.data_utils.post_processor.base_postprocessor \
     import BasePostprocessor
 from opencood.utils import box_utils
-# from opencood.visualization import vis_utils
+from opencood.visualization import vis_utils
 
 
 class BevPostprocessor(BasePostprocessor):
@@ -410,36 +410,36 @@ class BevPostprocessor(BasePostprocessor):
         pred_box2ds = pred_box2ds[mask, :, :]
         return pred_box2ds
 
-    # @staticmethod
-    # def visualize(pred_box_tensor, gt_tensor, pcd, show_vis, save_path,
-    #               dataset=None):
-    #     """
-    #     Visualize the BEV 2D prediction, ground truth with point cloud together.
-    #
-    #     Parameters
-    #     ----------
-    #     pred_box_tensor : torch.Tensor
-    #         (N, 8, 3) prediction.
-    #
-    #     gt_tensor : torch.Tensor
-    #         (N, 8, 3) groundtruth bbx
-    #
-    #     pcd : torch.Tensor
-    #         PointCloud, (N, 4).
-    #
-    #     show_vis : bool
-    #         Whether to show visualization.
-    #
-    #     save_path : str
-    #         Save the visualization results to given path.
-    #
-    #     dataset : BaseDataset
-    #         opencood dataset object.
-    #     """
-    #     assert dataset is not None, "dataset argument can't be None"
-    #     vis_utils.visualize_single_sample_output_bev(pred_box_tensor,
-    #                                                  gt_tensor,
-    #                                                  pcd,
-    #                                                  dataset,
-    #                                                  show_vis,
-    #                                                  save_path)
+    @staticmethod
+    def visualize(pred_box_tensor, gt_tensor, pcd, show_vis, save_path,
+                  dataset=None):
+        """
+        Visualize the BEV 2D prediction, ground truth with point cloud together.
+
+        Parameters
+        ----------
+        pred_box_tensor : torch.Tensor
+            (N, 8, 3) prediction.
+
+        gt_tensor : torch.Tensor
+            (N, 8, 3) groundtruth bbx
+
+        pcd : torch.Tensor
+            PointCloud, (N, 4).
+
+        show_vis : bool
+            Whether to show visualization.
+
+        save_path : str
+            Save the visualization results to given path.
+
+        dataset : BaseDataset
+            opencood dataset object.
+        """
+        assert dataset is not None, "dataset argument can't be None"
+        vis_utils.visualize_single_sample_output_bev(pred_box_tensor,
+                                                     gt_tensor,
+                                                     pcd,
+                                                     dataset,
+                                                     show_vis,
+                                                     save_path)

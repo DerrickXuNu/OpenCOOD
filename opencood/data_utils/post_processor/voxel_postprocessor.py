@@ -13,7 +13,7 @@ from opencood.data_utils.post_processor.base_postprocessor \
     import BasePostprocessor
 from opencood.utils import box_utils
 from opencood.utils.box_overlaps import bbox_overlaps
-# from opencood.visualization import vis_utils
+from opencood.visualization import vis_utils
 
 
 class VoxelPostprocessor(BasePostprocessor):
@@ -390,34 +390,34 @@ class VoxelPostprocessor(BasePostprocessor):
 
         return boxes3d
 
-    # @staticmethod
-    # def visualize(pred_box_tensor, gt_tensor, pcd, show_vis, save_path, dataset=None):
-    #     """
-    #     Visualize the prediction, ground truth with point cloud together.
-    #
-    #     Parameters
-    #     ----------
-    #     pred_box_tensor : torch.Tensor
-    #         (N, 8, 3) prediction.
-    #
-    #     gt_tensor : torch.Tensor
-    #         (N, 8, 3) groundtruth bbx
-    #
-    #     pcd : torch.Tensor
-    #         PointCloud, (N, 4).
-    #
-    #     show_vis : bool
-    #         Whether to show visualization.
-    #
-    #     save_path : str
-    #         Save the visualization results to given path.
-    #
-    #     dataset : BaseDataset
-    #         opencood dataset object.
-    #
-    #     """
-    #     vis_utils.visualize_single_sample_output_gt(pred_box_tensor,
-    #                                                 gt_tensor,
-    #                                                 pcd,
-    #                                                 show_vis,
-    #                                                 save_path)
+    @staticmethod
+    def visualize(pred_box_tensor, gt_tensor, pcd, show_vis, save_path, dataset=None):
+        """
+        Visualize the prediction, ground truth with point cloud together.
+
+        Parameters
+        ----------
+        pred_box_tensor : torch.Tensor
+            (N, 8, 3) prediction.
+
+        gt_tensor : torch.Tensor
+            (N, 8, 3) groundtruth bbx
+
+        pcd : torch.Tensor
+            PointCloud, (N, 4).
+
+        show_vis : bool
+            Whether to show visualization.
+
+        save_path : str
+            Save the visualization results to given path.
+
+        dataset : BaseDataset
+            opencood dataset object.
+
+        """
+        vis_utils.visualize_single_sample_output_gt(pred_box_tensor,
+                                                    gt_tensor,
+                                                    pcd,
+                                                    show_vis,
+                                                    save_path)
