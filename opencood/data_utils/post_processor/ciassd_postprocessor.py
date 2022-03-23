@@ -64,8 +64,8 @@ class CiassdPostprocessor(VoxelPostprocessor):
             prob = F.sigmoid(prob.permute(0, 2, 3, 1))
             prob = prob.reshape(1, -1)
             reg = preds_dict['box_preds']
-            iou = preds_dict['iou_preds'].reshape(1, -1)
-            dir = preds_dict['dir_cls_preds'].reshape(1, -1, 2)
+            iou = preds_dict['iou_preds'].permute(0, 2, 3, 1).contiguous().reshape(1, -1)
+            dir = preds_dict['dir_cls_preds'].permute(0, 2, 3, 1).contiguous().reshape(1, -1, 2)
 
             # convert regression map back to bounding box
             # (N, W*L*anchor_num, 7)

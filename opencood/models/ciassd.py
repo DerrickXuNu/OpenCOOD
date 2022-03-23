@@ -116,17 +116,17 @@ class Head(nn.Module):
         if self.use_dir:
             self.conv_dir = nn.Conv2d(num_input, num_dir, 1)  # 128 -> 4
 
-    def forward(self, x):                                              # x.shape=[8, 128, w, h]
-        box_preds = self.conv_box(x).permute(0, 2, 3, 1).contiguous()      # box_preds.shape=[8, w, h, 14]
-        cls_preds = self.conv_cls(x).permute(0, 2, 3, 1).contiguous()      # cls_preds.shape=[8, w, h, 2]
+    def forward(self, x):
+        box_preds = self.conv_box(x)
+        cls_preds = self.conv_cls(x)
         ret_dict = {"box_preds": box_preds, "cls_preds": cls_preds}
         if self.use_dir:
-            dir_preds = self.conv_dir(x).permute(0, 2, 3, 1).contiguous()  # dir_preds.shape=[8, w, h, 4]
+            dir_preds = self.conv_dir(x)  # dir_preds.shape=[8, w, h, 4]
             ret_dict["dir_cls_preds"] = dir_preds
         else:
             ret_dict["dir_cls_preds"] = torch.zeros((len(box_preds), 1, 2))
 
-        ret_dict["iou_preds"] = self.conv_iou(x).permute(0, 2, 3, 1).contiguous()
+        ret_dict["iou_preds"] = self.conv_iou(x)
 
         return ret_dict
 

@@ -1,8 +1,8 @@
 name: ciassd_early_fusion
 
 yaml_parser: "load_voxel_params"
-root_dir: "/media/hdd/yuan/data/OPV2V/train"
-validate_dir: "/media/hdd/yuan/data/OPV2V/validate"
+root_dir: "/workspace/koko/data/OPV2V/train" # "/media/hdd/yuan/data/OPV2V/train"
+validate_dir: "/workspace/koko/data/OPV2V/validate"
 
 train_params:
   batch_size: &batch_size 8

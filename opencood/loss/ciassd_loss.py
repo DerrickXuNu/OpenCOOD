@@ -36,7 +36,8 @@ class CiassdLoss(nn.Module):
         pos_normalizer = positives.sum(1, keepdim=True)
 
         # cls loss
-        cls_preds = preds_dict["cls_preds"].view(batch_size, -1,  self.num_cls - 1)
+        cls_preds = preds_dict["cls_preds"].permute(0, 2, 3, 1).contiguous() \
+                    .view(batch_size, -1,  self.num_cls - 1)
         cls_weights = positives * self.pos_cls_weight + negatives * 1.0
         cls_weights /= torch.clamp(pos_normalizer, min=1.0)
         cls_loss = sigmoid_focal_loss(cls_preds, cls_labls, weights=cls_weights, **self.cls)
@@ -44,7 +45,7 @@ class CiassdLoss(nn.Module):
 
         # reg loss
         reg_weights = positives / torch.clamp(pos_normalizer, min=1.0)
-        reg_preds = preds_dict['box_preds'].view(batch_size, -1, self.box_codesize)
+        reg_preds = preds_dict['box_preds'].permute(0, 2, 3, 1).contiguous().view(batch_size, -1, self.box_codesize)
         reg_targets = target_dict['targets'].view(batch_size, -1, self.box_codesize)
         if self.encode_rad_error_by_sin:
             reg_preds, reg_targets = add_sin_difference(reg_preds, reg_targets)
@@ -53,7 +54,7 @@ class CiassdLoss(nn.Module):
 
         # dir loss
         dir_targets = get_direction_target(reg_targets, output_dict['anchor_box'])
-        dir_logits = preds_dict["dir_cls_preds"].view(batch_size, -1, 2)
+        dir_logits = preds_dict["dir_cls_preds"].permute(0, 2, 3, 1).contiguous().view(batch_size, -1, 2)
         dir_weights = (cls_labls > 0).type_as(dir_logits).view(batch_size, -1)
         dir_weights /= torch.clamp(dir_weights.sum(-1, keepdim=True), min=1.0)  # [8, 70400], averaged in sample.
         dir_loss = softmax_cross_entropy_with_logits(dir_logits.view(-1, self.num_cls), dir_targets.view(-1, self.num_cls))
@@ -61,7 +62,7 @@ class CiassdLoss(nn.Module):
         dir_loss_reduced = dir_loss.sum() * self.dir['weight'] / batch_size
 
         # iou loss
-        iou_preds = preds_dict["iou_preds"]
+        iou_preds = preds_dict["iou_preds"].permute(0, 2, 3, 1).contiguous()
         pos_pred_mask = reg_weights.squeeze() > 0 # (4, 70400)
         iou_pos_preds = iou_preds.view(batch_size, -1, 1)[pos_pred_mask]
         boxes3d_pred = VoxelPostprocessor.delta_to_boxes3d(preds_dict['box_preds'], output_dict['anchor_box'])[pos_pred_mask]

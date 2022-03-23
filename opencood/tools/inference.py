@@ -89,13 +89,13 @@ def main():
             # points = batch_data['ego']['origin_lidar'][0].cpu().numpy()
             # boxes_pred = pred_box_tensor.cpu().numpy()
             # boxes_gt = gt_box_tensor.cpu().numpy()
-            # fig = plt.figure(figsize=(15, 5))
+            # fig = plt.figure(figsize=(10, 5))
             # ax = fig.add_subplot(111)
             # ax.plot(points[:, 0], points[:, 1], '.y', markersize=0.3)
             # ax.axis('equal')
             # for p, g in zip(boxes_pred, boxes_gt):
-            #     plt.plot(p[[0, 1, 2, 3, 0], 0], p[[0, 1, 2, 3, 0], 1], 'r', markersize=0.3)
             #     plt.plot(g[[0, 1, 2, 3, 0], 0], g[[0, 1, 2, 3, 0], 1], 'g', markersize=0.3)
+            #     plt.plot(p[[0, 1, 2, 3, 0], 0], p[[0, 1, 2, 3, 0], 1], 'r', markersize=0.2)
             # plt.show()
             # plt.close()
             #######################
