@@ -6,15 +6,11 @@ import sys
 
 import numpy as np
 import torch
-from torch.nn.functional import sigmoid
 import torch.nn.functional as F
 
 from opencood.data_utils.post_processor.voxel_postprocessor \
     import VoxelPostprocessor
 from opencood.utils import box_utils
-from opencood.utils.box_overlaps import bbox_overlaps
-from opencood.visualization import vis_utils
-import matplotlib.pyplot as plt
 
 
 class CiassdPostprocessor(VoxelPostprocessor):
