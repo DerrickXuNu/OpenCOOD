@@ -2,7 +2,7 @@ import os
 from collections import OrderedDict
 
 from opencood.hypes_yaml.yaml_utils import load_yaml
-from logreplay.scenario_manager.scene_manager import SceneManager
+from logreplay.scenario.scene_manager import SceneManager
 
 
 class ScenariosManager:

@@ -2,7 +2,7 @@ root_dir: '/home/runshengxu/project/OpenCOOD/opv2v_data_dumping/tmp'
 output_dir: '/home/runshengxu/project/OpenCOOD/additional/tmp'
 map: # corresponding to bev map
   activate: true
-  visualize: true
+  visualize: false
   radius: 40 # meter
   raster_size: [256, 256]
   lane_sample_resolution: 0.1
@@ -11,3 +11,14 @@ map: # corresponding to bev map
     draw_traffic_light: true
   dynamic:
     exclude_self: true
+
+sensor: # new attached sensor
+  sensor_list:
+    - name: 'bev_semantic_camera'
+      args:
+        visualize: true
+        fov: 45
+        image_size_x: 512
+        image_size_y: 512
+        height: 100
+

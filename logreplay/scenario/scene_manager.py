@@ -8,7 +8,8 @@ import numpy as np
 
 from logreplay.assets.utils import find_town, find_blue_print
 from logreplay.assets.presave_lib import bcolors
-from logreplay.map_manager.map_manager import MapManager
+from logreplay.map.map_manager import MapManager
+from logreplay.sensors.sensor_manager import SensorManager
 from opencood.hypes_yaml.yaml_utils import load_yaml
 
 
@@ -151,7 +152,13 @@ class SceneManager:
                                   cur_timestamp,
                                   self.structure_transform_cav(
                                       (cav_content['true_ego_pos'])))
+
             self.veh_dict[cav_id]['cav'] = True
+            # spawn the sensor on each cav
+            if 'sensor_manager' not in self.veh_dict[cav_id]:
+                self.veh_dict[cav_id]['sensor_manager'] = \
+                    SensorManager(cav_id, self.veh_dict[cav_id],
+                                  self.world, self.scenario_params['sensor'])
 
             # set the spectator to the first cav
             if i == 0:
@@ -184,6 +191,7 @@ class SceneManager:
 
         # we dump data after tick() so the agent can retrieve the newest info
         self.map_dumping(cur_timestamp)
+        self.sensor_dumping(cur_timestamp)
 
         return True
 
@@ -199,6 +207,11 @@ class SceneManager:
         for veh_id, veh_content in self.veh_dict.items():
             if 'cav' in veh_content:
                 self.map_manager.run_step(veh_id, veh_content)
+
+    def sensor_dumping(self, cur_timestamp):
+        for veh_id, veh_content in self.veh_dict.items():
+            if 'sensor_manager' in veh_content:
+                veh_content['sensor_manager'].run_step()
 
     def spawn_cav(self, cav_id, cav_content, cur_timestamp):
         """
@@ -330,6 +343,12 @@ class SceneManager:
         for actor in actor_list:
             actor.destroy()
         self.map_manager.destroy()
+        self.sensor_destory()
+
+    def sensor_destory(self):
+        for veh_id, veh_content in self.veh_dict.items():
+            if 'sensor_manager' in veh_content:
+                veh_content['sensor_manager'].destroy()
 
     def destroy_vehicle(self, cur_timestamp):
         """

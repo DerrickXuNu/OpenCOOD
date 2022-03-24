@@ -15,10 +15,10 @@ import numpy as np
 from matplotlib.path import Path
 from shapely.geometry import Polygon
 
-from logreplay.map_manager.map_utils import \
+from logreplay.map.map_utils import \
     world_to_sensor, lateral_shift, list_loc2array, list_wpt2array, \
     convert_tl_status
-from logreplay.map_manager.map_drawing import \
+from logreplay.map.map_drawing import \
     cv2_subpixel, draw_agent, draw_road, draw_lane
 
 
@@ -164,6 +164,7 @@ class MapManager(object):
             cv2.imshow('the bev map of agent %s' % self.agent_id,
                        self.vis_bev)
             cv2.waitKey(1)
+        # todo: add dump data
 
     @staticmethod
     def get_bounds(left_lane, right_lane):
