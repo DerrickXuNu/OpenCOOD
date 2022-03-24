@@ -8,6 +8,7 @@ import numpy as np
 
 from logreplay.assets.utils import find_town, find_blue_print
 from logreplay.assets.presave_lib import bcolors
+from logreplay.map_manager.map_manager import MapManager
 from opencood.hypes_yaml.yaml_utils import load_yaml
 
 
@@ -25,11 +26,16 @@ class SceneManager:
 
     collection_params : dict
         The collecting protocol information.
+
+    scenario_params : dict
+        The replay params.
     """
 
-    def __init__(self, folder, scene_name, collection_params):
+    def __init__(self, folder, scene_name, collection_params, scenario_params):
+        self.scene_name = scene_name
         self.town_name = find_town(scene_name)
         self.collection_params = collection_params
+        self.scenario_params = scenario_params
         self.cav_id_list = []
 
         if 'seed' in collection_params['world']:
@@ -72,6 +78,8 @@ class SceneManager:
         self.veh_dict = OrderedDict()
         # used to count timestamp
         self.cur_count = 0
+        # used for HDMap
+        self.map_manager = None
 
     def start_simulator(self):
         """
@@ -120,6 +128,8 @@ class SceneManager:
         self.carla_map = self.world.get_map()
         # spectator
         self.spectator = self.world.get_spectator()
+        # hd map manager per scene
+        self.map_manager = MapManager(self.world, self.scenario_params['map'])
 
     def tick(self):
         """
@@ -141,6 +151,8 @@ class SceneManager:
                                   cur_timestamp,
                                   self.structure_transform_cav(
                                       (cav_content['true_ego_pos'])))
+            self.veh_dict[cav_id]['cav'] = True
+
             # set the spectator to the first cav
             if i == 0:
                 transform = self.structure_transform_cav(
@@ -170,7 +182,23 @@ class SceneManager:
         self.cur_count += 1
         self.world.tick()
 
+        # we dump data after tick() so the agent can retrieve the newest info
+        self.map_dumping(cur_timestamp)
+
         return True
+
+    def map_dumping(self, cur_timestamp):
+        """
+        Dump bev map related.
+
+        Parameters
+        ----------
+        cur_timestamp : str
+            Used to save the corresponding file.
+        """
+        for veh_id, veh_content in self.veh_dict.items():
+            if 'cav' in veh_content:
+                self.map_manager.run_step(veh_id, veh_content)
 
     def spawn_cav(self, cav_id, cav_content, cur_timestamp):
         """
@@ -301,6 +329,7 @@ class SceneManager:
         actor_list = self.world.get_actors()
         for actor in actor_list:
             actor.destroy()
+        self.map_manager.destroy()
 
     def destroy_vehicle(self, cur_timestamp):
         """

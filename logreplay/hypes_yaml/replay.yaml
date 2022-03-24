@@ -1,0 +1,13 @@
+root_dir: '/home/runshengxu/project/OpenCOOD/opv2v_data_dumping/tmp'
+output_dir: '/home/runshengxu/project/OpenCOOD/additional/tmp'
+map: # corresponding to bev map
+  activate: true
+  visualize: true
+  radius: 40 # meter
+  raster_size: [256, 256]
+  lane_sample_resolution: 0.1
+  static:
+    draw_lane: true
+    draw_traffic_light: true
+  dynamic:
+    exclude_self: true

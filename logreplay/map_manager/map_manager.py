@@ -18,23 +18,18 @@ from shapely.geometry import Polygon
 from logreplay.map_manager.map_utils import \
     world_to_sensor, lateral_shift, list_loc2array, list_wpt2array, \
     convert_tl_status
-from opencda.core.map.map_drawing import \
+from logreplay.map_manager.map_drawing import \
     cv2_subpixel, draw_agent, draw_road, draw_lane
 
 
 class MapManager(object):
     """
     This class is used to manage HD Map. We emulate the style of Lyft dataset.
-    todo: Currently mainly used for map rasterization.
-    todo: everything is groundtruth loaded from server directly.
 
     Parameters
     ----------
-    vehicle : Carla.vehicle
-        The ego vehicle.
-
-    carla_map : Carla.Map
-        The carla simulator map.
+    world : Carla.World
+        CARLA world.
 
     config : dict
         All the map manager parameters.
@@ -44,16 +39,13 @@ class MapManager(object):
     world : carla.world
         Carla simulation world.
 
-    center : carla.Transform
-        The rasterization map's center pose.
-
     meter_per_pixel : float
         m/pixel
 
     raster_size : float
         The rasterization map size in pixels.
 
-    raster_radius : float
+    radius_meter : float
         The valid radius(m) in the center of the rasterization map.
 
     topology : list
@@ -76,6 +68,9 @@ class MapManager(object):
     lane_sample_resolution : int
         The sampling resolution for drawing lanes.
 
+    draw_lane : bool
+        Whether to draw lane on the static bev map
+
     static_bev : np.array
         The static bev map containing lanes and drivable road information.
 
@@ -87,28 +82,30 @@ class MapManager(object):
 
     """
 
-    def __init__(self, vehicle, carla_map, config):
-        self.world = vehicle.get_world()
-        self.agent_id = vehicle.id
-        self.carla_map = carla_map
+    def __init__(self, world, config):
+        self.world = world
+        self.carla_map = world.get_map()
         self.center = None
+        self.actor_id = None
 
-        self.actvate = config['activate']
+        # whether to activate this module
+        self.activate = config['activate']
+        if not self.activate:
+            return
+
+        # whether to visualize the bev map while running simulation
         self.visualize = config['visualize']
-        self.pixels_per_meter = config['pixels_per_meter']
-        self.meter_per_pixel = 1 / self.pixels_per_meter
+        self.radius_meter = config['radius']
+
+        assert config['raster_size'][0] == config['raster_size'][1]
         self.raster_size = np.array([config['raster_size'][0],
                                      config['raster_size'][1]])
+        self.pixels_per_meter = self.raster_size[0] / (self.radius_meter * 2)
+        self.meter_per_pixel = 1 / self.pixels_per_meter
         self.lane_sample_resolution = config['lane_sample_resolution']
 
-        self.raster_radius = \
-            float(np.linalg.norm(self.raster_size *
-                                 np.array(
-                                     [self.meter_per_pixel,
-                                      self.meter_per_pixel]))) / 2
-
         # list of all start waypoints in HD Map
-        topology = [x[0] for x in carla_map.get_topology()]
+        topology = [x[0] for x in self.carla_map.get_topology()]
         # sort by altitude
         self.topology = sorted(topology, key=lambda w: w.transform.location.z)
 
@@ -125,35 +122,44 @@ class MapManager(object):
         # generate lane, crosswalk and boundary information
         self.generate_lane_cross_info()
 
+        # static related info
+        self.draw_lane = config['static']['draw_lane']
+        self.draw_traffic_light = config['static']['draw_traffic_light']
+        # dynamic related info
+        self.exclude_self = config['dynamic']['exclude_self']
+
         # bev maps
         self.dynamic_bev = 255 * np.zeros(
             shape=(self.raster_size[1], self.raster_size[0], 3),
             dtype=np.uint8)
-        self.static_bev = 255 * np.ones(
+        self.static_bev = 255 * np.zeros(
             shape=(self.raster_size[1], self.raster_size[0], 3),
             dtype=np.uint8)
         self.vis_bev = 255 * np.ones(
             shape=(self.raster_size[1], self.raster_size[0], 3),
             dtype=np.uint8)
 
-    def update_information(self, ego_pose):
+    def run_step(self, cav_id, cav_content):
         """
-        Update the ego pose as the map center.
+        Rasterization + Visualize the bev map if needed.
 
         Parameters
         ----------
-        ego_pose : carla.Transform
+        cav_id : str
+            The cav's original id in the dataset.
+        cav_content : dict
+            The cav's information.
         """
-        self.center = ego_pose
-
-    def run_step(self):
-        """
-        Rasterization + Visualize the bev map if needed.
-        """
-        if not self.actvate:
+        if not self.activate:
             return
+
+        self.actor_id = cav_content['actor_id']
+        self.center = cav_content['cur_pose']
+        self.agent_id = cav_id
+
         self.rasterize_static()
         self.rasterize_dynamic()
+
         if self.visualize:
             cv2.imshow('the bev map of agent %s' % self.agent_id,
                        self.vis_bev)
@@ -528,6 +534,9 @@ class MapManager(object):
 
         corner_list = []
         for agent_id, agent in final_agents.items():
+            # in case we don't want to draw the cav itself
+            if agent_id == self.actor_id and self.exclude_self:
+                continue
             agent_corner = self.generate_agent_area(agent['corners'])
             corner_list.append(agent_corner)
 
@@ -538,7 +547,7 @@ class MapManager(object):
         """
         Generate the static bev map.
         """
-        self.static_bev = 255 * np.ones(
+        self.static_bev = 255 * np.zeros(
             shape=(self.raster_size[1], self.raster_size[0], 3),
             dtype=np.uint8)
         self.vis_bev = 255 * np.ones(
@@ -568,7 +577,7 @@ class MapManager(object):
 
             # check the associated traffic light
             associated_tl_id = lane_info['tl_id']
-            if associated_tl_id:
+            if associated_tl_id and self.draw_traffic_light:
                 tl_actor = self.traffic_light_info[associated_tl_id]['actor']
                 status = convert_tl_status(tl_actor.get_state())
                 lane_type_list.append(status)
@@ -577,11 +586,15 @@ class MapManager(object):
 
         self.static_bev = draw_road(lanes_area_list,
                                     self.static_bev)
-        self.static_bev = draw_lane(lanes_area_list, lane_type_list,
-                                    self.static_bev)
+        if self.draw_lane:
+            self.static_bev = draw_lane(lanes_area_list, lane_type_list,
+                                        self.static_bev)
 
+        # we try to draw everything for visualization, but only dumping the
+        # elements we need.
         self.vis_bev = draw_road(lanes_area_list,
-                                 self.vis_bev)
+                                 self.vis_bev,
+                                 visualize=True)
         self.vis_bev = draw_lane(lanes_area_list, lane_type_list,
                                  self.vis_bev)
         self.vis_bev = cv2.cvtColor(self.vis_bev, cv2.COLOR_RGB2BGR)

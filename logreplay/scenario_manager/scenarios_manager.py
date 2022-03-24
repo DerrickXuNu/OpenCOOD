@@ -46,7 +46,8 @@ class ScenariosManager:
             # create the corresponding scene manager
             cur_sg = SceneManager(scenario_folder,
                                   scene_name,
-                                  collection_params)
+                                  collection_params,
+                                  scenario_params)
             self.scenario_database[scene_name].update({'scene_manager':
                                                        cur_sg})
 
@@ -68,9 +69,8 @@ class ScenariosManager:
 
 
 if __name__ == '__main__':
-    scene_params = {'root_dir':
-                        '/home/runshengxu/project/OpenCOOD/'
-                        'opv2v_data_dumping/tmp'}
+    from opencood.hypes_yaml.yaml_utils import load_yaml
+    scene_params = load_yaml('../hypes_yaml/replay.yaml')
     scenarion_manager = ScenariosManager(scenario_params=scene_params)
     scenarion_manager.tick()
     print('test passed')
