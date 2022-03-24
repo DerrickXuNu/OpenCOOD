@@ -44,7 +44,7 @@ class BEVSemanticCamera:
             world = vehicle.get_world()
 
         self.agent_id = agent_id
-        blueprint = world.get_blueprint_library().\
+        blueprint = world.get_blueprint_library(). \
             find('sensor.camera.semantic_segmentation')
         blueprint.set_attribute('fov', str(config['fov']))
         blueprint.set_attribute('image_size_x', str(config['image_size_x']))
@@ -130,7 +130,16 @@ class BEVSemanticCamera:
             10: [0, 0, 255],  # Vehicles
             11: [102, 102, 156],  # Walls
             12: [220, 220, 0],  # TrafficSigns
-            13: [70, 130, 180]  # Sky
+            13: [70, 130, 180],  # Sky
+            14: [81, 0, 81],  # Ground
+            15: [150, 100, 100],  # Bridge
+            16: [230, 150, 140],  # RailTrack
+            17: [180, 165, 180],  # All types of guard rails/crash barriers.
+            18: [250, 170, 30],  # Traffic Light
+            19: [110, 190, 160],  # Static
+            20: [170, 120, 50],  # Dynamic
+            21: [45, 60, 150],  # Water
+            22: [145, 170, 100]  # Terrain
         }
         result = np.zeros((label.shape[0], label.shape[1], 3), dtype=np.uint8)
         for key, value in classes.items():
