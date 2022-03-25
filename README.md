@@ -139,6 +139,8 @@ We have a series of tutorials to help you understand OpenCOOD more. Please check
   year = {2022}}
 ```
 
+Also, under this LICENSE, OpenCDA is for non-commercial research only. Researchers can modify the source code for their own research only. Contracted work that generates corporate revenues and other general commercial use are prohibited under this LICENSE. See the LICENSE file for details and possible opportunities for commercial use.
+
 ## Future Plans
 - [ ] Provide camera APIs for OPV2V
 - [ ] Provide the log replay toolbox

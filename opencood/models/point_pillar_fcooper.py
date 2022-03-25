@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+# Author: Runsheng Xu <rxx3386@ucla.edu>
+# License: TDG-Attribution-NonCommercial-NoDistrib
+
+
 import torch.nn as nn
 
 from opencood.models.sub_modules.pillar_vfe import PillarVFE

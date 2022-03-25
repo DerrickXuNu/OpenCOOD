@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+# Author: OpenPCDet
+
 import numpy as np
 
 from opencood.utils import common_utils

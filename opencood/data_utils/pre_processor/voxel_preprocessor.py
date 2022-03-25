@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+# Author: Runsheng Xu <rxx3386@ucla.edu>
+# License: TDG-Attribution-NonCommercial-NoDistrib
+
+
 """
 Convert lidar to voxel. This class was manually designed, and we recommend
 to use sp_voxel_preprocessor.
