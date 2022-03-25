@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+# Author: Runsheng Xu <rxx3386@ucla.edu>, OpenPCDet
+# License: TDG-Attribution-NonCommercial-NoDistrib
+
+
 import torch
 import torch.nn as nn
 

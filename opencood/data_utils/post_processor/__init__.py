@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+# Author: Runsheng Xu <rxx3386@ucla.edu>
+# License: TDG-Attribution-NonCommercial-NoDistrib
+
 from opencood.data_utils.post_processor.voxel_postprocessor import VoxelPostprocessor
 from opencood.data_utils.post_processor.bev_postprocessor import BevPostprocessor
 
