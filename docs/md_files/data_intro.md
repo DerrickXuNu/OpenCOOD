@@ -1,7 +1,14 @@
 ## Data Preparation
 
 ---
-To use OpenCOOD, users need to first download the data from our [google drive](https://drive.google.com/drive/folders/1dkDeHlwOVbmgXcDazZvO6TFEZ6V_7WUu?usp=sharing) and make the file structured as following:
+All the data can be downloaded from [google drive](https://drive.google.com/drive/folders/1dkDeHlwOVbmgXcDazZvO6TFEZ6V_7WUu). If you have a good internet, you can directly
+download the complete large zip file such as `train.zip`. In case you suffer from downloading large fiels, we also split each data set into small chunks, which can be found 
+in the directory ending with `_chunks`, such as `train_chunks`. After downloading, please run the following command to each set to merge those chunks together:
+```python
+cat train.zip.parta* > train.zip
+unzip train.zip
+```
+After downloading is finished, please make the file structured as following:
 
 ```sh
 OpenCOOD # root of your OpenCOOD

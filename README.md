@@ -11,7 +11,9 @@ paper [OPV2V.](https://arxiv.org/abs/2109.07644)
 </p>
 
 ## News
-**03/10/2022**: Results and pretrained weights for intermeidate Fusion with **compression** are provided.
+**03/17/2022**:  [V2VNet](https://arxiv.org/abs/2008.07519) is supported and the results/trained model are provided in the benchmark table.
+
+**03/10/2022**: Results and pretrained weights for Attentive Fusion with **compression** are provided.
 
 **02/20/2022**: [F-Cooper](https://arxiv.org/abs/1909.06459) now is supported and the results/traiend model can be found in the benchmark table.
 
@@ -33,7 +35,7 @@ convert to PyTorch Tesnor directly for model use.
 - **Support several SOTA multi-agent visual fusion model** 
 
     It supports the most recent multi-agent perception algorithms (currently up to Sep. 2021) including [Attentive Fusion](https://arxiv.org/abs/2109.07644),
-    [Cooper (early fusion)](https://arxiv.org/abs/1905.05265), [F-Cooper](https://arxiv.org/abs/1909.06459), etc. We will keep updating
+    [Cooper (early fusion)](https://arxiv.org/abs/1905.05265), [F-Cooper](https://arxiv.org/abs/1909.06459), [V2VNet](https://arxiv.org/abs/2008.07519) etc. We will keep updating
     the newest algorithms.
 - **Provide a convenient log replay toolbox for OPV2V dataset (coming soon)**
 
@@ -41,6 +43,14 @@ convert to PyTorch Tesnor directly for model use.
  attaching new sensors or define additional tasks (e.g. tracking, prediction)
     without changing the events in the initial dataset (e.g. positions and number of all vehicles, traffic speed).
 
+## Data Downloading
+All the data can be downloaded from [google drive](https://drive.google.com/drive/folders/1dkDeHlwOVbmgXcDazZvO6TFEZ6V_7WUu). If you have a good internet, you can directly
+download the complete large zip file such as `train.zip`. In case you suffer from downloading large fiels, we also split each data set into small chunks, which can be found 
+in the directory ending with `_chunks`, such as `train_chunks`. After downloading, please run the following command to each set to merge those chunks together:
+```python
+cat train.zip.parta* > train.zip
+unzip train.zip
+```
 
 ## Installation
 Please refer to [data introduction](https://opencood.readthedocs.io/en/latest/md_files/data_intro.html)
@@ -94,8 +104,9 @@ The evaluation results  will be dumped in the model directory.
 |--------------------| --------   | ---------------  | ---------------                | -------------    |-----------| -------- |
 | Naive Late         | PointPillar        | Late      |    **0.024**/**0.024** |   0.781/0.781        | 0.668/0.668         |    [url](https://drive.google.com/file/d/1WTKooW6k0exLqoIE5Czqy6ptycYlgKZz/view?usp=sharing)   |
 | [Cooper](https://arxiv.org/abs/1905.05265)       | PointPillar        | Early  |   7.68/7.68   | 0.800/x         | 0.696/x       | [url](https://drive.google.com/file/d/1N1p6syxGSKD18ELgtBQoSuUzR8tX1JeE/view?usp=sharing)     | 
-| [Attentive Fusion](https://arxiv.org/abs/2109.07644)         | PointPillar        | Intermediate  | 126.8/1.98   | **0.815**/**0.810**       | **0.735**/**0.731**        | [url](https://drive.google.com/file/d/1u4w13SDzdGq6Irh2PHxT-qIlNXRT3z6Z/view?usp=sharing)     | 
+| [Attentive Fusion](https://arxiv.org/abs/2109.07644)         | PointPillar        | Intermediate  | 126.8/1.98   | 0.815/0.810       | **0.735**/**0.731**        | [url](https://drive.google.com/file/d/1u4w13SDzdGq6Irh2PHxT-qIlNXRT3z6Z/view?usp=sharing)     | 
 | [F-Cooper](https://arxiv.org/abs/1909.06459)         | PointPillar        | Intermediate  | 72.08/1.12    | 0.790/0.788     | 0.728/0.726        | [url](https://drive.google.com/file/d/1CjXu9Y2ZTzJA6Oo3hnqFhbTqBVKq3mQb/view?usp=sharing)     | 
+| [V2VNet](https://arxiv.org/abs/2008.07519)         | PointPillar        | Intermediate  | 72.08/1.12    | **0.822**/**0.814**     | 0.734/0.729    | [url](https://drive.google.com/file/d/1JqVnODFmwIaxOs-fKFUhA38-Lc3ehgEJ/view?usp=sharing)     | 
 | Naive Late         | VoxelNet        | Late  | **0.024**/**0.024**    | 0.738/0.738          | 0.588/0.588        | [url]()    |
 | Cooper    | VoxelNet        | Early   |   7.68/7.68  | 0.758/x        | 0.677/x        | [url](https://drive.google.com/file/d/14WD7iLLyyCJJ3lApbYYdr5KOUM1ACnve/view?usp=sharing)     | 
 | Attentive Fusion        | VoxelNet        | Intermediate |   576.71/1.12   | **0.864**/**0.852**        | **0.775**/**0.746**       | [url](https://drive.google.com/file/d/16q8CfcB8dS4EVhJMvvEfn0gM2ynxZB3E/view?usp=sharing)      | 
@@ -128,10 +139,14 @@ We have a series of tutorials to help you understand OpenCOOD more. Please check
   year = {2022}}
 ```
 
+Also, under this LICENSE, OpenCOOD is for non-commercial research only. Researchers can modify the source code for their own research only. Contracted work that generates corporate revenues and other general commercial use are prohibited under this LICENSE. See the LICENSE file for details and possible opportunities for commercial use.
+
 ## Future Plans
 - [ ] Provide camera APIs for OPV2V
 - [ ] Provide the log replay toolbox
-- [ ] More SOTA models, such as [DiscoNet](https://arxiv.org/pdf/2111.00643.pdf) and [V2VNet](https://arxiv.org/abs/2008.07519).
+- [x] Implement F-Cooper 
+- [x] Implement V2VNet 
+- [ ] Implement DiscoNet
 
 
 ## Contributors

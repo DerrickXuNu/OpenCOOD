@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+# Author: Runsheng Xu <rxx3386@ucla.edu>
+# License: TDG-Attribution-NonCommercial-NoDistrib
+
+
 from os.path import dirname, realpath
 from setuptools import setup, find_packages, Distribution
 from opencood.version import __version__
