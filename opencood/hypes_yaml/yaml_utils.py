@@ -242,3 +242,22 @@ def save_yaml(data, save_name):
 
     with open(save_name, 'w') as outfile:
         yaml.dump(data, outfile, default_flow_style=False)
+
+
+def save_yaml_wo_overwriting(data, save_name):
+    """
+    Save the yaml file without overwriting the existing one.
+
+    Parameters
+    ----------
+    data : dict
+        The dictionary contains all data.
+
+    save_name : string
+        Full path of the output yaml file.
+    """
+    if os.path.exists(save_name):
+        prev_data = load_yaml(save_name)
+        data = {**data, **prev_data}
+
+    save_yaml(data, save_name)

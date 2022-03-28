@@ -39,6 +39,10 @@ class SceneManager:
         self.scenario_params = scenario_params
         self.cav_id_list = []
 
+        # dumping related
+        self.output_root = os.path.join(scenario_params['output_dir'],
+                                        scene_name)
+
         if 'seed' in collection_params['world']:
             np.random.seed(collection_params['world']['seed'])
             random.seed(collection_params['world']['seed'])
@@ -130,7 +134,9 @@ class SceneManager:
         # spectator
         self.spectator = self.world.get_spectator()
         # hd map manager per scene
-        self.map_manager = MapManager(self.world, self.scenario_params['map'])
+        self.map_manager = MapManager(self.world,
+                                      self.scenario_params['map'],
+                                      self.output_root)
 
     def tick(self):
         """

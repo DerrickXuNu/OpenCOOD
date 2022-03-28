@@ -7,6 +7,7 @@
 # License: TDG-Attribution-NonCommercial-NoDistrib
 
 import math
+import os.path
 import uuid
 
 import cv2
@@ -20,6 +21,7 @@ from logreplay.map.map_utils import \
     convert_tl_status
 from logreplay.map.map_drawing import \
     cv2_subpixel, draw_agent, draw_road, draw_lane
+from opencood.hypes_yaml.yaml_utils import save_yaml_wo_overwriting
 
 
 class MapManager(object):
@@ -33,6 +35,9 @@ class MapManager(object):
 
     config : dict
         All the map manager parameters.
+
+    output_root : str
+        The data dump root folder.
 
     Attributes
     ----------
@@ -82,11 +87,12 @@ class MapManager(object):
 
     """
 
-    def __init__(self, world, config):
+    def __init__(self, world, config, output_root):
         self.world = world
         self.carla_map = world.get_map()
         self.center = None
         self.actor_id = None
+        self.out_root = output_root
 
         # whether to activate this module
         self.activate = config['activate']
@@ -156,6 +162,7 @@ class MapManager(object):
         self.actor_id = cav_content['actor_id']
         self.center = cav_content['cur_pose']
         self.agent_id = cav_id
+        self.current_timstamp = cav_content['cur_count']
 
         self.rasterize_static()
         self.rasterize_dynamic()
@@ -164,7 +171,7 @@ class MapManager(object):
             cv2.imshow('the bev map of agent %s' % self.agent_id,
                        self.vis_bev)
             cv2.waitKey(1)
-        # todo: add dump data
+        self.data_dump()
 
     @staticmethod
     def get_bounds(left_lane, right_lane):
@@ -278,6 +285,43 @@ class MapManager(object):
             if check_array.any():
                 associate_tl_id = tl_id
         return associate_tl_id
+
+    def data_dump(self):
+        """
+        Dump the data to the corresponding folder.
+        """
+        save_name = os.path.join(self.out_root, self.agent_id)
+
+        if not os.path.exists(save_name):
+            os.makedirs(save_name)
+
+        map_info = {'bev_map': {
+            'raster_size_pixel': self.raster_size,
+            'radius_meter': self.radius_meter,
+            'pixel_per_meter': self.pixels_per_meter,
+            'topology': self.valid_lane_info
+        }}
+        # save metadata
+        save_yaml_name = os.path.join(save_name,
+                                      self.current_timstamp +
+                                      '.yaml')
+        save_yaml_wo_overwriting(map_info, save_yaml_name)
+
+        # save rgb image
+        save_static_name = os.path.join(save_name,
+                                        self.current_timstamp +
+                                        '_bev_static.png')
+        cv2.imwrite(save_static_name, self.static_bev)
+        # save dynamic bev
+        save_dynamic_name = os.path.join(save_name,
+                                         self.current_timstamp +
+                                         '_bev_dynamic.png')
+        cv2.imwrite(save_dynamic_name, self.dynamic_bev)
+        # save visualize bev
+        save_vis_name = os.path.join(save_name,
+                                     self.current_timstamp +
+                                     '_bev_vis.png')
+        cv2.imwrite(save_vis_name, self.vis_bev)
 
     def generate_lane_cross_info(self):
         """
@@ -422,9 +466,9 @@ class MapManager(object):
         lane_area[:, :, 1] = -lane_area[:, :, 1]
 
         lane_area[:, :, 0] = lane_area[:, :, 0] * self.pixels_per_meter + \
-            self.raster_size[0] // 2
+                             self.raster_size[0] // 2
         lane_area[:, :, 1] = lane_area[:, :, 1] * self.pixels_per_meter + \
-            self.raster_size[1] // 2
+                             self.raster_size[1] // 2
 
         # to make more precise polygon
         lane_area = cv2_subpixel(lane_area)
@@ -461,9 +505,9 @@ class MapManager(object):
         corners[:, 1] = -corners[:, 1]
 
         corners[:, 0] = corners[:, 0] * self.pixels_per_meter + \
-            self.raster_size[0] // 2
+                        self.raster_size[0] // 2
         corners[:, 1] = corners[:, 1] * self.pixels_per_meter + \
-            self.raster_size[1] // 2
+                        self.raster_size[1] // 2
 
         # to make more precise polygon
         corner_area = cv2_subpixel(corners[:, :2])
@@ -569,6 +613,10 @@ class MapManager(object):
         for idx, lane_idx in enumerate(lane_indices):
             lane_idx = self.bound_info['lanes']['ids'][lane_idx]
             lane_info = self.lane_info[lane_idx]
+
+            # save the topology info for this cav
+            self.valid_lane_info = lane_info
+
             xyz_left, xyz_right = \
                 lane_info['xyz_left'], lane_info['xyz_right']
 
