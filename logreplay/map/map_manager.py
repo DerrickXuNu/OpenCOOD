@@ -304,7 +304,7 @@ class MapManager(object):
         # save metadata
         save_yaml_name = os.path.join(save_name,
                                       self.current_timstamp +
-                                      '.yaml')
+                                      '_additional.yaml')
         save_yaml_wo_overwriting(map_info, save_yaml_name)
 
         # save rgb image

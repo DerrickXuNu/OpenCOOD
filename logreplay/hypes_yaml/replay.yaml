@@ -1,5 +1,5 @@
-root_dir: '/home/runshengxu/project/OpenCOOD/opv2v_data_dumping/tmp'
-output_dir: '/home/runshengxu/project/OpenCOOD/opv2v_data_dumping/additional/tmp'
+root_dir: '/home/runshengxu/project/OpenCOOD/opv2v_data_dumping/test'
+output_dir: '/home/runshengxu/project/OpenCOOD/opv2v_data_dumping/additional/test'
 map: # corresponding to bev map
   activate: true
   visualize: true
@@ -13,12 +13,12 @@ map: # corresponding to bev map
     exclude_self: true
 
 sensor: # new attached sensor
-  sensor_list: []
-#    - name: 'bev_semantic_camera'
-#      args:
-#        visualize: true
-#        fov: 45
-#        image_size_x: 512
-#        image_size_y: 512
-#        height: 100
+  sensor_list:
+    - name: 'bev_semantic_camera'
+      args:
+        visualize: true
+        fov: 45
+        image_size_x: 512
+        image_size_y: 512
+        height: 100
 

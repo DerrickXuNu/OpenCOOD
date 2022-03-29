@@ -4,12 +4,15 @@ CARLA Semantic Camera Sensor
 """
 # Author: Runsheng Xu <rxx3386@ucla.edu>
 # License: TDG-Attribution-NonCommercial-NoDistrib
-
+import os.path
 import weakref
 
 import carla
 import cv2
 import numpy as np
+
+from opencood.hypes_yaml.yaml_utils import save_yaml_wo_overwriting
+from logreplay.sensors.utils import get_camera_intrinsic
 
 
 class BEVSemanticCamera:
@@ -172,6 +175,41 @@ class BEVSemanticCamera:
             cv2.imshow('bev seg camera agent %s' % self.agent_id,
                        self.vis_image)
             cv2.waitKey(1)
+
+    def data_dump(self, output_root, cur_timestamp):
+        while not hasattr(self, 'vis_image') or self.vis_image is None:
+            continue
+        # dump visualization
+        output_vis_name = os.path.join(output_root,
+                                       cur_timestamp + '_bev_sem_vis.png')
+        cv2.imwrite(output_vis_name, self.vis_image)
+
+        # dump the label
+        output_label_name = os.path.join(output_root,
+                                         cur_timestamp + '_bev_sem_label.png')
+        cv2.imwrite(output_label_name, self.image)
+
+        # dump the yaml
+        save_yaml_name = os.path.join(output_root,
+                                      cur_timestamp +
+                                      '_additional.yaml')
+        # intrinsic
+        camera_intrinsic = get_camera_intrinsic(self.sensor)
+        # pose under world coordinate system
+        camera_transformation = self.sensor.get_transform()
+        cords = [camera_transformation.location.x,
+                 camera_transformation.location.y,
+                 camera_transformation.location.z,
+                 camera_transformation.rotation.roll,
+                 camera_transformation.rotation.yaw,
+                 camera_transformation.rotation.pitch]
+
+        bev_sem_cam_info = {'bev_sem_cam':
+                                {'intrinsic': camera_intrinsic,
+                                 'cords': cords
+                                 }}
+        save_yaml_wo_overwriting(bev_sem_cam_info,
+                                 save_yaml_name)
 
     def destroy(self):
         self.sensor.destroy()

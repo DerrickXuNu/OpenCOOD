@@ -164,7 +164,8 @@ class SceneManager:
             if 'sensor_manager' not in self.veh_dict[cav_id]:
                 self.veh_dict[cav_id]['sensor_manager'] = \
                     SensorManager(cav_id, self.veh_dict[cav_id],
-                                  self.world, self.scenario_params['sensor'])
+                                  self.world, self.scenario_params['sensor'],
+                                  self.output_root)
 
             # set the spectator to the first cav
             if i == 0:
@@ -176,7 +177,7 @@ class SceneManager:
                                         z=70),
                                     carla.Rotation(
                                         pitch=-90
-                                        )))
+                                    )))
 
             for bg_veh_id, bg_veh_content in cav_content['vehicles'].items():
                 if str(bg_veh_id) not in self.veh_dict:
@@ -196,19 +197,17 @@ class SceneManager:
         self.world.tick()
 
         # we dump data after tick() so the agent can retrieve the newest info
-        self.map_dumping(cur_timestamp)
+        self.map_dumping()
         self.sensor_dumping(cur_timestamp)
 
         return True
 
-    def map_dumping(self, cur_timestamp):
+    def map_dumping(self):
         """
         Dump bev map related.
 
         Parameters
         ----------
-        cur_timestamp : str
-            Used to save the corresponding file.
         """
         for veh_id, veh_content in self.veh_dict.items():
             if 'cav' in veh_content:
@@ -217,7 +216,7 @@ class SceneManager:
     def sensor_dumping(self, cur_timestamp):
         for veh_id, veh_content in self.veh_dict.items():
             if 'sensor_manager' in veh_content:
-                veh_content['sensor_manager'].run_step()
+                veh_content['sensor_manager'].run_step(cur_timestamp)
 
     def spawn_cav(self, cav_id, cav_content, cur_timestamp):
         """
@@ -298,7 +297,7 @@ class SceneManager:
             veh_bp = blueprint_library.find(model)
 
             color = random.choice(
-                    veh_bp.get_attribute('color').recommended_values)
+                veh_bp.get_attribute('color').recommended_values)
 
         veh_bp.set_attribute('color', color)
 
@@ -389,10 +388,10 @@ class SceneManager:
                                                   yaw=pose[4],
                                                   pitch=pose[5]))
 
-
         return cur_pose
 
-    def structure_transform_bg_veh(self, location, rotation):
+    @staticmethod
+    def structure_transform_bg_veh(location, rotation):
         """
         Convert the location and rotation in list to carla transform format.
 
