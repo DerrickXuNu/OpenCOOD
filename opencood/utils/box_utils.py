@@ -364,7 +364,7 @@ def get_mask_for_boxes_within_range_torch(boxes):
 
 
 def mask_boxes_outside_range_numpy(boxes, limit_range, order,
-                                   min_num_corners=8):
+                                   min_num_corners=8, return_mask=False):
     """
     Parameters
     ----------
@@ -379,6 +379,9 @@ def mask_boxes_outside_range_numpy(boxes, limit_range, order,
 
     order : str
         'lwh' or 'hwl'
+
+    return_mask : bool
+        Whether return the mask.
 
     Returns
     -------
@@ -395,6 +398,8 @@ def mask_boxes_outside_range_numpy(boxes, limit_range, order,
             (new_boxes <= limit_range[3:6])).all(axis=2)
     mask = mask.sum(axis=1) >= min_num_corners  # (N)
 
+    if return_mask:
+        return boxes[mask], mask
     return boxes[mask]
 
 
