@@ -803,3 +803,142 @@ def project_points_by_matrix_torch(points, transformation_matrix):
 
     return projected_points[:, :3] if not is_numpy \
         else projected_points[:, :3].numpy()
+
+
+def box_encode(
+        boxes,
+        anchors,
+        encode_angle_to_vector=False,
+        encode_angle_with_residual=False,
+        smooth_dim=False,
+        norm_velo=False
+):
+    """box encode for VoxelNet
+        Args:
+            boxes ([N, 7] Tensor): normal boxes: x, y, z, w, l, h, r.
+            anchors ([N, 7] Tensor): anchors.
+    """
+
+    box_ndim = anchors.shape[-1]
+
+    if box_ndim == 7:
+        xa, ya, za, wa, la, ha, ra = torch.split(anchors, 1, dim=-1)
+        xg, yg, zg, wg, lg, hg, rg = torch.split(boxes, 1, dim=-1)
+    else:
+        xa, ya, za, wa, la, ha, vxa, vya, ra = torch.split(anchors, 1, dim=-1)
+        xg, yg, zg, wg, lg, hg, vxg, vyg, rg = torch.split(boxes, 1, dim=-1)
+
+    diagonal = torch.sqrt(la ** 2 + wa ** 2)
+    xt = (xg - xa) / diagonal
+    yt = (yg - ya) / diagonal
+    zt = (zg - za) / ha
+
+    if smooth_dim:
+        lt = lg / la - 1
+        wt = wg / wa - 1
+        ht = hg / ha - 1
+    else:
+        lt = torch.log(lg / la)
+        wt = torch.log(wg / wa)
+        ht = torch.log(hg / ha)
+
+    ret = [xt, yt, zt, wt, lt, ht]
+
+    if box_ndim > 7:
+        if norm_velo:
+            vxt = (vxg - vxa) / diagonal
+            vyt = (vyg - vya) / diagonal
+        else:
+            vxt = vxg - vxa
+            vyt = vyg - vya
+        ret.extend([vxt, vyt])
+
+    if encode_angle_to_vector:
+        rgx = torch.cos(rg)
+        rgy = torch.sin(rg)
+        if encode_angle_with_residual:
+            rax = torch.cos(ra)
+            ray = torch.sin(ra)
+            rtx = rgx - rax
+            rty = rgy - ray
+            ret.extend([rtx, rty])
+        else:
+            ret.extend([rgx, rgy])
+    else:
+        rt = rg - ra
+        ret.append(rt)
+
+    return torch.cat(ret, dim=-1)
+
+
+def box_decode(
+        box_encodings,
+        anchors,
+        encode_angle_to_vector=False,
+        encode_angle_with_residual=False,
+        bin_loss=False,
+        smooth_dim=False,
+        norm_velo=False,
+):
+    """box decode for VoxelNet in lidar
+    Args:
+        boxes ([N, 7] Tensor): normal boxes: x, y, z, w, l, h, r
+        anchors ([N, 7] Tensor): anchors
+    """
+    box_ndim = anchors.shape[-1]
+
+    if box_ndim == 9:  # False
+        xa, ya, za, wa, la, ha, vxa, vya, ra = torch.split(anchors, 1, dim=-1)
+        if encode_angle_to_vector:
+            xt, yt, zt, wt, lt, ht, vxt, vyt, rtx, rty = torch.split(box_encodings, 1, dim=-1)
+        else:
+            xt, yt, zt, wt, lt, ht, vxt, vyt, rt = torch.split(box_encodings, 1, dim=-1)
+
+    elif box_ndim == 7:
+        xa, ya, za, wa, la, ha, ra = torch.split(anchors, 1, dim=-1)
+        if encode_angle_to_vector:  # False
+            xt, yt, zt, wt, lt, ht, rtx, rty = torch.split(box_encodings, 1, dim=-1)
+        else:
+            xt, yt, zt, wt, lt, ht, rt = torch.split(box_encodings, 1, dim=-1)
+
+    diagonal = torch.sqrt(la ** 2 + wa ** 2)
+    xg = xt * diagonal + xa
+    yg = yt * diagonal + ya
+    zg = zt * ha + za
+
+    ret = [xg, yg, zg]
+
+    if smooth_dim:  # False
+        lg = (lt + 1) * la
+        wg = (wt + 1) * wa
+        hg = (ht + 1) * ha
+    else:
+        lg = torch.exp(lt) * la
+        wg = torch.exp(wt) * wa
+        hg = torch.exp(ht) * ha
+    ret.extend([wg, lg, hg])
+
+    if encode_angle_to_vector:  # False
+        if encode_angle_with_residual:
+            rax = torch.cos(ra)
+            ray = torch.sin(ra)
+            rgx = rtx + rax
+            rgy = rty + ray
+            rg = torch.atan2(rgy, rgx)
+        else:
+            rg = torch.atan2(rty, rtx)
+    else:
+        rg = rt + ra
+
+    if box_ndim > 7:  # False
+        if norm_velo:
+            vxg = vxt * diagonal + vxa
+            vyg = vyt * diagonal + vya
+        else:
+            vxg = vxt + vxa
+            vyg = vyt + vya
+        ret.extend([vxg, vyg])
+
+    ret.append(rg)
+
+    return torch.cat(ret, dim=-1)

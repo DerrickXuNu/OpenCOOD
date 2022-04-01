@@ -5,9 +5,11 @@ import numpy as np
 from opencood.models.sub_modules.mean_vfe import MeanVFE
 from opencood.models.sub_modules.sparse_backbone_3d import VoxelBackBone8x
 from opencood.models.sub_modules.height_compression import HeightCompression
+from opencood.models.sub_modules.cia_ssd_utils import SSFA, Head
 from opencood.models.sub_modules.vsa import VoxelSetAbstraction
 from opencood.models.sub_modules.roi_head import RoIHead
 from opencood.models.sub_modules.matcher import Matcher
+from opencood.data_utils.post_processor.ciassd_postprocessor import CiassdPostprocessor
 
 
 class FPVRCNN(nn.Module):
@@ -16,127 +18,39 @@ class FPVRCNN(nn.Module):
         lidar_range = np.array(args['lidar_range'])
         grid_size = np.round((lidar_range[3:6] - lidar_range[:3]) /
                              np.array(args['voxel_size'])).astype(np.int64)
-        args1 = args['stage1']
-        self.vfe = MeanVFE(args1['mean_vfe'], args1['mean_vfe']['num_point_features'])
-        self.spconv_block = VoxelBackBone8x(args1['spconv'],
+        self.vfe = MeanVFE(args['mean_vfe'], args['mean_vfe']['num_point_features'])
+        self.spconv_block = VoxelBackBone8x(args['spconv'],
                                             input_channels=args['spconv']['num_features_in'],
                                             grid_size=grid_size)
-        self.map_to_bev = HeightCompression(args1['map2bev'])
-        self.ssfa = SSFA(args1['ssfa'])
-        args2 = args['stage2']
-        self.vsa = VoxelSetAbstraction(args2['vsa'], args['voxel_size'], args['lidar_range'],
+        self.map_to_bev = HeightCompression(args['map2bev'])
+        self.ssfa = SSFA(args['ssfa'])
+        self.head = Head(**args['head'])
+        self.post_processor = CiassdPostprocessor(args['post_processer'], train=True)
+        self.vsa = VoxelSetAbstraction(args['vsa'], args['voxel_size'], args['lidar_range'],
                                        num_bev_features=128, num_rawpoint_features=3)
-        self.matcher = Matcher(args2['matcher'], args['lidar_range'])
-        self.roi_head = RoIHead(args2['roi_head'], None)
+        self.matcher = Matcher(args['matcher'], args['lidar_range'])
+        self.roi_head = RoIHead(args['roi_head'])
 
     def forward(self, batch_dict):
-        ret_dict = {'batch_size': len(batch_dict['object_bbx_center'])}
-        ret_dict.update(batch_dict['processed_lidar'])
-        ret_dict = self.vfe(ret_dict)
-        ret_dict = self.spconv_block(ret_dict)
-        ret_dict = self.map_to_bev(ret_dict)
-        out = self.ssfa(ret_dict['spatial_features'])
-        out = self.head(out)
-        batch_dict['preds_dict'] = out
+        batch_dict['batch_size'] = int(batch_dict['record_len'].sum())
+        batch_dict = self.vfe(batch_dict)
+        batch_dict = self.spconv_block(batch_dict)
+        batch_dict = self.map_to_bev(batch_dict)
+        out = self.ssfa(batch_dict['processed_lidar']['spatial_features'])
+        batch_dict['preds_dict_stage1'] = self.head(out)
+        data_dict, output_dict = {}, {}
+        data_dict['ego'], output_dict['ego'] = batch_dict, batch_dict
+        # The data structure is a little confusing, same data pointer is passed two times,
+        # because it should match the format of the main framwork
+        pred_box3d_list, scores_list = self.post_processor.post_process(data_dict, output_dict)
+        batch_dict['det_boxes'] = pred_box3d_list
+        batch_dict['det_scores'] = scores_list
+        if pred_box3d_list is not None:
+            batch_dict = self.vsa(batch_dict)
+            batch_dict = self.matcher(batch_dict)
+            batch_dict = self.roi_head(batch_dict)
 
         return batch_dict
-
-
-class SSFA(nn.Module):
-    def __init__(self, args):
-        super(SSFA, self).__init__()
-        self._num_input_features = args['feature_num']  # 128
-
-        seq = [nn.ZeroPad2d(1)] + get_conv_layers('Conv2d', 128, 128, n_layers=3, kernel_size=[3, 3, 3],
-                                                  stride=[1, 1, 1], padding=[0, 1, 1], sequential=False)
-        self.bottom_up_block_0 = nn.Sequential(*seq)
-        self.bottom_up_block_1 = get_conv_layers('Conv2d', 128, 256, n_layers=3, kernel_size=[3, 3, 3],
-                                                  stride=[2, 1, 1], padding=[1, 1, 1]) # [200, 176] -> [100, 88]
-
-        self.trans_0 = get_conv_layers('Conv2d', 128, 128, n_layers=1, kernel_size=[1], stride=[1], padding=[0])
-        self.trans_1 = get_conv_layers('Conv2d', 256, 256, n_layers=1, kernel_size=[1], stride=[1], padding=[0])
-
-        self.deconv_block_0 = get_conv_layers('ConvTranspose2d', 256, 128, n_layers=1, kernel_size=[3], stride=[2],
-                                              padding=[1], output_padding=[1])
-        self.deconv_block_1 = get_conv_layers('ConvTranspose2d', 256, 128, n_layers=1, kernel_size=[3], stride=[2],
-                                              padding=[1], output_padding=[1])
-
-        self.conv_0 = get_conv_layers('Conv2d', 128, 128, n_layers=1, kernel_size=[3], stride=[1], padding=[1])
-        self.conv_1 = get_conv_layers('Conv2d', 128, 128, n_layers=1, kernel_size=[3], stride=[1], padding=[1])
-
-        self.w_0 = get_conv_layers('Conv2d', 128, 1, n_layers=1, kernel_size=[1], stride=[1], padding=[0], relu_last=False)
-        self.w_1 = get_conv_layers('Conv2d', 128, 1, n_layers=1, kernel_size=[1], stride=[1], padding=[0], relu_last=False)
-
-    # default init_weights for conv(msra) and norm in ConvModule
-    def init_weights(self):
-        for m in self.modules():
-            if isinstance(m, nn.Conv2d):
-                nn.init.xavier_normal_(m.weight, gain=1)
-                if hasattr(m, "bias") and m.bias is not None:
-                    nn.init.constant_(m.bias, 0)
-
-    def forward(self, x):
-        x_0 = self.bottom_up_block_0(x)
-        x_1 = self.bottom_up_block_1(x_0)
-        x_trans_0 = self.trans_0(x_0)
-        x_trans_1 = self.trans_1(x_1)
-        x_middle_0 = self.deconv_block_0(x_trans_1) + x_trans_0
-        x_middle_1 = self.deconv_block_1(x_trans_1)
-        x_output_0 = self.conv_0(x_middle_0)
-        x_output_1 = self.conv_1(x_middle_1)
-
-        x_weight_0 = self.w_0(x_output_0)
-        x_weight_1 = self.w_1(x_output_1)
-        x_weight = torch.softmax(torch.cat([x_weight_0, x_weight_1], dim=1), dim=1)
-        x_output = x_output_0 * x_weight[:, 0:1, :, :] + x_output_1 * x_weight[:, 1:, :, :]
-
-        return x_output.contiguous()
-
-
-def get_conv_layers(conv_name, in_channels, out_channels, n_layers, kernel_size, stride,
-                    padding, relu_last=True, sequential=True, **kwargs):
-    """
-    Build convolutional layers. kernel_size, stride and padding should be a list with the lengths that match n_layers
-    """
-    seq = []
-    for i in range(n_layers):
-        seq.extend([getattr(nn, conv_name)(in_channels, out_channels, kernel_size[i], stride=stride[i],
-                                           padding=padding[i], bias=False, **{k: v[i] for k, v in kwargs.items()}),
-                    nn.BatchNorm2d(out_channels, eps=1e-3, momentum=0.01)])
-        if i < n_layers - 1 or relu_last:
-            seq.append(nn.ReLU())
-        in_channels = out_channels
-    if sequential:
-        return nn.Sequential(*seq)
-    else:
-        return seq
-
-
-class Head(nn.Module):
-    def __init__(self, num_input, num_pred, num_cls, num_iou=2, use_dir=False, num_dir=1):
-        super(Head, self).__init__()
-        self.use_dir = use_dir
-
-        self.conv_box = nn.Conv2d(num_input, num_pred, 1)  # 128 -> 14
-        self.conv_cls = nn.Conv2d(num_input, num_cls, 1)   # 128 -> 2
-        self.conv_iou = nn.Conv2d(num_input, num_iou, 1, bias=False)
-
-        if self.use_dir:
-            self.conv_dir = nn.Conv2d(num_input, num_dir, 1)  # 128 -> 4
-
-    def forward(self, x):                                              # x.shape=[8, 128, w, h]
-        box_preds = self.conv_box(x).permute(0, 2, 3, 1).contiguous()      # box_preds.shape=[8, w, h, 14]
-        cls_preds = self.conv_cls(x).permute(0, 2, 3, 1).contiguous()      # cls_preds.shape=[8, w, h, 2]
-        ret_dict = {"box_preds": box_preds, "cls_preds": cls_preds}
-        if self.use_dir:
-            dir_preds = self.conv_dir(x).permute(0, 2, 3, 1).contiguous()  # dir_preds.shape=[8, w, h, 4]
-            ret_dict["dir_cls_preds"] = dir_preds
-        else:
-            ret_dict["dir_cls_preds"] = torch.zeros((len(box_preds), 1, 2))
-
-        ret_dict["iou_preds"] = self.conv_iou(x).permute(0, 2, 3, 1).contiguous()
-
-        return ret_dict
 
 
 if __name__=="__main__":

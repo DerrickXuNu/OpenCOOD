@@ -1,7 +1,7 @@
 import argparse
 import os
 import statistics
-
+import random, numpy
 import torch
 from torch.utils.data import DataLoader
 from tensorboardX import SummaryWriter
@@ -22,6 +22,11 @@ def train_parser():
 
 
 def main():
+    # set random seeds
+    torch.manual_seed(0)
+    random.seed(0)
+    numpy.random.seed(0)
+
     opt = train_parser()
     hypes = yaml_utils.load_yaml(opt.hypes_yaml, opt)
 
@@ -33,14 +38,14 @@ def main():
 
     train_loader = DataLoader(opencood_train_dataset,
                               batch_size=hypes['train_params']['batch_size'],
-                              num_workers=4,
+                              num_workers=1,
                               collate_fn=opencood_train_dataset.collate_batch_train,
                               shuffle=True,
                               pin_memory=False,
                               drop_last=True)
     val_loader = DataLoader(opencood_validate_dataset,
                             batch_size=hypes['train_params']['batch_size'],
-                            num_workers=4,
+                            num_workers=1,
                             collate_fn=opencood_train_dataset.collate_batch_train,
                             shuffle=False,
                             pin_memory=False,
@@ -85,7 +90,6 @@ def main():
         for param_group in optimizer.param_groups:
             print('learning rate %f' % param_group["lr"])
         for i, batch_data in enumerate(train_loader):
-            print('test')
             # the model will be evaluation mode during validation
             model.train()
             model.zero_grad()
@@ -102,7 +106,7 @@ def main():
             ouput_dict = model(batch_data['ego'])
             # first argument is always your output dictionary,
             # second argument is always your label dictionary.
-            final_loss = criterion(ouput_dict, batch_data['ego']['label_dict'])
+            final_loss = criterion(ouput_dict, batch_data['ego']['label_dict_no_coop'])
             criterion.logging(epoch, i, len(train_loader), writer)
 
             # back-propagation
@@ -120,7 +124,7 @@ def main():
                     ouput_dict = model(batch_data['ego'])
 
                     final_loss = criterion(ouput_dict,
-                                           batch_data['ego']['label_dict'])
+                                           batch_data['ego']['label_dict_no_coop'])
                     valid_ave_loss.append(final_loss.item())
             valid_ave_loss = statistics.mean(valid_ave_loss)
             print('At epoch %d, the validation loss is %f' % (epoch,
@@ -131,7 +135,7 @@ def main():
             torch.save(model.state_dict(),
                        os.path.join(saved_path,
                                     'net_epoch%d.pth' % (epoch + 1)))
-        scheduler.step(epoch)
+        scheduler.step()
 
     print('Training Finished, checkpoints saved to %s' % saved_path)
 

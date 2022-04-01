@@ -33,6 +33,22 @@ def points_in_boxes_gpu(points, boxes):
     """
     assert boxes.shape[0] == points.shape[0]
     assert boxes.shape[2] == 7 and points.shape[2] == 3
+    # #######
+    # import matplotlib.pyplot as plt
+    # ax = plt.figure(figsize=(8, 8)).add_subplot(1, 1, 1)
+    # ax.set_aspect('equal', 'box')
+    # ax.set(xlim=(-50, 50),
+    #        ylim=(-41.6, 41.6))
+    # points0 = points[0].cpu().detach().numpy()
+    # boxes0 = boxes[0].cpu().detach().numpy()
+    # ax.plot(points0[:, 0], points0[:, 1], 'y.', markersize=3)
+    # ax.plot(boxes0[:, 0], boxes0[:, 1], 'r.', markersize=10)
+    # plt.xlabel('x')
+    # plt.ylabel('y')
+    #
+    # plt.show()
+    # plt.close()
+    # ########
     batch_size, num_points, _ = points.shape
 
     box_idxs_of_pts = points.new_zeros((batch_size, num_points), dtype=torch.int).fill_(-1)

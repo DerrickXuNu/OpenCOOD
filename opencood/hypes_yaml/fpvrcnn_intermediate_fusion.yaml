@@ -1,17 +1,17 @@
-name: ciassd
+name: fpvrcnn_intermediate_fusion
 
 yaml_parser: "load_voxel_params"
-root_dir: "/media/hdd/yuan/data/OPV2V/train"
-validate_dir: "/media/hdd/yuan/data/OPV2V/validate"
+root_dir: "/media/hdd/yuan/koko/data/OPV2V/train"
+validate_dir: "/media/hdd/yuan/koko/data/OPV2V/validate"
 
 train_params:
-  batch_size: &batch_size 1
-  epoches: 30
+  batch_size: &batch_size 2
+  epoches: 70
   eval_freq: 1
   save_freq: 1
 
 fusion:
-  core_method: 'IntermediateFusionDataset' # LateFusionDataset, EarlyFusionDataset, IntermediateFusionDataset supported
+  core_method: 'IntermediateFusionDatasetV2' # LateFusionDataset, EarlyFusionDataset, IntermediateFusionDataset supported
   args: []
 
 # preprocess-related
@@ -19,12 +19,13 @@ preprocess:
   # options: BasePreprocessor, VoxelPreprocessor, BevPreprocessor
   core_method: 'SpVoxelPreprocessor'
   args:
-    voxel_size: &voxel_size [0.4, 0.4, 0.4]
-    max_points_per_voxel: &T 32
+    voxel_size: &voxel_size [0.1, 0.1, 0.1]
+    max_points_per_voxel: &T 5
     max_voxel_train: 36000
     max_voxel_test: 70000
   # lidar range for each individual cav.
   cav_lidar_range: &cav_lidar [-140.8, -41.6, -3, 140.8, 41.6, 1]
+  keep_original_lidar: true
 
 data_augment:
   - NAME: random_world_flip
@@ -37,7 +38,7 @@ data_augment:
     WORLD_SCALE_RANGE: [ 0.95, 1.05 ]
 
 # anchor box related
-postprocess:
+postprocess: &postprocess_params
   core_method: 'VoxelPostprocessor' # VoxelPostprocessor, BevPostprocessor supported
   anchor_args:
     cav_lidar_range: *cav_lidar
@@ -45,18 +46,19 @@ postprocess:
     w: 1.6
     h: 1.56
     r: [0, 90]
+    feature_stride: 8
     num: &achor_num 2
   target_args:
     pos_threshold: 0.6
     neg_threshold: 0.45
-    score_threshold: 0.25
+    score_threshold: 0.5
   order: 'hwl' # hwl or lwh
   max_num: 100 # maximum number of objects in a single frame. use this number to make sure different frames has the same dimension in the same batch
   nms_thresh: 0.15
 
 # model related
 model:
-  core_method: fpvrcnn_intermediate # corresponding to VoxelNet
+  core_method: fpvrcnn # corresponding to FPVRCNN
   args:
     N: *batch_size
     T: *T
@@ -79,10 +81,11 @@ model:
       num_iou: 2
       use_dir: True
       num_dir: 4
+    post_processer: *postprocess_params
     vsa:
       enlarge_selection_boxes: true
       point_source: 'raw_points'
-      num_keypoints: 2048
+      num_keypoints: 4096
       num_out_features: &cpm_features 32
       features_source: ['bev', 'x_conv1', 'x_conv2', 'x_conv3', 'x_conv4', 'raw_points']
       sa_layer:
@@ -112,6 +115,7 @@ model:
           n_sample: [16, 32]
     matcher: 'none' # may need to configure parameters for loc correction
     roi_head:
+      num_cls: 1
       in_channels: *cpm_features
       n_fc_neurons: 256
       dp_ratio: 0.3 # dropout ratio
@@ -123,7 +127,7 @@ model:
         pool_method: 'max_pool'
 
 loss:
-  core_method: pvrcnn_loss
+  core_method: fpvrcnn_loss
   args:
     stage1:
       pos_cls_weight: 50.0
@@ -155,7 +159,7 @@ loss:
         type: 'WeightedSmoothL1Loss'
         sigma: 3.0
         reduction: 'mean'
-        code_weights: [20.0] * 7
+        code_weights: [20.0]
         weight: 1.0
 
 optimizer:

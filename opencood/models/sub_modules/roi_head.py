@@ -4,14 +4,14 @@ import numpy as np
 from pcdet.ops.pointnet2.pointnet2_stack import pointnet2_modules as pointnet2_stack_modules
 from pcdet.utils import common_utils
 from pcdet.ops.iou3d_nms.iou3d_nms_utils import boxes_iou3d_gpu, nms_gpu
+from opencood.utils import box_utils
 
 
 class RoIHead(nn.Module):
-    def __init__(self, model_cfg, box_coder):
+    def __init__(self, model_cfg):
         super().__init__()
         self.model_cfg = model_cfg
-        input_channels = model_cfg['input_channels']
-        self.box_coder = box_coder
+        input_channels = model_cfg['in_channels']
         self.code_size = 7
 
         mlps = self.model_cfg['roi_grid_pool']['mlps']
@@ -20,7 +20,7 @@ class RoIHead(nn.Module):
 
         self.roi_grid_pool_layer = pointnet2_stack_modules.StackSAModuleMSG(
             radii=self.model_cfg['roi_grid_pool']['pool_radius'],
-            nsamples=self.model_cfg['roi_grid_pool']['nsample'],
+            nsamples=self.model_cfg['roi_grid_pool']['n_sample'],
             mlps=mlps,
             use_xyz=True,
             pool_method=self.model_cfg['roi_grid_pool']['pool_method'],
@@ -30,14 +30,14 @@ class RoIHead(nn.Module):
         self.grid_size = grid_size
         c_out = sum([x[-1] for x in mlps])
         pre_channel = grid_size * grid_size * grid_size * c_out
+        fc_layers = [self.model_cfg['n_fc_neurons']] * 2
+        self.shared_fc_layers, pre_channel = self._make_fc_layers(pre_channel, fc_layers)
 
-        self.shared_fc_layers, pre_channel = self._make_fc_layers(pre_channel, self.model_cfg['shared_fc'])
-
-        self.cls_layers, pre_channel = self._make_fc_layers(pre_channel, self.model_cfg['cls_fc'],
+        self.cls_layers, pre_channel = self._make_fc_layers(pre_channel, fc_layers,
                                                            output_channels=self.model_cfg['num_cls'])
-        self.iou_layers, _ = self._make_fc_layers(pre_channel, self.model_cfg['reg_fc'],
+        self.iou_layers, _ = self._make_fc_layers(pre_channel, fc_layers,
                                                  output_channels=self.model_cfg['num_cls'])
-        self.reg_layers, _ = self._make_fc_layers(pre_channel, self.model_cfg['reg_fc'],
+        self.reg_layers, _ = self._make_fc_layers(pre_channel, fc_layers,
                                                  output_channels=self.model_cfg['num_cls'] * 7)
 
         self._init_weights(weight_init='xavier')
@@ -107,88 +107,110 @@ class RoIHead(nn.Module):
         return roi_grid_points
 
     def assign_targets(self, batch_dict):
-        rois = batch_dict['boxes_fused']
-        gt_boxes = batch_dict['gt_boxes_fused']
-        ious = boxes_iou3d_gpu(rois, gt_boxes)
-        max_ious, gt_inds = ious.max(dim=1)
-        gt_of_rois = gt_boxes[gt_inds]
-        rcnn_labels = (max_ious > 0.3).float()
-        mask = torch.logical_not(rcnn_labels.bool())
-        gt_of_rois[mask] = rois[mask]
-        gt_of_rois_src = gt_of_rois.clone().detach()
+        batch_dict['rcnn_label_dict'] = {
+            'rois': [],
+            'gt_of_rois': [],
+            'gt_of_rois_src': [],
+            'cls_tgt': [],
+            'reg_tgt': [],
+            'iou_tgt': [],
+            'rois_anchor': [],
+            'record_len': []
+        }
+        pred_boxes = batch_dict['boxes_fused']
+        gt_boxes = [b[m][:, [0, 1, 2, 5, 4, 3, 6]].float() for b, m in
+                    zip(batch_dict['object_bbx_center'], batch_dict['object_bbx_mask'].bool())]
+        for rois, gts in zip(pred_boxes, gt_boxes):
+            gts[:, -1] *= 1
+            ious = boxes_iou3d_gpu(rois, gts)
+            max_ious, gt_inds = ious.max(dim=1)
+            gt_of_rois = gts[gt_inds]
+            rcnn_labels = (max_ious > 0.3).float()
+            mask = torch.logical_not(rcnn_labels.bool())
+            gt_of_rois[mask] = rois[mask]
+            gt_of_rois_src = gt_of_rois.clone().detach()
 
-        # canoical transformation
-        roi_center = rois[:, 0:3]
-        #TODO: roi_ry > 0 in pcdet
-        roi_ry = rois[:, 6] % (2 * np.pi)
-        gt_of_rois[:, 0:3] = gt_of_rois[:, 0:3] - roi_center
-        gt_of_rois[:, 6] = gt_of_rois[:, 6] - roi_ry
+            # canoical transformation
+            roi_center = rois[:, 0:3]
+            #TODO: roi_ry > 0 in pcdet
+            roi_ry = rois[:, 6] % (2 * np.pi)
+            gt_of_rois[:, 0:3] = gt_of_rois[:, 0:3] - roi_center
+            gt_of_rois[:, 6] = gt_of_rois[:, 6] - roi_ry
 
-        # transfer LiDAR coords to local coords
-        gt_of_rois = common_utils.rotate_points_along_z(
-            points=gt_of_rois.view(-1, 1, gt_of_rois.shape[-1]), angle=-roi_ry.view(-1)
-        ).view(-1, gt_of_rois.shape[-1])
+            # transfer LiDAR coords to local coords
+            gt_of_rois = common_utils.rotate_points_along_z(
+                points=gt_of_rois.view(-1, 1, gt_of_rois.shape[-1]), angle=-roi_ry.view(-1)
+            ).view(-1, gt_of_rois.shape[-1])
 
-        # flip orientation if rois have opposite orientation
-        heading_label = (gt_of_rois[:, 6] + (torch.abs(gt_of_rois[:, 6].min()) // (2 * np.pi) + 1) * 2 * np.pi) % (2 * np.pi)  # 0 ~ 2pi
-        opposite_flag = (heading_label > np.pi * 0.5) & (heading_label < np.pi * 1.5)
-        heading_label[opposite_flag] = (heading_label[opposite_flag] + np.pi) % (2 * np.pi)  # (0 ~ pi/2, 3pi/2 ~ 2pi)
-        flag = heading_label > np.pi
-        heading_label[flag] = heading_label[flag] - np.pi * 2  # (-pi/2, pi/2)
-        heading_label = torch.clamp(heading_label, min=-np.pi / 2, max=np.pi / 2)
-        gt_of_rois[:, 6] = heading_label
+            # flip orientation if rois have opposite orientation
+            heading_label = (gt_of_rois[:, 6] + (torch.div(torch.abs(gt_of_rois[:, 6].min()),
+                                                           (2 * np.pi), rounding_mode='trunc')
+                                                 + 1) * 2 * np.pi) % (2 * np.pi)  # 0 ~ 2pi
+            opposite_flag = (heading_label > np.pi * 0.5) & (heading_label < np.pi * 1.5)
+            heading_label[opposite_flag] = (heading_label[opposite_flag] + np.pi) % (2 * np.pi)  # (0 ~ pi/2, 3pi/2 ~ 2pi)
+            flag = heading_label > np.pi
+            heading_label[flag] = heading_label[flag] - np.pi * 2  # (-pi/2, pi/2)
+            heading_label = torch.clamp(heading_label, min=-np.pi / 2, max=np.pi / 2)
+            gt_of_rois[:, 6] = heading_label
 
-        # generate regression target
-        rois_anchor = rois.clone().detach().view(-1, self.code_size)
-        rois_anchor[:, 0:3] = 0
-        rois_anchor[:, 6] = 0
-        # rcnn_batch_size = gt_of_rois.view(-1, self.code_size).shape[0]
-        reg_targets = self.box_coder.encode_torch(
-            gt_of_rois.view(-1, self.code_size), rois_anchor
-        )
-        # reg_targets = gt_of_rois.view(-1, self.code_size) - rois_anchor
+            # generate regression target
+            rois_anchor = rois.clone().detach().view(-1, self.code_size)
+            rois_anchor[:, 0:3] = 0
+            rois_anchor[:, 6] = 0
+            # rcnn_batch_size = gt_of_rois.view(-1, self.code_size).shape[0]
+            # from opencood.utils import visulizor
+            # visulizor.draw_points_boxes_plt_2d(pc_range=[-100, -41.6, -3, 140.8, 41.6, 1],
+            #                                    boxes_pred=rois,
+            #                                    boxes_gt=gts)
+            reg_targets = box_utils.box_encode(
+                gt_of_rois.view(-1, self.code_size), rois_anchor
+            )
+            # reg_targets = gt_of_rois.view(-1, self.code_size) - rois_anchor
 
-        batch_dict.update({
-            'rois': rois,
-            'gt_of_rois': gt_of_rois,
-            'gt_of_rois_src': gt_of_rois_src,
-            'cls_tgt': rcnn_labels,
-            'reg_tgt': reg_targets,
-            'iou_tgt': max_ious,
-            'rois_anchor': rois_anchor
-        })
+            batch_dict['rcnn_label_dict'][          'rois'].append(rois)
+            batch_dict['rcnn_label_dict'][    'gt_of_rois'].append(gt_of_rois)
+            batch_dict['rcnn_label_dict']['gt_of_rois_src'].append(gt_of_rois_src)
+            batch_dict['rcnn_label_dict'][       'cls_tgt'].append(rcnn_labels)
+            batch_dict['rcnn_label_dict'][       'reg_tgt'].append(reg_targets)
+            batch_dict['rcnn_label_dict'][       'iou_tgt'].append(max_ious)
+            batch_dict['rcnn_label_dict'][   'rois_anchor'].append(rois_anchor)
+            batch_dict['rcnn_label_dict'][   'record_len'].append(rois.shape[0])
+
+        # cat list to tensor
+        for k, v in batch_dict['rcnn_label_dict'].items():
+            if k == 'record_len':
+                continue
+            batch_dict['rcnn_label_dict'][k] = torch.cat(v, dim=0).squeeze()
 
         return batch_dict
 
     def roi_grid_pool(self, batch_dict):
-        batch_size = 1
-        rois = batch_dict['rois']
-        point_coords = torch.cat(batch_dict['cpm_pts_coords'], dim=0)
-        point_cls = torch.cat(batch_dict['cpm_pts_cls'], dim=0)
-        point_features = batch_dict['cpm_pts_features']
-        # if 'coop_mask' in batch_dict:
-        #     point_features = [point_features[i] for i, m in enumerate(batch_dict['coop_mask']) if m]
+        batch_size = len(batch_dict['record_len'])
+        rois = batch_dict['rcnn_label_dict']['rois']
+        point_coords = batch_dict['processed_lidar']['point_coords']
+        point_features = batch_dict['processed_lidar']['point_features']
+        label_record_len = batch_dict['rcnn_label_dict']['record_len']
+
         point_features = torch.cat(point_features, dim=0)
 
         global_roi_grid_points, local_roi_grid_points = self.get_global_grid_points_of_roi(rois)  # (BxN, 6x6x6, 3)
         global_roi_grid_points = global_roi_grid_points.view(batch_size, -1, 3)  # (B, Nx6x6x6, 3)
 
-        # mask keypoints with cls and detection range
-        # mask = torch.norm(point_coords[:, :2], dim=1) < 57.6
-        mask = torch.logical_and(point_cls==4, torch.norm(point_coords[:, :2], dim=1) < 57.6)
-
-        xyz = point_coords[mask]
+        xyz = torch.cat(point_coords, dim=0)
         xyz_batch_cnt = xyz.new_zeros(batch_size).int()
-        xyz_batch_cnt[0] = len(xyz) #TODO Take care if the batch size is bigger than one, this should be adapted
+        for bs_idx in range(batch_size):
+            xyz_batch_cnt[bs_idx] = len(point_coords[bs_idx])
         new_xyz = global_roi_grid_points.view(-1, 3)
-        new_xyz_batch_cnt = xyz.new_zeros(batch_size).int().fill_(global_roi_grid_points.shape[1])
+        new_xyz_batch_cnt = xyz.new_zeros(batch_size).int()
+        for bs_idx in range(batch_size):
+            new_xyz_batch_cnt[bs_idx] = label_record_len[bs_idx] * self.grid_size ** 3
 
         pooled_points, pooled_features = self.roi_grid_pool_layer(
             xyz=xyz[:, :3].contiguous(),
             xyz_batch_cnt=xyz_batch_cnt,
             new_xyz=new_xyz[:, :3].contiguous(),
             new_xyz_batch_cnt=new_xyz_batch_cnt,
-            features=point_features[mask].contiguous(),   # weighted point features
+            features=point_features.contiguous(),   # weighted point features
         )  # (M1 + M2 ..., C)
 
         pooled_features = pooled_features.view(-1, self.grid_size ** 3,
@@ -209,10 +231,11 @@ class RoIHead(nn.Module):
         rcnn_iou = self.iou_layers(shared_features).transpose(1, 2).contiguous().squeeze(dim=1)  # (B, 1)
         rcnn_reg = self.reg_layers(shared_features).transpose(1, 2).contiguous().squeeze(dim=1)  # (B, C)
 
-        batch_dict['rcnn_cls'] = rcnn_cls
-        batch_dict['rcnn_iou'] = rcnn_iou
-        batch_dict['rcnn_reg'] = rcnn_reg
-
+        batch_dict['fpvrcnn_out'] = {
+        'rcnn_cls': rcnn_cls,
+        'rcnn_iou': rcnn_iou,
+        'rcnn_reg': rcnn_reg,
+        }
         return batch_dict
 
 

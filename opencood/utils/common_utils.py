@@ -191,3 +191,4 @@ def torch_tensor_to_numpy(torch_tensor):
     """
     return torch_tensor.numpy() if not torch_tensor.is_cuda else \
         torch_tensor.cpu().detach().numpy()
+

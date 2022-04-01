@@ -1,3 +1,4 @@
+import copy
 import random
 
 import torch
@@ -61,7 +62,7 @@ class VoxelSetAbstraction(nn.Module):
             if src_name in ['bev', 'raw_points']:
                 continue
             self.downsample_times_map[src_name] = SA_cfg[src_name]['downsample_factor']
-            mlps = SA_cfg[src_name]['mlps']
+            mlps = copy.copy(SA_cfg[src_name]['mlps'])
             for k in range(len(mlps)):
                 mlps[k] = [mlps[k][0]] + mlps[k]
             cur_layer = pointnet2_stack_modules.StackSAModuleMSG(
@@ -93,8 +94,7 @@ class VoxelSetAbstraction(nn.Module):
                 pool_method='max_pool'
             )
             c_in += sum([x[-1] for x in mlps])
-        if self.model_cfg['add_ego_mask_feature']:
-            c_in += 1
+
         self.vsa_point_feature_fusion = nn.Sequential(
             nn.Linear(c_in, self.model_cfg['num_out_features'], bias=False),
             nn.BatchNorm1d(self.model_cfg['num_out_features']),
@@ -123,8 +123,8 @@ class VoxelSetAbstraction(nn.Module):
     def get_sampled_points(self, batch_dict):
         batch_size = batch_dict['batch_size']
         if self.model_cfg['point_source'] == 'raw_points':
-            src_points = batch_dict['points'][:, 1:]
-            batch_indices = batch_dict['points'][:, 0].long()
+            src_points = batch_dict['origin_lidar'][:, 1:]
+            batch_indices = batch_dict['origin_lidar'][:, 0].long()
         elif self.model_cfg['point_source'] == 'voxel_centers':
             src_points = common_utils.get_voxel_centers(
                 batch_dict['voxel_coords'][:, 1:4],
@@ -140,25 +140,31 @@ class VoxelSetAbstraction(nn.Module):
         # src_points = src_points[mask]
         # batch_indices = batch_indices[mask]
         # sample points
-        keypoints_list = []
+        keypoints_batch = torch.randn((batch_size, self.model_cfg['num_keypoints'], 4), device=src_points.device)
+        keypoints_batch[..., 0] = keypoints_batch[..., 0] * 140
+        keypoints_batch[..., 1] = keypoints_batch[..., 0] * 40
+        keypoints_batch[..., 2] = 10.0 # points with height flag 10 are padding/invalid, for later filtering
         for bs_idx in range(batch_size):
             bs_mask = (batch_indices == bs_idx)
             sampled_points = src_points[bs_mask].unsqueeze(dim=0)  # (1, N, 3)
             # sample points with FPS
+            # some cropped pcd may have very few points, select various number of points to ensure similar sample density
+            num_kpts = int(self.model_cfg['num_keypoints'] * sampled_points.shape[1] / 50000) + 1 # 50000 is approximately the number of points in one full pcd
+            num_kpts = min(num_kpts, self.model_cfg['num_keypoints'])
             cur_pt_idxs = pointnet2_stack_utils.furthest_point_sample(
-                sampled_points[:, :, 0:3].contiguous(), self.model_cfg['num_keypoints']
+                sampled_points[:, :, 0:3].contiguous(), num_kpts
             ).long()
 
-            if sampled_points.shape[1] < self.model_cfg['num_keypoints']:
-                empty_num = self.model_cfg['num_keypoints'] - sampled_points.shape[1]
+            if sampled_points.shape[1] < num_kpts:
+                empty_num = num_kpts - sampled_points.shape[1]
                 cur_pt_idxs[0, -empty_num:] = cur_pt_idxs[0, :empty_num]
 
             keypoints = sampled_points[0][cur_pt_idxs[0]].unsqueeze(dim=0)
 
-            keypoints_list.append(keypoints)
+            keypoints_batch[bs_idx, :len(keypoints[0]), :] = keypoints
 
-        keypoints = torch.cat(keypoints_list, dim=0)  # (B, M, 3)
-        return keypoints
+        # keypoints = torch.cat(keypoints_list, dim=0)  # (B, M, 3)
+        return keypoints_batch
 
     def forward(self, batch_dict):
         """
@@ -179,7 +185,7 @@ class VoxelSetAbstraction(nn.Module):
 
         """
         keypoints = self.get_sampled_points(batch_dict) # BxNx4
-        kpt_mask1 = torch.logical_and(keypoints[..., 2] > 0.5, keypoints[..., 2] < 4.0)
+        kpt_mask1 = torch.logical_and(keypoints[..., 2] > -2.8, keypoints[..., 2] < 1.0)
         kpt_mask2 = None
         # Only select the points that are in the predicted bounding boxes
         if 'det_boxes' in batch_dict:
@@ -188,6 +194,8 @@ class VoxelSetAbstraction(nn.Module):
             boxes = torch.zeros((len(dets_list), max_len, 7), dtype=dets_list[0].dtype,
                                 device=dets_list[0].device)
             for i, dets in enumerate(dets_list):
+                if len(dets)==0:
+                    continue
                 cur_dets = dets.clone()
                 if self.model_cfg['enlarge_selection_boxes']:
                     cur_dets[:, 3:6] += 0.5
@@ -196,7 +204,7 @@ class VoxelSetAbstraction(nn.Module):
             kpt_mask2 = points_in_boxes_gpu(keypoints[..., :3], boxes) >= 0
             # kpt_mask = (keypoints[:,:,3:]== torch.tensor(labels_used, device=keypoints.device).view(1, 1, -1)).sum(dim=2).bool()
             # kpt_mask = torch.ones(keypoints.shape[:2], device=keypoints.device).bool()
-        kpt_mask = torch.logical_or(kpt_mask1, kpt_mask2) if kpt_mask2 is not None else kpt_mask1
+        kpt_mask = torch.logical_and(kpt_mask1, kpt_mask2) if kpt_mask2 is not None else kpt_mask1
         # Ensure there are more than 2 points are selected to satisfy the condition of batch norm in
         # the FC layers of feature fusion module
         if (kpt_mask).sum()<2:
@@ -217,8 +225,8 @@ class VoxelSetAbstraction(nn.Module):
         point_features_list = []
         if 'bev' in self.model_cfg['features_source']:
             point_bev_features = self.interpolate_from_bev_features(
-                keypoints[..., :3], batch_dict['spatial_features'], batch_dict['batch_size'],
-                bev_stride=batch_dict['spatial_features_stride']
+                keypoints[..., :3], batch_dict['processed_lidar']['spatial_features'], batch_dict['batch_size'],
+                bev_stride=batch_dict['processed_lidar']['spatial_features_stride']
             )
             point_features_list.append(point_bev_features[kpt_mask])
 
@@ -229,7 +237,7 @@ class VoxelSetAbstraction(nn.Module):
         new_xyz_batch_cnt = torch.tensor([(mask).sum() for mask in kpt_mask], device=new_xyz.device).int()
 
         if 'raw_points' in self.model_cfg['features_source']:
-            raw_points = batch_dict['points']
+            raw_points = batch_dict['origin_lidar']
             xyz = raw_points[:, 1:4]
             xyz_batch_cnt = xyz.new_zeros(batch_size).int()
             for bs_idx in range(batch_size):
@@ -248,7 +256,7 @@ class VoxelSetAbstraction(nn.Module):
             point_features_list.append(pooled_features)
 
         for k, src_name in enumerate(self.SA_layer_names):
-            cur_coords = batch_dict['multi_scale_3d_features'][src_name].indices
+            cur_coords = batch_dict['processed_lidar']['multi_scale_3d_features'][src_name].indices
             xyz = common_utils.get_voxel_centers(
                 cur_coords[:, 1:4],
                 downsample_times=self.downsample_times_map[src_name],
@@ -264,35 +272,31 @@ class VoxelSetAbstraction(nn.Module):
                 xyz_batch_cnt=xyz_batch_cnt,
                 new_xyz=new_xyz[:, :3].contiguous(),
                 new_xyz_batch_cnt=new_xyz_batch_cnt,
-                features=batch_dict['multi_scale_3d_features'][src_name].features.contiguous(),
+                features=batch_dict['processed_lidar']['multi_scale_3d_features'][src_name].features.contiguous(),
             )
             # point_features_list.append(pooled_features.view(batch_size, num_keypoints, -1))
             point_features_list.append(pooled_features)
-        if self.model_cfg['add_ego_mask_feature']:
-            ego_mask = torch.ones((len(new_xyz), 1), device=point_features_list[0].device)
-            ego_mask[new_xyz_batch_cnt[0]:] = 0
-            point_features_list.append(ego_mask)
 
         point_features = torch.cat(point_features_list, dim=1)
 
         # batch_idx = torch.arange(batch_size, device=keypoints.device).view(-1, 1).repeat(1, keypoints.shape[1]).view(-1)
         # point_coords = torch.cat((batch_idx.view(-1, 1).float(), keypoints.view(-1, 3)), dim=1)
 
-        batch_dict['point_features_before_fusion'] = point_features.view(-1, point_features.shape[-1])
+        batch_dict['processed_lidar']['point_features_before_fusion'] = point_features.view(-1, point_features.shape[-1])
         point_features = self.vsa_point_feature_fusion(point_features.view(-1, point_features.shape[-1]))
 
         cur_idx = 0
-        batch_dict['point_features'] = []
-        batch_dict['point_coords'] = []
+        batch_dict['processed_lidar']['point_features'] = []
+        batch_dict['processed_lidar']['point_coords'] = []
         for num in new_xyz_batch_cnt:
-            batch_dict['point_features'].append(point_features[cur_idx:cur_idx + num])
-            batch_dict['point_coords'].append(new_xyz[cur_idx:cur_idx + num])
+            batch_dict['processed_lidar']['point_features'].append(point_features[cur_idx:cur_idx + num])
+            batch_dict['processed_lidar']['point_coords'].append(new_xyz[cur_idx:cur_idx + num])
             cur_idx += num
 
         # transform keypoints coordinates to ego frame
         # shifts_coop_to_ego = batch_dict['translations'] - batch_dict['translations'][:1]
         # for b in range(batch_size):
-        #     batch_dict['point_coords'][b][:, :2] = batch_dict['point_coords'][b][:, :2] + shifts_coop_to_ego[b][None, :2]
+        #     batch_dict['processed_lidar']['point_coords'][b][:, :2] = batch_dict['processed_lidar']['point_coords'][b][:, :2] + shifts_coop_to_ego[b][None, :2]
 
         ######################################
         # import matplotlib.pyplot as plt
@@ -301,7 +305,7 @@ class VoxelSetAbstraction(nn.Module):
         # ax = fig.add_subplot(111)
         # ax.set_aspect('equal')
         # ii = 1
-        # points = batch_dict['point_coords']
+        # points = batch_dict['processed_lidar']['point_coords']
         # colors = ['g', 'r', 'b', 'y', 'c']
         # for ii in range(len(dets_list)):
         #     pcd = keypoints[ii].clone()

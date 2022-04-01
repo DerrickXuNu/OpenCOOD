@@ -19,16 +19,17 @@ from opencood.utils.pcd_utils import \
     mask_points_by_range, mask_ego_points, shuffle_points, \
     downsample_lidar_minimum
 from opencood.utils.transformation_utils import x1_to_x2
+from pcdet.ops.roiaware_pool3d.roiaware_pool3d_utils import points_in_boxes_cpu
 
 
-class IntermediateFusionDataset(basedataset.BaseDataset):
+class IntermediateFusionDatasetV2(basedataset.BaseDataset):
     """
     This class is for intermediate fusion where each vehicle transmit the
     deep features to ego.
     """
 
     def __init__(self, params, visualize, train=True):
-        super(IntermediateFusionDataset, self). \
+        super(IntermediateFusionDatasetV2, self). \
             __init__(params, visualize, train)
         self.pre_processor = build_preprocessor(params['preprocess'],
                                                 train)
@@ -97,15 +98,15 @@ class IntermediateFusionDataset(basedataset.BaseDataset):
         # exclude all repetitive objects
         unique_indices = \
             [object_id_stack.index(x) for x in set(object_id_stack)]
-        object_stack = np.vstack(object_stack)
-        object_stack = object_stack[unique_indices]
+        object_stack_all = np.vstack(object_stack)
+        object_stack_all = object_stack_all[unique_indices]
 
         # make sure bounding boxes across all frames have the same number
         object_bbx_center = \
             np.zeros((self.params['postprocess']['max_num'], 7))
         mask = np.zeros(self.params['postprocess']['max_num'])
-        object_bbx_center[:object_stack.shape[0], :] = object_stack
-        mask[:object_stack.shape[0]] = 1
+        object_bbx_center[:object_stack_all.shape[0], :] = object_stack_all
+        mask[:object_stack_all.shape[0]] = 1
 
         # merge preprocessed features from different cavs into the same dict
         cav_num = len(processed_features)
@@ -121,6 +122,48 @@ class IntermediateFusionDataset(basedataset.BaseDataset):
                 anchors=anchor_box,
                 mask=mask)
 
+        # import matplotlib.pyplot as plt
+        # from opencood.utils.visulizor import draw_points_boxes_plt_2d
+        # ax = plt.figure(figsize=(15, 5)).add_subplot(1, 1, 1)
+        # ax.set_aspect('equal', 'box')
+        # pc_range = [-140.8, -41.6, -3, 140.8, 41.6, 1]
+        # ax.set(xlim=(pc_range[0], pc_range[3]),
+        #        ylim=(pc_range[1], pc_range[4]))
+        # colors = ['r', 'g', 'b', 'c', 'orange']
+        # for i in range(len(projected_lidar_stack)):
+        #     pcd = projected_lidar_stack[i]
+        #     ax = draw_points_boxes_plt_2d(ax, pc_range, pcd, object_stack[i][:, [0, 1, 2, 5, 4, 3, 6]], colors[i])
+        # plt.xlabel('x')
+        # plt.ylabel('y')
+        # plt.show()
+        # plt.close()
+
+        # Filter empty boxes
+        object_stack_filtered = []
+        label_dict_no_coop = []
+        for boxes, points in zip(object_stack, projected_lidar_stack):
+            point_indices = points_in_boxes_cpu(points[:, :3], boxes[:, [0, 1, 2, 5, 4, 3, 6]])
+            cur_mask = point_indices.sum(axis=1) >= 10
+            if cur_mask.sum()==0:
+                label_dict_no_coop.append({
+                    'pos_equal_one': np.zeros((*anchor_box.shape[:2], self.post_processor.anchor_num)),
+                    'neg_equal_one': np.ones((*anchor_box.shape[:2], self.post_processor.anchor_num)),
+                    'targets': np.zeros((*anchor_box.shape[:2], self.post_processor.anchor_num * 7))
+                })
+                continue
+            object_stack_filtered.append(boxes[cur_mask])
+            bbx_center = \
+                np.zeros((self.params['postprocess']['max_num'], 7))
+            bbx_mask = np.zeros(self.params['postprocess']['max_num'])
+            bbx_center[:boxes[cur_mask].shape[0], :] = boxes[cur_mask]
+            bbx_mask[:boxes[cur_mask].shape[0]] = 1
+            label_dict_no_coop.append(
+                self.post_processor.generate_label(
+                    gt_box_center=bbx_center,
+                    anchors=anchor_box,
+                    mask=bbx_mask)
+            )
+
         processed_data_dict['ego'].update(
             {'object_bbx_center': object_bbx_center,
              'object_bbx_mask': mask,
@@ -128,6 +171,7 @@ class IntermediateFusionDataset(basedataset.BaseDataset):
              'anchor_box': anchor_box,
              'processed_lidar': merged_feature_dict,
              'label_dict': label_dict,
+             'label_dict_no_coop': label_dict_no_coop,
              'cav_num': cav_num})
 
         if self.visualize:
@@ -231,6 +275,7 @@ class IntermediateFusionDataset(basedataset.BaseDataset):
         # used to record different scenario
         record_len = []
         label_dict_list = []
+        label_dict_no_coop_list = []
 
         if self.visualize or self.keep_original_lidar:
             origin_lidar = []
@@ -251,6 +296,7 @@ class IntermediateFusionDataset(basedataset.BaseDataset):
             processed_lidar_list.append(ego_dict['processed_lidar'])
             record_len.append(ego_dict['cav_num'])
             label_dict_list.append(ego_dict['label_dict'])
+            label_dict_no_coop_list.append(ego_dict['label_dict_no_coop'])
 
             if self.visualize:
                 origin_lidar.append(ego_dict['origin_lidar'])
@@ -270,6 +316,13 @@ class IntermediateFusionDataset(basedataset.BaseDataset):
         record_len = torch.from_numpy(np.array(record_len, dtype=int))
         label_torch_dict = \
             self.post_processor.collate_batch(label_dict_list)
+        label_dict_no_coop_list_ = [label_dict for label_list in
+                                               label_dict_no_coop_list for label_dict in label_list]
+        for i in range(len(label_dict_no_coop_list_)):
+            if isinstance(label_dict_no_coop_list_[i], list):
+                print('debug')
+        label_no_coop_torch_dict = \
+            self.post_processor.collate_batch(label_dict_no_coop_list_)
         # object id is only used during inference, where batch size is 1.
         # so here we only get the first element.
         output_dict['ego'].update({'object_bbx_center': object_bbx_center,
@@ -277,6 +330,7 @@ class IntermediateFusionDataset(basedataset.BaseDataset):
                                    'processed_lidar': processed_lidar_torch_dict,
                                    'record_len': record_len,
                                    'label_dict': label_torch_dict,
+                                   'label_dict_no_coop': label_no_coop_torch_dict,
                                    'object_ids': object_ids[0]})
 
         if self.visualize:

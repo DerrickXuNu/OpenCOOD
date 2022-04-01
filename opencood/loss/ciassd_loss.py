@@ -26,13 +26,31 @@ class CiassdLoss(nn.Module):
         output_dict : dict
         target_dict : dict
         """
-        preds_dict = output_dict['preds_dict']
-        batch_size = preds_dict["cls_preds"].shape[0]
+        preds_dict = output_dict['preds_dict_stage1']
+        batch_size = int(output_dict['record_len'].sum())
+
+        # ########
+        # pred = preds_dict['cls_preds'][0].sum(dim=0).cpu().detach().numpy()
+        # tagt_pos = target_dict['pos_equal_one'][0].sum(dim=-1).cpu().detach().numpy()
+        # tagt_neg = target_dict['neg_equal_one'][0].sum(dim=-1).cpu().detach().numpy()
+        # import matplotlib.pyplot as plt
+        #
+        # fig = plt.figure(figsize=(18, 8))
+        # ax1 = fig.add_subplot(3, 1, 1)
+        # ax1.imshow(pred)
+        # ax2 = fig.add_subplot(3, 1, 2)
+        # ax2.imshow(tagt_pos)
+        # ax3 = fig.add_subplot(3, 1, 3)
+        # ax3.imshow(tagt_neg)
+        # plt.show()
+        # plt.close()
+        # #########
 
         cls_labls = target_dict['pos_equal_one'].view(batch_size, -1,  self.num_cls - 1)
         positives = cls_labls > 0
-        negatives = cls_labls == 0
-        # num_normalizer = positives.sum(1, keepdim=True) + negatives.sum(1, keepdim=True)
+        negatives = target_dict['neg_equal_one'].view(batch_size, -1,  self.num_cls - 1) > 0
+        # cared = torch.logical_or(positives, negatives)
+        # num_normalizer = cared.sum(1, keepdim=True)
         pos_normalizer = positives.sum(1, keepdim=True).float()
 
         # cls loss
@@ -63,14 +81,16 @@ class CiassdLoss(nn.Module):
 
         # iou loss
         iou_preds = preds_dict["iou_preds"].permute(0, 2, 3, 1).contiguous()
-        pos_pred_mask = reg_weights.squeeze() > 0 # (4, 70400)
-        iou_pos_preds = iou_preds.view(batch_size, -1, 1)[pos_pred_mask]
-        boxes3d_pred = VoxelPostprocessor.delta_to_boxes3d(preds_dict['box_preds'], output_dict['anchor_box'])[pos_pred_mask]
-        boxes3d_tgt = VoxelPostprocessor.delta_to_boxes3d(target_dict['targets'], output_dict['anchor_box'])[pos_pred_mask]
-        iou_weights = reg_weights[pos_pred_mask]
+        pos_pred_mask = reg_weights.squeeze(dim=-1) > 0 # (4, 70400)
+        iou_pos_preds = iou_preds.view(batch_size, -1)[pos_pred_mask]
+        boxes3d_pred = VoxelPostprocessor.delta_to_boxes3d(preds_dict['box_preds'].permute(0, 2, 3, 1).contiguous().detach(),
+                                                           output_dict['anchor_box'])[pos_pred_mask]
+        boxes3d_tgt = VoxelPostprocessor.delta_to_boxes3d(target_dict['targets'],
+                                                          output_dict['anchor_box'])[pos_pred_mask]
+        iou_weights = reg_weights[pos_pred_mask].view(-1)
         iou_pos_targets = aligned_boxes_iou3d_gpu(boxes3d_pred.float()[:, [0, 1, 2, 5, 4, 3, 6]],
                                                   boxes3d_tgt.float()[:, [0, 1, 2, 5, 4, 3, 6]]).detach().squeeze()
-        iou_pos_targets = 2 * iou_pos_targets.view(-1, 1) - 1
+        iou_pos_targets = 2 * iou_pos_targets.view(-1) - 1
         iou_loss = weighted_smooth_l1_loss(iou_pos_preds, iou_pos_targets, weights=iou_weights, sigma=self.iou['sigma'])
 
         iou_loss_reduced = iou_loss.sum() * self.iou['weight'] / batch_size
