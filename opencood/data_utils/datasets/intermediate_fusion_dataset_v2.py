@@ -143,7 +143,7 @@ class IntermediateFusionDatasetV2(basedataset.BaseDataset):
         label_dict_no_coop = []
         for boxes, points in zip(object_stack, projected_lidar_stack):
             point_indices = points_in_boxes_cpu(points[:, :3], boxes[:, [0, 1, 2, 5, 4, 3, 6]])
-            cur_mask = point_indices.sum(axis=1) >= 10
+            cur_mask = point_indices.sum(axis=1) > 0
             if cur_mask.sum()==0:
                 label_dict_no_coop.append({
                     'pos_equal_one': np.zeros((*anchor_box.shape[:2], self.post_processor.anchor_num)),
@@ -174,11 +174,11 @@ class IntermediateFusionDatasetV2(basedataset.BaseDataset):
              'label_dict_no_coop': label_dict_no_coop,
              'cav_num': cav_num})
 
-        if self.visualize:
-            processed_data_dict['ego'].update({'origin_lidar':
-                np.vstack(
-                    projected_lidar_stack)})
-        elif self.keep_original_lidar:
+        # if self.visualize:
+        #     processed_data_dict['ego'].update({'origin_lidar_vis':
+        #         np.vstack(
+        #             projected_lidar_stack)})
+        if self.visualize or self.keep_original_lidar:
             processed_data_dict['ego'].update({'origin_lidar':
                                                    projected_lidar_stack})
         return processed_data_dict
@@ -298,10 +298,8 @@ class IntermediateFusionDatasetV2(basedataset.BaseDataset):
             label_dict_list.append(ego_dict['label_dict'])
             label_dict_no_coop_list.append(ego_dict['label_dict_no_coop'])
 
-            if self.visualize:
+            if self.visualize or self.keep_original_lidar:
                 origin_lidar.append(ego_dict['origin_lidar'])
-            elif self.keep_original_lidar:
-                origin_lidar.extend(ego_dict['origin_lidar'])
 
         # convert to numpy, (B, max_num, 7)
         object_bbx_center = torch.from_numpy(np.array(object_bbx_center))
@@ -317,7 +315,7 @@ class IntermediateFusionDatasetV2(basedataset.BaseDataset):
         label_torch_dict = \
             self.post_processor.collate_batch(label_dict_list)
         label_dict_no_coop_list_ = [label_dict for label_list in
-                                               label_dict_no_coop_list for label_dict in label_list]
+                                    label_dict_no_coop_list for label_dict in label_list]
         for i in range(len(label_dict_no_coop_list_)):
             if isinstance(label_dict_no_coop_list_[i], list):
                 print('debug')
@@ -333,19 +331,22 @@ class IntermediateFusionDatasetV2(basedataset.BaseDataset):
                                    'label_dict_no_coop': label_no_coop_torch_dict,
                                    'object_ids': object_ids[0]})
 
-        if self.visualize:
-            origin_lidar = \
-                np.array(downsample_lidar_minimum(pcd_np_list=origin_lidar))
-        elif self.keep_original_lidar:
+        if self.visualize: # assume batch size is 1
+            origin_lidar_downsampled = downsample_lidar_minimum(pcd_np_list=[np.vstack(origin_lidar[0])])
+            origin_lidar_downsampled = torch.from_numpy(origin_lidar_downsampled[0])
+            output_dict['ego'].update({'origin_lidar_downsampled': origin_lidar_downsampled})
+
+        if self.keep_original_lidar:
             coords = []
-            for i, points in enumerate(origin_lidar):
-                assert len(points)!=0
-                coor_pad = np.pad(points, ((0, 0), (1, 0)), mode="constant", constant_values=i)
-                coords.append(coor_pad)
+            for b in range(len(batch)):
+                for i, points in enumerate(origin_lidar[b]):
+                    assert len(points)!=0
+                    coor_pad = np.pad(points, ((0, 0), (1, 0)), mode="constant", constant_values=i)
+                    coords.append(coor_pad)
             origin_lidar = np.concatenate(coords, axis=0)
 
-        origin_lidar = torch.from_numpy(origin_lidar)
-        output_dict['ego'].update({'origin_lidar': origin_lidar})
+            origin_lidar = torch.from_numpy(origin_lidar)
+            output_dict['ego'].update({'origin_lidar': origin_lidar})
 
         return output_dict
 

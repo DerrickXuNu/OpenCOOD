@@ -9,7 +9,7 @@ from opencood.models.sub_modules.cia_ssd_utils import SSFA, Head
 from opencood.models.sub_modules.vsa import VoxelSetAbstraction
 from opencood.models.sub_modules.roi_head import RoIHead
 from opencood.models.sub_modules.matcher import Matcher
-from opencood.data_utils.post_processor.ciassd_postprocessor import CiassdPostprocessor
+from opencood.data_utils.post_processor.fpvrcnn_postprocessor import FpvrcnnPostprocessor
 
 
 class FPVRCNN(nn.Module):
@@ -25,7 +25,7 @@ class FPVRCNN(nn.Module):
         self.map_to_bev = HeightCompression(args['map2bev'])
         self.ssfa = SSFA(args['ssfa'])
         self.head = Head(**args['head'])
-        self.post_processor = CiassdPostprocessor(args['post_processer'], train=True)
+        self.post_processor = FpvrcnnPostprocessor(args['post_processer'], train=True)
         self.vsa = VoxelSetAbstraction(args['vsa'], args['voxel_size'], args['lidar_range'],
                                        num_bev_features=128, num_rawpoint_features=3)
         self.matcher = Matcher(args['matcher'], args['lidar_range'])
@@ -42,7 +42,7 @@ class FPVRCNN(nn.Module):
         data_dict['ego'], output_dict['ego'] = batch_dict, batch_dict
         # The data structure is a little confusing, same data pointer is passed two times,
         # because it should match the format of the main framwork
-        pred_box3d_list, scores_list = self.post_processor.post_process(data_dict, output_dict)
+        pred_box3d_list, scores_list = self.post_processor.post_process(data_dict, output_dict, stage1=True)
         batch_dict['det_boxes'] = pred_box3d_list
         batch_dict['det_scores'] = scores_list
         if pred_box3d_list is not None:

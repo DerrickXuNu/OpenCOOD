@@ -30,18 +30,18 @@ class CiassdLoss(nn.Module):
         batch_size = int(output_dict['record_len'].sum())
 
         # ########
-        # pred = preds_dict['cls_preds'][0].sum(dim=0).cpu().detach().numpy()
+        # pred = torch.sigmoid(preds_dict['cls_preds'][0]).sum(dim=0).cpu().detach().numpy()
         # tagt_pos = target_dict['pos_equal_one'][0].sum(dim=-1).cpu().detach().numpy()
         # tagt_neg = target_dict['neg_equal_one'][0].sum(dim=-1).cpu().detach().numpy()
         # import matplotlib.pyplot as plt
         #
         # fig = plt.figure(figsize=(18, 8))
         # ax1 = fig.add_subplot(3, 1, 1)
-        # ax1.imshow(pred)
+        # ax1.imshow(pred, cmap='cool')
         # ax2 = fig.add_subplot(3, 1, 2)
-        # ax2.imshow(tagt_pos)
+        # ax2.imshow(tagt_pos, cmap='cool')
         # ax3 = fig.add_subplot(3, 1, 3)
-        # ax3.imshow(tagt_neg)
+        # ax3.imshow(tagt_neg, cmap='cool')
         # plt.show()
         # plt.close()
         # #########
@@ -49,7 +49,8 @@ class CiassdLoss(nn.Module):
         cls_labls = target_dict['pos_equal_one'].view(batch_size, -1,  self.num_cls - 1)
         positives = cls_labls > 0
         negatives = target_dict['neg_equal_one'].view(batch_size, -1,  self.num_cls - 1) > 0
-        # cared = torch.logical_or(positives, negatives)
+        cared = torch.logical_or(positives, negatives)
+        cls_labls = cls_labls * cared.type_as(cls_labls)
         # num_normalizer = cared.sum(1, keepdim=True)
         pos_normalizer = positives.sum(1, keepdim=True).float()
 
