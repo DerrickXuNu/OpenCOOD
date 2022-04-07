@@ -89,6 +89,28 @@ def draw_road(lane_area_list, image, visualize=False):
                      **CV2_SUB_VALUES)
     return image
 
+def road_exclude(static_road):
+    """
+    Exclude the road segment that is not connected to the ego vehicle
+    position.
+
+    Parameters
+    ----------
+    static_road : np.ndarray
+        The static bev map with road segment.
+
+    Returns
+    -------
+    The road without unrelated road.
+    """
+    binary_bev = cv2.cvtColor(static_road, cv2.COLOR_BGR2GRAY)
+    _, label, stats, _ = cv2.connectedComponentsWithStats(binary_bev)
+
+    ego_label = label[static_road.shape[0] // 2, static_road.shape[1] // 2]
+    static_road[label != ego_label] = 0
+
+    return static_road
+
 
 def draw_lane(lane_area_list, lane_type_list, image):
     """

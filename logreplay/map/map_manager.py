@@ -20,7 +20,7 @@ from logreplay.map.map_utils import \
     world_to_sensor, lateral_shift, list_loc2array, list_wpt2array, \
     convert_tl_status
 from logreplay.map.map_drawing import \
-    cv2_subpixel, draw_agent, draw_road, draw_lane
+    cv2_subpixel, draw_agent, draw_road, draw_lane, road_exclude
 from opencood.hypes_yaml.yaml_utils import save_yaml_wo_overwriting
 
 
@@ -101,6 +101,8 @@ class MapManager(object):
 
         # whether to visualize the bev map while running simulation
         self.visualize = config['visualize']
+        # whether exclude the road that is unrelated to the ego vehicle
+        self.exclude_road = config['static']['exclude_road']
         self.radius_meter = config['radius']
 
         assert config['raster_size'][0] == config['raster_size'][1]
@@ -635,6 +637,9 @@ class MapManager(object):
 
         self.static_bev = draw_road(lanes_area_list,
                                     self.static_bev)
+        if self.exclude_road:
+            self.static_bev = road_exclude(self.static_bev)
+
         if self.draw_lane:
             self.static_bev = draw_lane(lanes_area_list, lane_type_list,
                                         self.static_bev)

@@ -9,6 +9,7 @@ map: # corresponding to bev map
   static:
     draw_lane: false
     draw_traffic_light: true
+    exclude_road: true
   dynamic:
     exclude_self: true
 
