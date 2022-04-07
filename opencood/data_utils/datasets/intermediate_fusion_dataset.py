@@ -71,7 +71,7 @@ class IntermediateFusionDataset(basedataset.BaseDataset):
 
         pairwise_t_matrix = \
             self.get_pairwise_transformation(base_data_dict,
-                                             self.params['train_params']['max_cav'])
+                                             self.max_cav)
 
         processed_features = []
         object_stack = []

@@ -107,17 +107,19 @@ class EarlyFusionDataset(basedataset.BaseDataset):
                                                          'cav_lidar_range'])
         # augmentation may remove some of the bbx out of range
         object_bbx_center_valid = object_bbx_center[mask == 1]
-        object_bbx_center_valid = \
+        object_bbx_center_valid, range_mask = \
             box_utils.mask_boxes_outside_range_numpy(object_bbx_center_valid,
                                                      self.params['preprocess'][
                                                          'cav_lidar_range'],
                                                      self.params['postprocess'][
-                                                         'order']
+                                                         'order'],
+                                                     return_mask=True
                                                      )
         mask[object_bbx_center_valid.shape[0]:] = 0
         object_bbx_center[:object_bbx_center_valid.shape[0]] = \
             object_bbx_center_valid
         object_bbx_center[object_bbx_center_valid.shape[0]:] = 0
+        unique_indices = list(np.array(unique_indices)[range_mask])
 
         # pre-process the lidar to voxel/bev/downsampled lidar
         lidar_dict = self.pre_processor.preprocess(projected_lidar_stack)

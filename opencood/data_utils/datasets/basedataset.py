@@ -70,7 +70,8 @@ class BaseDataset(Dataset):
         else:
             root_dir = params['validate_dir']
 
-        if 'max_cav' not in params['train_params']:
+        if 'train_params' not in params or\
+                'max_cav' not in params['train_params']:
             self.max_cav = 7
         else:
             self.max_cav = params['train_params']['max_cav']
