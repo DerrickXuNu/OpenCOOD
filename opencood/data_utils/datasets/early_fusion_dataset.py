@@ -134,7 +134,7 @@ class EarlyFusionDataset(basedataset.BaseDataset):
              'object_ids': [object_id_stack[i] for i in unique_indices],
              'anchor_box': anchor_box,
              'processed_lidar': lidar_dict,
-             'label_dict': label_dict})
+             'label_dict': {'stage1': label_dict}})
 
         if self.visualize:
             processed_data_dict['ego'].update({'origin_lidar':

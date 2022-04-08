@@ -83,8 +83,8 @@ def setup_train(hypes):
     folder_name = current_time.strftime("_%Y_%m_%d_%H_%M_%S")
     folder_name = model_name + folder_name
 
-    if os.path.exists('/workspace/koko/experiments-output/opencood'):
-        current_path = '/workspace/koko/experiments-output/opencood'  # only for training on dcos
+    if os.path.exists('/media/hdd/koko/experiments-output/opencood'):
+        current_path = '/media/hdd/koko/experiments-output/opencood'  # only for training on dcos
     else:
         current_path = os.path.dirname(__file__)
         current_path = os.path.join(current_path, '../logs')

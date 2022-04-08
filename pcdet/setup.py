@@ -49,6 +49,7 @@ if __name__ == '__main__':
         license='Apache License 2.0',
         packages=find_packages(exclude=['tools', 'data', 'output']),
         cmdclass={'build_ext': BuildExtension},
+        extra_compile_args=['-g'],
         ext_modules=[
             make_cuda_ext(
                 name='iou3d_nms_cuda',

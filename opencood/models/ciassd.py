@@ -29,7 +29,7 @@ class CIASSD(nn.Module):
         batch_dict = self.map_to_bev(batch_dict)
         out = self.ssfa(batch_dict['processed_lidar']['spatial_features'])
         out = self.head(out)
-        batch_dict['preds_dict'] = out
+        batch_dict['preds_dict_stage1'] = out
 
         return batch_dict
 

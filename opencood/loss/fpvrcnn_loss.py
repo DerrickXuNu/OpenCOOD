@@ -13,14 +13,14 @@ class FpvrcnnLoss(nn.Module):
         self.iou = args['stage2']['iou']
         self.loss_dict = {}
 
-    def forward(self, output_dict, target_dict):
+    def forward(self, output_dict, label_dict):
         """
         Parameters
         ----------
         output_dict : dict
         target_dict : dict
         """
-        ciassd_loss = self.ciassd_loss(output_dict, target_dict)
+        ciassd_loss = self.ciassd_loss(output_dict, label_dict)
 
         # only update ciassd if no bbox is detected in the first stage
         if 'fpvrcnn_out' not in output_dict:

@@ -163,7 +163,10 @@ class IntermediateFusionDatasetV2(basedataset.BaseDataset):
                     anchors=anchor_box,
                     mask=bbx_mask)
             )
-
+        label_dict = {
+            'stage1': label_dict,
+            'stage2': label_dict_no_coop
+        }
         processed_data_dict['ego'].update(
             {'object_bbx_center': object_bbx_center,
              'object_bbx_mask': mask,
@@ -171,7 +174,6 @@ class IntermediateFusionDatasetV2(basedataset.BaseDataset):
              'anchor_box': anchor_box,
              'processed_lidar': merged_feature_dict,
              'label_dict': label_dict,
-             'label_dict_no_coop': label_dict_no_coop,
              'cav_num': cav_num})
 
         # if self.visualize:
@@ -295,8 +297,8 @@ class IntermediateFusionDatasetV2(basedataset.BaseDataset):
 
             processed_lidar_list.append(ego_dict['processed_lidar'])
             record_len.append(ego_dict['cav_num'])
-            label_dict_list.append(ego_dict['label_dict'])
-            label_dict_no_coop_list.append(ego_dict['label_dict_no_coop'])
+            label_dict_list.append(ego_dict['label_dict']['stage1'])
+            label_dict_no_coop_list.append(ego_dict['label_dict']['stage2'])
 
             if self.visualize or self.keep_original_lidar:
                 origin_lidar.append(ego_dict['origin_lidar'])
@@ -327,8 +329,9 @@ class IntermediateFusionDatasetV2(basedataset.BaseDataset):
                                    'object_bbx_mask': object_bbx_mask,
                                    'processed_lidar': processed_lidar_torch_dict,
                                    'record_len': record_len,
-                                   'label_dict': label_torch_dict,
-                                   'label_dict_no_coop': label_no_coop_torch_dict,
+                                   'label_dict': {
+                                       'stage1': label_torch_dict,
+                                       'stage2': label_no_coop_torch_dict},
                                    'object_ids': object_ids[0]})
 
         if self.visualize: # assume batch size is 1

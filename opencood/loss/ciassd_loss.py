@@ -19,7 +19,7 @@ class CiassdLoss(nn.Module):
         self.num_cls = 2
         self.box_codesize = 7
 
-    def forward(self, output_dict, target_dict):
+    def forward(self, output_dict, label_dict):
         """
         Parameters
         ----------
@@ -27,7 +27,11 @@ class CiassdLoss(nn.Module):
         target_dict : dict
         """
         preds_dict = output_dict['preds_dict_stage1']
-        batch_size = int(output_dict['record_len'].sum())
+        target_dict = label_dict['stage1']
+        if 'record_len' in output_dict:
+            batch_size = int(output_dict['record_len'].sum())
+        else:
+            batch_size = output_dict['batch_size']
 
         # ########
         # pred = torch.sigmoid(preds_dict['cls_preds'][0]).sum(dim=0).cpu().detach().numpy()
@@ -128,11 +132,11 @@ class CiassdLoss(nn.Module):
         cls_loss = self.loss_dict['cls_loss']
         dir_loss = self.loss_dict['dir_loss']
         iou_loss = self.loss_dict['iou_loss']
-
-        print("[epoch %d][%d/%d], || Loss: %.4f || Cls: %.4f"
-              " || Loc: %.4f || Dir: %.4f || Iou: %.4f" % (
-                  epoch, batch_id + 1, batch_len,
-                  total_loss.item(), cls_loss.item(), reg_loss.item(), dir_loss.item(), iou_loss.item()))
+        if (batch_id + 1) % 10 == 0:
+            print("[epoch %d][%d/%d], || Loss: %.4f || Cls: %.4f"
+                  " || Loc: %.4f || Dir: %.4f || Iou: %.4f" % (
+                      epoch, batch_id + 1, batch_len,
+                      total_loss.item(), cls_loss.item(), reg_loss.item(), dir_loss.item(), iou_loss.item()))
 
         writer.add_scalar('Regression_loss', reg_loss.item(),
                           epoch*batch_len + batch_id)
