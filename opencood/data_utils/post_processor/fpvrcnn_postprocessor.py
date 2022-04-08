@@ -49,7 +49,6 @@ class FpvrcnnPostprocessor(VoxelPostprocessor):
             The groundtruth bounding box tensor.
         """
         # the final bounding box list
-        global batch_num_box_count
         pred_box3d_original_list = []
         pred_box3d_list = []
         pred_box2d_list = []
@@ -73,7 +72,7 @@ class FpvrcnnPostprocessor(VoxelPostprocessor):
             prob = preds_dict['cls_preds']
             prob = torch.sigmoid(prob.permute(0, 2, 3, 1).contiguous())
             reg = preds_dict['box_preds'].permute(0, 2, 3, 1).contiguous()
-            iou = preds_dict['iou_preds'].permute(0, 2, 3, 1).contiguous().reshape(1, -1)
+            iou = torch.sigmoid(preds_dict['iou_preds'].permute(0, 2, 3, 1).contiguous()).reshape(1, -1)
             dir = preds_dict['dir_cls_preds'].permute(0, 2, 3, 1).contiguous().reshape(1, -1, 2)
 
             # convert regression map back to bounding box
@@ -95,6 +94,7 @@ class FpvrcnnPostprocessor(VoxelPostprocessor):
             dir_labels = dir_labels[mask]
             # top_labels = torch.zeros([scores.shape[0]], dtype=torch.long).cuda()
             if scores.shape[0] != 0:
+                iou = torch.minimum(torch.maximum(iou, torch.ones_like(iou)), torch.zeros_like(iou))
                 iou = (iou + 1) * 0.5
                 scores = scores * torch.pow(iou.masked_select(mask), 4)
                 # correct_direction
@@ -102,6 +102,28 @@ class FpvrcnnPostprocessor(VoxelPostprocessor):
                 boxes3d[..., -1] += torch.where(top_labels, torch.tensor(np.pi).type_as(boxes3d),
                                                   torch.tensor(0.0).type_as(boxes3d))
                 pred_box3d_original_list.append(boxes3d.detach())
+
+            # filter invalid boxes
+            keep_idx = torch.logical_and((boxes3d[:, 3:6] > 1).all(dim=1), (boxes3d[:, 3:6] < 10).all(dim=1))
+            idx_start = 0
+            count = []
+            for i, n in enumerate(batch_num_box_count):
+                count.append(int(keep_idx[idx_start:idx_start+n].sum()))
+            batch_num_box_count = count
+            boxes3d = boxes3d[keep_idx]
+            scores = scores[keep_idx]
+
+            # if the number of boxes is too huge, this would consume a lot of memory in the second stage
+            # therefore, randomly select some boxes if the box number is too big at the beginning of the training
+            if len(boxes3d) > 200:
+                keep_idx = torch.multinomial(scores, 200)
+                idx_start = 0
+                count = []
+                for i, n in enumerate(batch_num_box_count):
+                    count.append(int(torch.logical_and(keep_idx>=idx_start, keep_idx<idx_start + n).sum()))
+                batch_num_box_count = count
+            boxes3d = boxes3d[keep_idx]
+            scores = scores[keep_idx]
 
             # convert output to bounding box
             if len(boxes3d) != 0:

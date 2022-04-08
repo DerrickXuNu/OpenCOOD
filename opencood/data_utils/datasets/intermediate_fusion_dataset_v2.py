@@ -164,8 +164,8 @@ class IntermediateFusionDatasetV2(basedataset.BaseDataset):
                     mask=bbx_mask)
             )
         label_dict = {
-            'stage1': label_dict,
-            'stage2': label_dict_no_coop
+            'stage1': label_dict_no_coop,
+            'stage2': label_dict
         }
         processed_data_dict['ego'].update(
             {'object_bbx_center': object_bbx_center,
@@ -297,8 +297,8 @@ class IntermediateFusionDatasetV2(basedataset.BaseDataset):
 
             processed_lidar_list.append(ego_dict['processed_lidar'])
             record_len.append(ego_dict['cav_num'])
-            label_dict_list.append(ego_dict['label_dict']['stage1'])
-            label_dict_no_coop_list.append(ego_dict['label_dict']['stage2'])
+            label_dict_no_coop_list.append(ego_dict['label_dict']['stage1'])
+            label_dict_list.append(ego_dict['label_dict']['stage2'])
 
             if self.visualize or self.keep_original_lidar:
                 origin_lidar.append(ego_dict['origin_lidar'])
@@ -330,8 +330,8 @@ class IntermediateFusionDatasetV2(basedataset.BaseDataset):
                                    'processed_lidar': processed_lidar_torch_dict,
                                    'record_len': record_len,
                                    'label_dict': {
-                                       'stage1': label_torch_dict,
-                                       'stage2': label_no_coop_torch_dict},
+                                       'stage1': label_no_coop_torch_dict,
+                                       'stage2': label_torch_dict},
                                    'object_ids': object_ids[0]})
 
         if self.visualize: # assume batch size is 1
@@ -341,11 +341,13 @@ class IntermediateFusionDatasetV2(basedataset.BaseDataset):
 
         if self.keep_original_lidar:
             coords = []
+            idx = 0
             for b in range(len(batch)):
-                for i, points in enumerate(origin_lidar[b]):
+                for points in origin_lidar[b]:
                     assert len(points)!=0
-                    coor_pad = np.pad(points, ((0, 0), (1, 0)), mode="constant", constant_values=i)
+                    coor_pad = np.pad(points, ((0, 0), (1, 0)), mode="constant", constant_values=idx)
                     coords.append(coor_pad)
+                    idx += 1
             origin_lidar = np.concatenate(coords, axis=0)
 
             origin_lidar = torch.from_numpy(origin_lidar)
