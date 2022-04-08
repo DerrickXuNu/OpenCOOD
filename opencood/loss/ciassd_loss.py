@@ -173,7 +173,7 @@ def get_direction_target(reg_targets, anchors, one_hot=True, dir_offset=0.0):
         [batch_size, w*h*num_anchor_per_pos, 2]
     """
     batch_size = reg_targets.shape[0]
-    anchors = torch.tile(anchors.view(1,  -1, anchors.shape[-1]), (batch_size, 1, 1))
+    anchors = anchors.view(1,  -1, anchors.shape[-1]).repeat(batch_size, 1, 1)
     rot_gt = reg_targets[..., -1] + anchors[..., -1]  # [4, 70400]
     dir_cls_targets = ((rot_gt - dir_offset) > 0).long()  # [4, 70400]
     if one_hot:
