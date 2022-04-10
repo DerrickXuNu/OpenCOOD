@@ -106,10 +106,11 @@ class BaseDataset(Dataset):
                 cav_path = os.path.join(scenario_folder, cav_id)
 
                 # use the frame number as key, the full path as the values
+                # todo currently we don't load additional metadata
                 yaml_files = \
                     sorted([os.path.join(cav_path, x)
                             for x in os.listdir(cav_path) if
-                            x.endswith('.yaml')])
+                            x.endswith('.yaml') and 'additional' not in x])
                 timestamps = self.extract_timestamps(yaml_files)
 
                 for timestamp in timestamps:
