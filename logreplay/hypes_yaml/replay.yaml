@@ -1,5 +1,5 @@
-root_dir: '/home/runshengxu/project/OpenCOOD/opv2v_data_dumping/test'
-output_dir: '/home/runshengxu/project/OpenCOOD/opv2v_data_dumping/additional/test'
+root_dir: '/home/runshengxu/project/OpenCOOD/opv2v_data_dumping/train'
+output_dir: '/home/runshengxu/project/OpenCOOD/opv2v_data_dumping/additional/train'
 map: # corresponding to bev map
   activate: true
   visualize: true
@@ -21,5 +21,5 @@ sensor: # new attached sensor
         fov: 45
         image_size_x: 512
         image_size_y: 512
-        height: 100
+        height: 115.88
 
