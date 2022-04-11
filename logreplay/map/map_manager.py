@@ -16,9 +16,10 @@ import numpy as np
 from matplotlib.path import Path
 from shapely.geometry import Polygon
 
+from logreplay.assets.presave_lib import EXCLUDE_ROAD_MAP, OR_Z_VALUE_MAP
 from logreplay.map.map_utils import \
     world_to_sensor, lateral_shift, list_loc2array, list_wpt2array, \
-    convert_tl_status
+    convert_tl_status, exclude_off_road_agents
 from logreplay.map.map_drawing import \
     cv2_subpixel, draw_agent, draw_road, draw_lane, road_exclude
 from opencood.hypes_yaml.yaml_utils import save_yaml_wo_overwriting
@@ -38,6 +39,9 @@ class MapManager(object):
 
     output_root : str
         The data dump root folder.
+
+    scene_name : str
+        The name of the scene.
 
     Attributes
     ----------
@@ -87,12 +91,13 @@ class MapManager(object):
 
     """
 
-    def __init__(self, world, config, output_root):
+    def __init__(self, world, config, output_root, scene_name):
         self.world = world
         self.carla_map = world.get_map()
         self.center = None
         self.actor_id = None
         self.out_root = output_root
+        self.scene_name = scene_name
 
         # whether to activate this module
         self.activate = config['activate']
@@ -103,6 +108,9 @@ class MapManager(object):
         self.visualize = config['visualize']
         # whether exclude the road that is unrelated to the ego vehicle
         self.exclude_road = config['static']['exclude_road']
+        if self.scene_name in EXCLUDE_ROAD_MAP:
+            self.exclude_road = True
+
         self.radius_meter = config['radius']
         self.z_filter_value = config['static']['z_filter_value']
 
@@ -136,6 +144,7 @@ class MapManager(object):
         self.draw_traffic_light = config['static']['draw_traffic_light']
         # dynamic related info
         self.exclude_self = config['dynamic']['exclude_self']
+        self.exclude_off_road = config['dynamic']['exclude_off_road']
 
         # bev maps
         self.dynamic_bev = 255 * np.zeros(
@@ -169,6 +178,10 @@ class MapManager(object):
 
         self.rasterize_static()
         self.rasterize_dynamic()
+
+        if self.exclude_off_road:
+            self.dynamic_bev = exclude_off_road_agents(self.static_bev,
+                                                       self.dynamic_bev)
 
         if self.visualize:
             cv2.imshow('the bev map of agent %s' % self.agent_id,
@@ -268,11 +281,18 @@ class MapManager(object):
         y_min_in = y_center > bounds[:, 0, 1] - half_extent
         x_max_in = x_center < bounds[:, 1, 0] + half_extent
         y_max_in = y_center < bounds[:, 1, 1] + half_extent
+
         z_min_in = abs(z_center - bounds[:, 2, 0]) < self.z_filter_value
         z_max_in = abs(z_center - bounds[:, 2, 1]) < self.z_filter_value
 
+        # this several scenes has some speciality and needs to be hardcoded
+        if self.scene_name in OR_Z_VALUE_MAP:
+            z_flag = z_min_in | z_max_in
+        else:
+            z_flag = z_min_in & z_max_in
+
         return np.nonzero(x_min_in & y_min_in & x_max_in & y_max_in
-                          & z_min_in & z_max_in)[0]
+                          & z_flag)[0]
 
     def associate_lane_tl(self, mid_lane):
         """

@@ -3,7 +3,6 @@
 """HDMap utilities
 """
 
-
 # Author: Runsheng Xu <rxx3386@ucla.edu>
 # License: TDG-Attribution-NonCommercial-NoDistrib
 
@@ -157,3 +156,8 @@ def world_to_sensor(cords, sensor_transform):
     sensor_cords = np.dot(world_sensor_matrix, cords)
 
     return sensor_cords
+
+
+def exclude_off_road_agents(static_bev, dynamic_bev):
+    dynamic_bev[static_bev == 0] = 0
+    return dynamic_bev

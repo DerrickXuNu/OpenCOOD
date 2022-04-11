@@ -1,5 +1,5 @@
-root_dir: '/home/runshengxu/project/OpenCOOD/opv2v_data_dumping/tmp'
-output_dir: '/home/runshengxu/project/OpenCOOD/opv2v_data_dumping/additional/tmp'
+root_dir: '/home/runshengxu/project/OpenCOOD/opv2v_data_dumping/train'
+output_dir: '/home/runshengxu/project/OpenCOOD/opv2v_data_dumping/additional/train'
 map: # corresponding to bev map
   activate: true
   visualize: true
@@ -13,6 +13,7 @@ map: # corresponding to bev map
     z_filter_value: 6
   dynamic:
     exclude_self: true
+    exclude_off_road: true
 
 sensor: # new attached sensor
   sensor_list:

@@ -136,7 +136,8 @@ class SceneManager:
         # hd map manager per scene
         self.map_manager = MapManager(self.world,
                                       self.scenario_params['map'],
-                                      self.output_root)
+                                      self.output_root,
+                                      self.scene_name)
 
     def tick(self):
         """
