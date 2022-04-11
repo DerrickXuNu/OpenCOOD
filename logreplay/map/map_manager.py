@@ -104,6 +104,7 @@ class MapManager(object):
         # whether exclude the road that is unrelated to the ego vehicle
         self.exclude_road = config['static']['exclude_road']
         self.radius_meter = config['radius']
+        self.z_filter_value = config['static']['z_filter_value']
 
         assert config['raster_size'][0] == config['raster_size'][1]
         self.raster_size = np.array([config['raster_size'][0],
@@ -194,11 +195,16 @@ class MapManager(object):
                     np.min(right_lane[:, 0]))
         y_min = min(np.min(left_lane[:, 1]),
                     np.min(right_lane[:, 1]))
+        z_min = min(np.min(left_lane[:, 2]),
+                    np.min(right_lane[:, 2]))
         x_max = max(np.max(left_lane[:, 0]),
                     np.max(right_lane[:, 0]))
         y_max = max(np.max(left_lane[:, 1]),
                     np.max(right_lane[:, 1]))
-        bounds = np.asarray([[[x_min, y_min], [x_max, y_max]]])
+        z_max = max(np.max(left_lane[:, 2]),
+                    np.max(right_lane[:, 2]))
+
+        bounds = np.asarray([[[x_min, y_min], [x_max, y_max], [z_min, z_max]]])
 
         return bounds
 
@@ -253,13 +259,20 @@ class MapManager(object):
         -------
         np.ndarray: indices of elements inside radius from center
         """
-        x_center, y_center = self.center.location.x, self.center.location.y
+        x_center, y_center, z_center = \
+            self.center.location.x, \
+            self.center.location.y, \
+            self.center.location.z
 
         x_min_in = x_center > bounds[:, 0, 0] - half_extent
         y_min_in = y_center > bounds[:, 0, 1] - half_extent
         x_max_in = x_center < bounds[:, 1, 0] + half_extent
         y_max_in = y_center < bounds[:, 1, 1] + half_extent
-        return np.nonzero(x_min_in & y_min_in & x_max_in & y_max_in)[0]
+        z_min_in = abs(z_center - bounds[:, 2, 0]) < self.z_filter_value
+        z_max_in = abs(z_center - bounds[:, 2, 1]) < self.z_filter_value
+
+        return np.nonzero(x_min_in & y_min_in & x_max_in & y_max_in
+                          & z_min_in & z_max_in)[0]
 
     def associate_lane_tl(self, mid_lane):
         """
@@ -335,8 +348,8 @@ class MapManager(object):
         crosswalks_ids = []
 
         # boundary of each lane for later filtering
-        lanes_bounds = np.empty((0, 2, 2), dtype=np.float)
-        crosswalks_bounds = np.empty((0, 2, 2), dtype=np.float)
+        lanes_bounds = np.empty((0, 3, 2), dtype=np.float)
+        crosswalks_bounds = np.empty((0, 3, 2), dtype=np.float)
 
         # loop all waypoints to get lane information
         for (i, waypoint) in enumerate(self.topology):

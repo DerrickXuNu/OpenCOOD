@@ -1,5 +1,5 @@
-root_dir: '/home/runshengxu/project/OpenCOOD/opv2v_data_dumping/train'
-output_dir: '/home/runshengxu/project/OpenCOOD/opv2v_data_dumping/additional/train'
+root_dir: '/home/runshengxu/project/OpenCOOD/opv2v_data_dumping/tmp'
+output_dir: '/home/runshengxu/project/OpenCOOD/opv2v_data_dumping/additional/tmp'
 map: # corresponding to bev map
   activate: true
   visualize: true
@@ -9,7 +9,8 @@ map: # corresponding to bev map
   static:
     draw_lane: false
     draw_traffic_light: true
-    exclude_road: true
+    exclude_road: false
+    z_filter_value: 6
   dynamic:
     exclude_self: true
 
