@@ -56,9 +56,9 @@ class Matcher(nn.Module):
                 cur_cluster_id += 1
             clusters = []
             scores = []
-            for i in range(1, cluster_indices.max().item() + 1):
-                clusters.append(pred_boxes_cat[cluster_indices==i])
-                scores.append(pred_scores_cat[cluster_indices==i])
+            for j in range(1, cluster_indices.max().item() + 1):
+                clusters.append(pred_boxes_cat[cluster_indices==j])
+                scores.append(pred_scores_cat[cluster_indices==j])
             clusters_batch.append(clusters)
             scores_batch.append(scores)
 
