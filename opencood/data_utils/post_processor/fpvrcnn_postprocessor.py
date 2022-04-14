@@ -94,7 +94,7 @@ class FpvrcnnPostprocessor(VoxelPostprocessor):
             dir_labels = dir_labels[mask]
             # top_labels = torch.zeros([scores.shape[0]], dtype=torch.long).cuda()
             if scores.shape[0] != 0:
-                iou = torch.minimum(torch.maximum(iou, torch.ones_like(iou)), torch.zeros_like(iou))
+                iou = torch.clamp(iou, min=0.0, max=1.0)
                 iou = (iou + 1) * 0.5
                 scores = scores * torch.pow(iou.masked_select(mask), 4)
                 # correct_direction
