@@ -127,7 +127,7 @@ class RoIHead(nn.Module):
             gt_of_rois = gts[gt_inds]
             rcnn_labels = (max_ious > 0.3).float()
             mask = torch.logical_not(rcnn_labels.bool())
-            gt_of_rois[mask] = rois[mask]
+            gt_of_rois[mask] = rois[mask] # set negative samples back to rois, no correction in stage2 for them
             gt_of_rois_src = gt_of_rois.clone().detach()
 
             # canoical transformation
@@ -180,7 +180,7 @@ class RoIHead(nn.Module):
         for k, v in batch_dict['rcnn_label_dict'].items():
             if k == 'record_len':
                 continue
-            batch_dict['rcnn_label_dict'][k] = torch.cat(v, dim=0).squeeze()
+            batch_dict['rcnn_label_dict'][k] = torch.cat(v, dim=0)
 
         return batch_dict
 

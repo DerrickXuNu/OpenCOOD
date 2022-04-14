@@ -115,15 +115,15 @@ class FpvrcnnPostprocessor(VoxelPostprocessor):
 
             # if the number of boxes is too huge, this would consume a lot of memory in the second stage
             # therefore, randomly select some boxes if the box number is too big at the beginning of the training
-            if len(boxes3d) > 200:
-                keep_idx = torch.multinomial(scores, 200)
+            if len(boxes3d) > 500:
+                keep_idx = torch.multinomial(scores, 500)
                 idx_start = 0
                 count = []
                 for i, n in enumerate(batch_num_box_count):
                     count.append(int(torch.logical_and(keep_idx>=idx_start, keep_idx<idx_start + n).sum()))
                 batch_num_box_count = count
-            boxes3d = boxes3d[keep_idx]
-            scores = scores[keep_idx]
+                boxes3d = boxes3d[keep_idx]
+                scores = scores[keep_idx]
 
             # convert output to bounding box
             if len(boxes3d) != 0:
@@ -160,7 +160,7 @@ class FpvrcnnPostprocessor(VoxelPostprocessor):
                                                cur_scores,
                                                self.params['nms_thresh']
                                                )
-            cur_boxes = pred_box3d_original[cur_idx:cur_idx+n] # [:, [0, 1, 2, 5, 4, 3, 6]] # hwl -> lwh
+            cur_boxes = pred_box3d_original[cur_idx:cur_idx+n][:, [0, 1, 2, 5, 4, 3, 6]] # hwl -> lwh
             batch_pred_boxes3d.append(cur_boxes[keep_index])
             batch_scores.append(cur_scores[keep_index])
             cur_idx += n

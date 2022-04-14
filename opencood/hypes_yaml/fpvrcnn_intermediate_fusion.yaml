@@ -2,7 +2,7 @@ name: fpvrcnn_intermediate_fusion
 
 yaml_parser: "load_voxel_params"
 root_dir: "/media/hdd/yuan/koko/data/OPV2V/train"
-validate_dir: "/media/hdd/yuan/koko/data/OPV2V/validate"
+validate_dir: "/media/hdd/yuan/koko/data/OPV2V/test_culver_city"
 
 train_params:
   batch_size: &batch_size 1
@@ -130,7 +130,7 @@ loss:
   core_method: fpvrcnn_loss
   args:
     stage1:
-      pos_cls_weight: 50.0
+      pos_cls_weight: 2.0
       encode_rad_error_by_sin: true
       cls:
         type: 'SigmoidFocalLoss'

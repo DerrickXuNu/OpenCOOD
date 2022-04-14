@@ -1,5 +1,6 @@
 import argparse
 import os
+from tqdm import tqdm
 
 import torch
 from torch.utils.data import DataLoader
@@ -25,7 +26,7 @@ def test_parser():
                         help='whether to save visualization result')
     parser.add_argument('--save_npy', action='store_true',
                         help='whether to save prediction and gt result'
-                             'in npy file')
+                             'in npy_test file')
     opt = parser.parse_args()
     return opt
 
@@ -38,6 +39,7 @@ def main():
 
     print('Dataset Building')
     opencood_dataset = build_dataset(hypes, visualize=True, train=False)
+    print(f"{len(opencood_dataset)} samples found.")
     data_loader = DataLoader(opencood_dataset,
                              batch_size=1,
                              num_workers=4,
@@ -63,8 +65,10 @@ def main():
                    0.5: {'tp': [], 'fp': [], 'gt': 0},
                    0.7: {'tp': [], 'fp': [], 'gt': 0}}
 
-    for i, batch_data in enumerate(data_loader):
-        print(i)
+    for i, batch_data in tqdm(enumerate(data_loader)):
+        # if i < 1724:
+        #     continue
+        # print(i)
         with torch.no_grad():
             batch_data = train_utils.to_device(batch_data, device)
             if opt.fusion_method == 'late':
