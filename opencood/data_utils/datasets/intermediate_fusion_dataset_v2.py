@@ -118,7 +118,7 @@ class IntermediateFusionDatasetV2(basedataset.BaseDataset):
         # generate targets label
         label_dict = \
             self.post_processor.generate_label(
-                gt_box_center=object_bbx_center,
+                gt_box_center=object_bbx_center, # hwl
                 anchors=anchor_box,
                 mask=mask)
 
@@ -159,7 +159,7 @@ class IntermediateFusionDatasetV2(basedataset.BaseDataset):
             bbx_mask[:boxes[cur_mask].shape[0]] = 1
             label_dict_no_coop.append(
                 self.post_processor.generate_label(
-                    gt_box_center=bbx_center,
+                    gt_box_center=bbx_center, # hwl
                     anchors=anchor_box,
                     mask=bbx_mask)
             )
