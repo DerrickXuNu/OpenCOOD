@@ -1,5 +1,5 @@
-root_dir: '/home/runshengxu/project/OpenCOOD/opv2v_data_dumping/train'
-output_dir: '/home/runshengxu/project/OpenCOOD/opv2v_data_dumping/additional/train'
+root_dir: '/home/runshengxu/project/OpenCOOD/opv2v_data_dumping/validate'
+output_dir: '/home/runshengxu/project/OpenCOOD/opv2v_data_dumping/additional/validate'
 map: # corresponding to bev map
   activate: true
   visualize: true
