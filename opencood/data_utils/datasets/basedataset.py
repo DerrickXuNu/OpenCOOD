@@ -109,7 +109,7 @@ class BaseDataset(Dataset):
                 yaml_files = \
                     sorted([os.path.join(cav_path, x)
                             for x in os.listdir(cav_path) if
-                            x.endswith('.yaml')])
+                            x.endswith('.yaml') and 'additional' not in x])
                 timestamps = self.extract_timestamps(yaml_files)
 
                 for timestamp in timestamps:
