@@ -4,10 +4,10 @@ Written by Shaoshuai Shi
 All Rights Reserved 2019-2020.
 """
 import torch
-
-from utils import common_utils
-from ops.iou3d_nms import iou3d_nms_cuda
 import numpy as np
+
+from opencood.utils.common_utils import check_numpy_to_torch
+from opencood.pcdet_utils.iou3d_nms import iou3d_nms_cuda
 
 
 def boxes_bev_iou_cpu(boxes_a, boxes_b):
@@ -19,8 +19,8 @@ def boxes_bev_iou_cpu(boxes_a, boxes_b):
     Returns:
 
     """
-    boxes_a, is_numpy = common_utils.check_numpy_to_torch(boxes_a)
-    boxes_b, is_numpy = common_utils.check_numpy_to_torch(boxes_b)
+    boxes_a, is_numpy = check_numpy_to_torch(boxes_a)
+    boxes_b, is_numpy = check_numpy_to_torch(boxes_b)
     assert not (boxes_a.is_cuda or boxes_b.is_cuda), 'Only support CPU tensors'
     assert boxes_a.shape[1] == 7 and boxes_b.shape[1] == 7
     ans_iou = boxes_a.new_zeros(torch.Size((boxes_a.shape[0], boxes_b.shape[0])))

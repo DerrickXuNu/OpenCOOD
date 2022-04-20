@@ -4,10 +4,10 @@ import random
 import torch
 import torch.nn as nn
 
-from pcdet.ops.pointnet2.pointnet2_stack import pointnet2_modules as pointnet2_stack_modules
-from pcdet.ops.pointnet2.pointnet2_stack import pointnet2_utils as pointnet2_stack_utils
-from pcdet.ops.roiaware_pool3d.roiaware_pool3d_utils import points_in_boxes_gpu
-from pcdet.utils import common_utils
+from opencood.pcdet_utils.pointnet2.pointnet2_stack import pointnet2_modules as pointnet2_stack_modules
+from opencood.pcdet_utils.pointnet2.pointnet2_stack import pointnet2_utils as pointnet2_stack_utils
+from opencood.pcdet_utils.roiaware_pool3d.roiaware_pool3d_utils import points_in_boxes_gpu
+from opencood.utils import common_utils
 
 
 def bilinear_interpolate_torch(im, x, y):

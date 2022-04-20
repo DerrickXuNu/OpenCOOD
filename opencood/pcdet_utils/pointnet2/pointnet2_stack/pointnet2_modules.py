@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from . import pointnet2_utils
+from opencood.pcdet_utils.pointnet2.pointnet2_stack import pointnet2_utils
 
 
 class StackSAModuleMSG(nn.Module):

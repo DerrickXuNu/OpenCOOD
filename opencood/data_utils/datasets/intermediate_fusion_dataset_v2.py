@@ -7,19 +7,18 @@ from collections import OrderedDict
 
 import numpy as np
 import torch
-from torch.utils.data import DataLoader
 
 import opencood.data_utils.datasets
 import opencood.data_utils.post_processor as post_processor
 from opencood.utils import box_utils
 from opencood.data_utils.datasets import basedataset
 from opencood.data_utils.pre_processor import build_preprocessor
-from opencood.hypes_yaml.yaml_utils import load_yaml
 from opencood.utils.pcd_utils import \
     mask_points_by_range, mask_ego_points, shuffle_points, \
     downsample_lidar_minimum
 from opencood.utils.transformation_utils import x1_to_x2
-from pcdet.ops.roiaware_pool3d.roiaware_pool3d_utils import points_in_boxes_cpu
+from opencood.pcdet_utils.roiaware_pool3d.roiaware_pool3d_utils import \
+    points_in_boxes_cpu
 
 
 class IntermediateFusionDatasetV2(basedataset.BaseDataset):

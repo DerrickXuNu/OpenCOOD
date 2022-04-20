@@ -4,7 +4,8 @@ import torch
 import torch.nn as nn
 from torch.autograd import Function, Variable
 
-from . import pointnet2_batch_cuda as pointnet2
+from opencood.pcdet_utils.pointnet2.pointnet2_batch import \
+    pointnet2_batch_cuda as pointnet2
 
 
 class FurthestPointSampling(Function):

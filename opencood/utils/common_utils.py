@@ -141,26 +141,6 @@ def compute_iou(box, boxes):
     return np.array(iou, dtype=np.float32)
 
 
-def compute_ious(boxes1, boxes2):
-    """
-    Compute ious between boxes1 and boxes2 list
-    Parameters
-    ----------
-    boxes1, boxes2 : list
-        List of shapely.geometry.Polygon. The two lists must have the same length
-
-    Returns
-    -------
-    ious : np.ndarray
-        Array of ious between boxes1 and boxes2.
-
-    """
-    # Calculate intersection areas
-    iou = [box.intersection(b).area / box.union(b).area for b in boxes]
-
-    return np.array(iou, dtype=np.float32)
-
-
 def convert_format(boxes_array):
     """
     Convert boxes array to shapely.geometry.Polygon format.
@@ -194,3 +174,24 @@ def torch_tensor_to_numpy(torch_tensor):
     return torch_tensor.numpy() if not torch_tensor.is_cuda else \
         torch_tensor.cpu().detach().numpy()
 
+
+def get_voxel_centers(voxel_coords,
+                      downsample_times,
+                      voxel_size,
+                      point_cloud_range):
+    """
+    Args:
+        voxel_coords: (N, 3)
+        downsample_times:
+        voxel_size:
+        point_cloud_range:
+
+    Returns:
+
+    """
+    assert voxel_coords.shape[1] == 3
+    voxel_centers = voxel_coords[:, [2, 1, 0]].float()  # (xyz)
+    voxel_size = torch.tensor(voxel_size, device=voxel_centers.device).float() * downsample_times
+    pc_range = torch.tensor(point_cloud_range[0:3], device=voxel_centers.device).float()
+    voxel_centers = (voxel_centers + 0.5) * voxel_size + pc_range
+    return voxel_centers
