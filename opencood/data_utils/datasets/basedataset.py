@@ -337,7 +337,6 @@ class BaseDataset(Dataset):
             object_bbx_center.append(ego_dict['object_bbx_center'])
             object_bbx_mask.append(ego_dict['object_bbx_mask'])
             processed_lidar_list.append(ego_dict['processed_lidar'])
-            label_dict_list.append(ego_dict['label_dict']['stage1'])
 
             if self.visualize:
                 origin_lidar.append(ego_dict['origin_lidar'])
@@ -352,12 +351,8 @@ class BaseDataset(Dataset):
             self.post_processor.collate_batch(label_dict_list)
         output_dict['ego'].update({'object_bbx_center': object_bbx_center,
                                    'object_bbx_mask': object_bbx_mask,
-                                   'processed_lidar': processed_lidar_torch_dict,
-                                   'label_dict': {'stage1': label_torch_dict}})
-
-        # iou prediction needs anchors to generate targets dynamicly
-        if 'predict_iou' in self.params['postprocess'] and self.params['postprocess']['predict_iou']:
-            output_dict['ego']['anchor_box'] = torch.from_numpy(batch[0]['ego']['anchor_box']) # all sample has the same anchor boxes
+                                   'processed_lidar': processed_lidar_torch_dict
+                                   })
 
         if self.visualize:
             origin_lidar = \

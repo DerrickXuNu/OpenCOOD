@@ -1,5 +1,10 @@
+# -*- coding: utf-8 -*-
+# Author: Yunshuang Yuan <yunshuang.yuan@ikg.uni-hannover.de>
+# Modified by: Runsheng Xu <rxx3386@ucla.edu>
+# License: TDG-Attribution-NonCommercial-NoDistrib
+
 """
-Dataset class for early fusion
+Dataset class for 2-stage backbone intermediate fusion
 """
 import random
 import math
