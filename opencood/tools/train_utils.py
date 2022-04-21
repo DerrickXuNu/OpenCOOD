@@ -39,33 +39,15 @@ def load_saved_model(saved_path, model):
             initial_epoch_ = 0
         return initial_epoch_
 
-    def load_model_dict(model, pretrained_dict):
-        """
-        Generalize the loading of checkpoint.
-        Modules that both exists in the checkpoint and the current model will be loaded.
-        """
-        # 1. filter out unnecessary keys
-        model_dict = model.state_dict()
-        pretrained_dict = {k: v for k, v in pretrained_dict.items() if k in model_dict}
-        # 2. overwrite entries in the existing state dict
-        model_dict.update(pretrained_dict)
-        # 3. load the new state dict
-        model.load_state_dict(model_dict)
-        return model
-
-    if os.path.exists(os.path.join(saved_path, 'latest.pth')):
-        model = load_model_dict(model, torch.load(
-            os.path.join(saved_path, 'latest.pth')))
-        return 100, model
-
     initial_epoch = findLastCheckpoint(saved_path)
     if initial_epoch > 0:
         print('resuming by loading epoch %d' % initial_epoch)
-        model = load_model_dict(model, torch.load(
+        model.load_state_dict(torch.load(
             os.path.join(saved_path,
-                         'net_epoch%d.pth' % initial_epoch)))
+                         'net_epoch%d.pth' % initial_epoch)), strict=False)
 
     return initial_epoch, model
+
 
 
 def setup_train(hypes):
