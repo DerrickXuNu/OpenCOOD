@@ -1,17 +1,8 @@
-
 import torch
 from torch import nn
-import numpy as np
-import cv2
-import itertools
-from scipy.optimize import linear_sum_assignment
-from scipy.sparse import csr_matrix
-from scipy.sparse.csgraph import shortest_path
-from pcdet.ops.iou3d_nms.iou3d_nms_utils import boxes_iou3d_gpu, nms_gpu
-from sklearn.neighbors import NearestNeighbors
-# from vlib.point import draw_points_boxes_plt, draw_box_plt
-import matplotlib.pyplot as plt
-from opencood.utils.max_consensus import max_consunsus_hierarchical
+
+from opencood.pcdet_utils.iou3d_nms.iou3d_nms_utils import boxes_iou3d_gpu
+
 
 pi = 3.141592653
 
@@ -21,7 +12,8 @@ def limit_period(val, offset=0.5, period=2 * pi):
 
 
 class Matcher(nn.Module):
-    """Correct localization error and use Algorithm 1: BBox matching with scores to fuse the proposal BBoxes"""
+    """Correct localization error and use Algorithm 1:
+     BBox matching with scores to fuse the proposal BBoxes"""
     def __init__(self, cfg, pc_range):
         super(Matcher, self).__init__()
         self.pc_range = pc_range

@@ -167,11 +167,10 @@ def boxes_to_corners_3d(boxes3d, order):
     # +-------> y
 
     boxes3d, is_numpy = common_utils.check_numpy_to_torch(boxes3d)
+    boxes3d_ = boxes3d
 
     if order == 'hwl':
         boxes3d_ = boxes3d[:, [0, 1, 2, 5, 4, 3, 6]]
-    elif order== 'lwh':
-        boxes3d_ = boxes3d
 
     template = boxes3d_.new_tensor((
         [1, -1, -1], [1, 1, -1], [-1, 1, -1], [-1, -1, -1],
@@ -180,11 +179,11 @@ def boxes_to_corners_3d(boxes3d, order):
 
     corners3d = boxes3d_[:, None, 3:6].repeat(1, 8, 1) * template[None, :, :]
     corners3d = common_utils.rotate_points_along_z(corners3d.view(-1, 8, 3),
-                                                   boxes3d_[:, 6]).view(-1, 8,
-                                                                       3)
+                                                   boxes3d_[:, 6]).view(-1, 8, 3)
     corners3d += boxes3d_[:, None, 0:3]
 
     return corners3d.numpy() if is_numpy else corners3d
+
 
 
 def box3d_to_2d(box3d):

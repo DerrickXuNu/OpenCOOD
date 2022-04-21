@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 from opencood.data_utils.post_processor.voxel_postprocessor import VoxelPostprocessor
-from pcdet.ops.iou3d_nms.iou3d_nms_utils import aligned_boxes_iou3d_gpu
+from opencood.pcdet_utils.iou3d_nms.iou3d_nms_utils import aligned_boxes_iou3d_gpu
 
 
 class CiassdLoss(nn.Module):
