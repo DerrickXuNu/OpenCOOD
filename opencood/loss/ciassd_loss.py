@@ -89,9 +89,11 @@ class CiassdLoss(nn.Module):
         pos_pred_mask = reg_weights.squeeze(dim=-1) > 0 # (4, 70400)
         iou_pos_preds = iou_preds.view(batch_size, -1)[pos_pred_mask]
         boxes3d_pred = VoxelPostprocessor.delta_to_boxes3d(preds_dict['box_preds'].permute(0, 2, 3, 1).contiguous().detach(),
-                                                           output_dict['anchor_box'])[pos_pred_mask]
+                                                           output_dict['anchor_box'],
+                                                           False)[pos_pred_mask]
         boxes3d_tgt = VoxelPostprocessor.delta_to_boxes3d(target_dict['targets'],
-                                                          output_dict['anchor_box'])[pos_pred_mask]
+                                                          output_dict['anchor_box'],
+                                                          False)[pos_pred_mask]
         iou_weights = reg_weights[pos_pred_mask].view(-1)
         iou_pos_targets = aligned_boxes_iou3d_gpu(boxes3d_pred.float()[:, [0, 1, 2, 5, 4, 3, 6]],
                                                   boxes3d_tgt.float()[:, [0, 1, 2, 5, 4, 3, 6]]).detach().squeeze()
