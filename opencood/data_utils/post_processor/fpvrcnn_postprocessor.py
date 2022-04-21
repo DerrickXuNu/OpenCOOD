@@ -84,7 +84,7 @@ class FpvrcnnPostprocessor(VoxelPostprocessor):
             if not self.train:
                 assert batch_box3d.shape[0] == 1
 
-            boxes3d = torch.masked_select(batch_box3d.view(-1, 7), mask_reg[0]).view(-1, 7)
+            boxes3d = torch.masked_select(batch_box3d.view(-1, 7), mask_reg[0]).view(-1, 7) # hwl
             scores = torch.masked_select(prob.view(-1), mask[0])
 
             dir_labels = torch.max(dir, dim=-1)[1]
@@ -189,7 +189,7 @@ class FpvrcnnPostprocessor(VoxelPostprocessor):
         scores = rcnn_score[mask]
         # gt_boxes = label_dict['gt_of_rois_src'][mask]
         mask = nms_gpu(detections, scores, thresh=0.01)[0]
-        boxes3d = detections[mask][:, [0, 1, 2, 5, 4, 3, 6]]
+        boxes3d = detections[mask][:, [0, 1, 2, 5, 4, 3, 6]] # lwh -> hwl
         projected_boxes3d = None
         if len(boxes3d) != 0:
             # (N, 8, 3)

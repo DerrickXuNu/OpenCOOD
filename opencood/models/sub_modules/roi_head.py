@@ -118,6 +118,7 @@ class RoIHead(nn.Module):
             'rois_anchor': [],
             'record_len': []
         }
+        # pred_boxes = [boxes[:, [0, 1, 2, 5, 4, 3, 6]] for boxes in batch_dict['boxes_fused']]
         pred_boxes = batch_dict['boxes_fused']
         gt_boxes = [b[m][:, [0, 1, 2, 5, 4, 3, 6]].float() for b, m in
                     zip(batch_dict['object_bbx_center'], batch_dict['object_bbx_mask'].bool())]
