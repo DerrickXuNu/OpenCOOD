@@ -104,15 +104,15 @@ class Matcher(nn.Module):
         # merge keypoints
         kpts_feat_out = []
         kpts_coor_out = []
-        keypoints_features = data_dict['processed_lidar']['point_features']
-        keypoints_coords = data_dict['processed_lidar']['point_coords']
+        keypoints_features = data_dict['point_features']
+        keypoints_coords = data_dict['point_coords']
         idx = 0
         for l in data_dict['record_len']:
             kpts_coor_out.append(torch.cat(keypoints_coords[idx:l+idx], dim=0))
             kpts_feat_out.append(torch.cat(keypoints_features[idx:l+idx], dim=0))
             idx += l
-        data_dict['processed_lidar']['point_features'] = kpts_feat_out
-        data_dict['processed_lidar']['point_coords'] = kpts_coor_out
+        data_dict['point_features'] = kpts_feat_out
+        data_dict['point_coords'] = kpts_coor_out
 
 
 

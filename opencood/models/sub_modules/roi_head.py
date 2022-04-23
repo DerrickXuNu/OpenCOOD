@@ -213,8 +213,8 @@ class RoIHead(nn.Module):
     def roi_grid_pool(self, batch_dict):
         batch_size = len(batch_dict['record_len'])
         rois = batch_dict['rcnn_label_dict']['rois']
-        point_coords = batch_dict['processed_lidar']['point_coords']
-        point_features = batch_dict['processed_lidar']['point_features']
+        point_coords = batch_dict['point_coords']
+        point_features = batch_dict['point_features']
         label_record_len = batch_dict['rcnn_label_dict']['record_len']
 
         point_features = torch.cat(point_features, dim=0)

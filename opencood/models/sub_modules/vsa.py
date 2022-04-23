@@ -212,8 +212,8 @@ class VoxelSetAbstraction(nn.Module):
         point_features_list = []
         if 'bev' in self.model_cfg['features_source']:
             point_bev_features = self.interpolate_from_bev_features(
-                keypoints[..., :3], batch_dict['processed_lidar']['spatial_features'], batch_dict['batch_size'],
-                bev_stride=batch_dict['processed_lidar']['spatial_features_stride']
+                keypoints[..., :3], batch_dict['spatial_features'], batch_dict['batch_size'],
+                bev_stride=batch_dict['spatial_features_stride']
             )
             point_features_list.append(point_bev_features[kpt_mask])
 
@@ -240,7 +240,7 @@ class VoxelSetAbstraction(nn.Module):
             point_features_list.append(pooled_features)
 
         for k, src_name in enumerate(self.SA_layer_names):
-            cur_coords = batch_dict['processed_lidar']['multi_scale_3d_features'][src_name].indices
+            cur_coords = batch_dict['multi_scale_3d_features'][src_name].indices
             xyz = common_utils.get_voxel_centers(
                 cur_coords[:, 1:4],
                 downsample_times=self.downsample_times_map[src_name],
@@ -256,22 +256,22 @@ class VoxelSetAbstraction(nn.Module):
                 xyz_batch_cnt=xyz_batch_cnt,
                 new_xyz=new_xyz[:, :3].contiguous(),
                 new_xyz_batch_cnt=new_xyz_batch_cnt,
-                features=batch_dict['processed_lidar']['multi_scale_3d_features'][src_name].features.contiguous(),
+                features=batch_dict['multi_scale_3d_features'][src_name].features.contiguous(),
             )
 
             point_features_list.append(pooled_features)
 
         point_features = torch.cat(point_features_list, dim=1)
 
-        batch_dict['processed_lidar']['point_features_before_fusion'] = point_features.view(-1, point_features.shape[-1])
+        batch_dict['point_features_before_fusion'] = point_features.view(-1, point_features.shape[-1])
         point_features = self.vsa_point_feature_fusion(point_features.view(-1, point_features.shape[-1]))
 
         cur_idx = 0
-        batch_dict['processed_lidar']['point_features'] = []
-        batch_dict['processed_lidar']['point_coords'] = []
+        batch_dict['point_features'] = []
+        batch_dict['point_coords'] = []
         for num in new_xyz_batch_cnt:
-            batch_dict['processed_lidar']['point_features'].append(point_features[cur_idx:cur_idx + num])
-            batch_dict['processed_lidar']['point_coords'].append(new_xyz[cur_idx:cur_idx + num])
+            batch_dict['point_features'].append(point_features[cur_idx:cur_idx + num])
+            batch_dict['point_coords'].append(new_xyz[cur_idx:cur_idx + num])
             cur_idx += num
 
         return batch_dict

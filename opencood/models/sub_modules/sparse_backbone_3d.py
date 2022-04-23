@@ -97,8 +97,8 @@ class VoxelBackBone8x(nn.Module):
             batch_dict:
                 encoded_spconv_tensor: sparse tensor
         """
-        voxel_features, voxel_coords = batch_dict['processed_lidar']['voxel_features'], \
-                                       batch_dict['processed_lidar']['voxel_coords']
+        voxel_features, voxel_coords = batch_dict['voxel_features'], \
+                                       batch_dict['voxel_coords']
         batch_size = batch_dict['batch_size']
         input_sp_tensor = spconv.SparseConvTensor(
             features=voxel_features,
@@ -118,11 +118,11 @@ class VoxelBackBone8x(nn.Module):
         # [200, 176, 5] -> [200, 176, 2]
         out = self.conv_out(x_conv4)
 
-        batch_dict['processed_lidar'].update({
+        batch_dict.update({
             'encoded_spconv_tensor': out,
             'encoded_spconv_tensor_stride': 8
         })
-        batch_dict['processed_lidar'].update({
+        batch_dict.update({
             'multi_scale_3d_features': {
                 'x_conv1': x_conv1,
                 'x_conv2': x_conv2,
@@ -130,7 +130,7 @@ class VoxelBackBone8x(nn.Module):
                 'x_conv4': x_conv4,
             }
         })
-        batch_dict['processed_lidar'].update({
+        batch_dict.update({
             'multi_scale_3d_strides': {
                 'x_conv1': 1,
                 'x_conv2': 2,

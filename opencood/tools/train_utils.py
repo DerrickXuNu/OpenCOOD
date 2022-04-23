@@ -39,6 +39,12 @@ def load_saved_model(saved_path, model):
             initial_epoch_ = 0
         return initial_epoch_
 
+    if os.path.exists(os.path.join(saved_path, 'latest.pth')):
+        model.load_state_dict(torch.load(
+            os.path.join(saved_path,
+                         'latest.pth')))
+        return 100, model
+
     initial_epoch = findLastCheckpoint(saved_path)
     if initial_epoch > 0:
         print('resuming by loading epoch %d' % initial_epoch)
