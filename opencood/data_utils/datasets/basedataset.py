@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+# Author: Runsheng Xu <rxx3386@ucla.edu>
+# License: TDG-Attribution-NonCommercial-NoDistrib
+
 """
 Basedataset class for all kinds of fusion.
 """
@@ -66,6 +70,12 @@ class BaseDataset(Dataset):
         else:
             root_dir = params['validate_dir']
 
+        if 'train_params' not in params or\
+                'max_cav' not in params['train_params']:
+            self.max_cav = 7
+        else:
+            self.max_cav = params['train_params']['max_cav']
+
         # first load all paths of different scenarios
         scenario_folders = sorted([os.path.join(root_dir, x)
                                    for x in os.listdir(root_dir) if
@@ -87,6 +97,9 @@ class BaseDataset(Dataset):
 
             # loop over all CAV data
             for (j, cav_id) in enumerate(cav_list):
+                if j > self.max_cav - 1:
+                    print('too many cavs')
+                    break
                 self.scenario_database[i][cav_id] = OrderedDict()
 
                 # save all yaml files to the dictionary
@@ -337,7 +350,7 @@ class BaseDataset(Dataset):
             object_bbx_center.append(ego_dict['object_bbx_center'])
             object_bbx_mask.append(ego_dict['object_bbx_mask'])
             processed_lidar_list.append(ego_dict['processed_lidar'])
-            label_dict_list.append(ego_dict['label_dict']['stage1'])
+            label_dict_list.append(ego_dict['label_dict'])
 
             if self.visualize:
                 origin_lidar.append(ego_dict['origin_lidar'])
@@ -353,12 +366,7 @@ class BaseDataset(Dataset):
         output_dict['ego'].update({'object_bbx_center': object_bbx_center,
                                    'object_bbx_mask': object_bbx_mask,
                                    'processed_lidar': processed_lidar_torch_dict,
-                                   'label_dict': {'stage1': label_torch_dict}})
-
-        # iou prediction needs anchors to generate targets dynamicly
-        if 'predict_iou' in self.params['postprocess'] and self.params['postprocess']['predict_iou']:
-            output_dict['ego']['anchor_box'] = torch.from_numpy(batch[0]['ego']['anchor_box']) # all sample has the same anchor boxes
-
+                                   'label_dict': label_torch_dict})
         if self.visualize:
             origin_lidar = \
                 np.array(downsample_lidar_minimum(pcd_np_list=origin_lidar))

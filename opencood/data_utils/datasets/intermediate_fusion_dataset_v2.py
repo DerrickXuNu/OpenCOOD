@@ -1,5 +1,10 @@
+# -*- coding: utf-8 -*-
+# Author: Yunshuang Yuan <yunshuang.yuan@ikg.uni-hannover.de>
+# Modified by: Runsheng Xu <rxx3386@ucla.edu>
+# License: TDG-Attribution-NonCommercial-NoDistrib
+
 """
-Dataset class for early fusion
+Dataset class for 2-stage backbone intermediate fusion
 """
 import random
 import math
@@ -30,17 +35,10 @@ class IntermediateFusionDatasetV2(basedataset.BaseDataset):
     def __init__(self, params, visualize, train=True):
         super(IntermediateFusionDatasetV2, self). \
             __init__(params, visualize, train)
-        self.pre_processor = build_preprocessor(params['preprocess'],
-                                                train)
-        self.post_processor = post_processor.build_postprocessor(
-            params['postprocess'],
-            train)
-        # TODO: currently, if visualize = True, keep_original_lidar will not work.
-        #  For the later one, the cav index information of each point cloud is not lost
-        if 'keep_original_lidar' in params['preprocess']:
-            self.keep_original_lidar = params['preprocess']['keep_original_lidar']
-        else:
-            self.keep_original_lidar = False
+        self.pre_processor = \
+            build_preprocessor(params['preprocess'], train)
+        self.post_processor = \
+            post_processor.build_postprocessor(params['postprocess'], train)
 
     def __getitem__(self, idx):
         base_data_dict = self.retrieve_base_data(idx)
@@ -66,8 +64,7 @@ class IntermediateFusionDatasetV2(basedataset.BaseDataset):
         object_stack = []
         object_id_stack = []
 
-        if self.visualize or self.keep_original_lidar:
-            projected_lidar_stack = []
+        projected_lidar_stack = []
 
         # loop over all CAVs to process information
         for cav_id, selected_cav_base in base_data_dict.items():
@@ -85,14 +82,14 @@ class IntermediateFusionDatasetV2(basedataset.BaseDataset):
                 selected_cav_base,
                 ego_lidar_pose)
             if len(selected_cav_processed['projected_lidar']) > 10:
-                object_stack.append(selected_cav_processed['object_bbx_center'])
+                object_stack.append(
+                    selected_cav_processed['object_bbx_center'])
                 object_id_stack += selected_cav_processed['object_ids']
                 processed_features.append(
                     selected_cav_processed['processed_features'])
 
-                if self.visualize or self.keep_original_lidar:
-                    projected_lidar_stack.append(
-                        selected_cav_processed['projected_lidar'])
+                projected_lidar_stack.append(
+                    selected_cav_processed['projected_lidar'])
 
         # exclude all repetitive objects
         unique_indices = \
@@ -121,33 +118,22 @@ class IntermediateFusionDatasetV2(basedataset.BaseDataset):
                 anchors=anchor_box,
                 mask=mask)
 
-        # import matplotlib.pyplot as plt
-        # from opencood.utils.visulizor import draw_points_boxes_plt_2d
-        # ax = plt.figure(figsize=(15, 5)).add_subplot(1, 1, 1)
-        # ax.set_aspect('equal', 'box')
-        # pc_range = [-140.8, -41.6, -3, 140.8, 41.6, 1]
-        # ax.set(xlim=(pc_range[0], pc_range[3]),
-        #        ylim=(pc_range[1], pc_range[4]))
-        # colors = ['r', 'g', 'b', 'c', 'orange']
-        # for i in range(len(projected_lidar_stack)):
-        #     pcd = projected_lidar_stack[i]
-        #     ax = draw_points_boxes_plt_2d(ax, pc_range, pcd, object_stack[i][:, [0, 1, 2, 5, 4, 3, 6]], colors[i])
-        # plt.xlabel('x')
-        # plt.ylabel('y')
-        # plt.show()
-        # plt.close()
-
         # Filter empty boxes
         object_stack_filtered = []
         label_dict_no_coop = []
         for boxes, points in zip(object_stack, projected_lidar_stack):
-            point_indices = points_in_boxes_cpu(points[:, :3], boxes[:, [0, 1, 2, 5, 4, 3, 6]])
+            point_indices = points_in_boxes_cpu(points[:, :3], boxes[:,
+                                                               [0, 1, 2, 5, 4,
+                                                                3, 6]])
             cur_mask = point_indices.sum(axis=1) > 0
-            if cur_mask.sum()==0:
+            if cur_mask.sum() == 0:
                 label_dict_no_coop.append({
-                    'pos_equal_one': np.zeros((*anchor_box.shape[:2], self.post_processor.anchor_num)),
-                    'neg_equal_one': np.ones((*anchor_box.shape[:2], self.post_processor.anchor_num)),
-                    'targets': np.zeros((*anchor_box.shape[:2], self.post_processor.anchor_num * 7))
+                    'pos_equal_one': np.zeros((*anchor_box.shape[:2],
+                                               self.post_processor.anchor_num)),
+                    'neg_equal_one': np.ones((*anchor_box.shape[:2],
+                                              self.post_processor.anchor_num)),
+                    'targets': np.zeros((*anchor_box.shape[:2],
+                                         self.post_processor.anchor_num * 7))
                 })
                 continue
             object_stack_filtered.append(boxes[cur_mask])
@@ -175,13 +161,8 @@ class IntermediateFusionDatasetV2(basedataset.BaseDataset):
              'label_dict': label_dict,
              'cav_num': cav_num})
 
-        # if self.visualize:
-        #     processed_data_dict['ego'].update({'origin_lidar_vis':
-        #         np.vstack(
-        #             projected_lidar_stack)})
-        if self.visualize or self.keep_original_lidar:
-            processed_data_dict['ego'].update({'origin_lidar':
-                                                   projected_lidar_stack})
+        processed_data_dict['ego'].update({'origin_lidar':
+                                               projected_lidar_stack})
         return processed_data_dict
 
     def get_item_single_car(self, selected_cav_base, ego_pose):
@@ -278,10 +259,10 @@ class IntermediateFusionDatasetV2(basedataset.BaseDataset):
         label_dict_list = []
         label_dict_no_coop_list = []
 
-        if self.visualize or self.keep_original_lidar:
-            origin_lidar = []
+        origin_lidar = []
 
-        # added by yys, fpvrcnn needs anchors for first stage proposal generation
+        # added by yys, fpvrcnn needs anchors for
+        # first stage proposal generation
         if batch[0]['ego']['anchor_box'] is not None:
             output_dict['ego'].update({'anchor_box':
                 torch.from_numpy(np.array(
@@ -299,8 +280,7 @@ class IntermediateFusionDatasetV2(basedataset.BaseDataset):
             label_dict_no_coop_list.append(ego_dict['label_dict']['stage1'])
             label_dict_list.append(ego_dict['label_dict']['stage2'])
 
-            if self.visualize or self.keep_original_lidar:
-                origin_lidar.append(ego_dict['origin_lidar'])
+            origin_lidar.append(ego_dict['origin_lidar'])
 
         # convert to numpy, (B, max_num, 7)
         object_bbx_center = torch.from_numpy(np.array(object_bbx_center))
@@ -316,7 +296,8 @@ class IntermediateFusionDatasetV2(basedataset.BaseDataset):
         label_torch_dict = \
             self.post_processor.collate_batch(label_dict_list)
         label_dict_no_coop_list_ = [label_dict for label_list in
-                                    label_dict_no_coop_list for label_dict in label_list]
+                                    label_dict_no_coop_list for label_dict in
+                                    label_list]
         for i in range(len(label_dict_no_coop_list_)):
             if isinstance(label_dict_no_coop_list_[i], list):
                 print('debug')
@@ -333,24 +314,19 @@ class IntermediateFusionDatasetV2(basedataset.BaseDataset):
                                        'stage2': label_torch_dict},
                                    'object_ids': object_ids[0]})
 
-        if self.visualize: # assume batch size is 1
-            origin_lidar_downsampled = downsample_lidar_minimum(pcd_np_list=[np.vstack(origin_lidar[0])])
-            origin_lidar_downsampled = torch.from_numpy(origin_lidar_downsampled[0])
-            output_dict['ego'].update({'origin_lidar_downsampled': origin_lidar_downsampled})
+        coords = []
+        idx = 0
+        for b in range(len(batch)):
+            for points in origin_lidar[b]:
+                assert len(points) != 0
+                coor_pad = np.pad(points, ((0, 0), (1, 0)),
+                                  mode="constant", constant_values=idx)
+                coords.append(coor_pad)
+                idx += 1
+        origin_lidar = np.concatenate(coords, axis=0)
 
-        if self.keep_original_lidar:
-            coords = []
-            idx = 0
-            for b in range(len(batch)):
-                for points in origin_lidar[b]:
-                    assert len(points)!=0
-                    coor_pad = np.pad(points, ((0, 0), (1, 0)), mode="constant", constant_values=idx)
-                    coords.append(coor_pad)
-                    idx += 1
-            origin_lidar = np.concatenate(coords, axis=0)
-
-            origin_lidar = torch.from_numpy(origin_lidar)
-            output_dict['ego'].update({'origin_lidar': origin_lidar})
+        origin_lidar = torch.from_numpy(origin_lidar)
+        output_dict['ego'].update({'origin_lidar': origin_lidar})
 
         return output_dict
 

@@ -7,14 +7,12 @@ from collections import OrderedDict
 
 import numpy as np
 import torch
-from torch.utils.data import DataLoader
 
 import opencood.data_utils.datasets
 from opencood.utils import box_utils
 from opencood.data_utils.post_processor import build_postprocessor
 from opencood.data_utils.datasets import basedataset
 from opencood.data_utils.pre_processor import build_preprocessor
-from opencood.hypes_yaml.yaml_utils import load_yaml
 from opencood.utils.pcd_utils import \
     mask_points_by_range, mask_ego_points, shuffle_points, \
     downsample_lidar_minimum
@@ -134,7 +132,7 @@ class EarlyFusionDataset(basedataset.BaseDataset):
              'object_ids': [object_id_stack[i] for i in unique_indices],
              'anchor_box': anchor_box,
              'processed_lidar': lidar_dict,
-             'label_dict': {'stage1': label_dict}})
+             'label_dict': label_dict})
 
         if self.visualize:
             processed_data_dict['ego'].update({'origin_lidar':

@@ -32,14 +32,21 @@ class RoIHead(nn.Module):
         c_out = sum([x[-1] for x in mlps])
         pre_channel = grid_size * grid_size * grid_size * c_out
         fc_layers = [self.model_cfg['n_fc_neurons']] * 2
-        self.shared_fc_layers, pre_channel = self._make_fc_layers(pre_channel, fc_layers)
+        self.shared_fc_layers, pre_channel = self._make_fc_layers(pre_channel,
+                                                                  fc_layers)
 
-        self.cls_layers, pre_channel = self._make_fc_layers(pre_channel, fc_layers,
-                                                           output_channels=self.model_cfg['num_cls'])
+        self.cls_layers, pre_channel = self._make_fc_layers(pre_channel,
+                                                            fc_layers,
+                                                            output_channels=
+                                                            self.model_cfg[
+                                                                'num_cls'])
         self.iou_layers, _ = self._make_fc_layers(pre_channel, fc_layers,
-                                                 output_channels=self.model_cfg['num_cls'])
+                                                  output_channels=
+                                                  self.model_cfg['num_cls'])
         self.reg_layers, _ = self._make_fc_layers(pre_channel, fc_layers,
-                                                 output_channels=self.model_cfg['num_cls'] * 7)
+                                                  output_channels=
+                                                  self.model_cfg[
+                                                      'num_cls'] * 7)
 
         self._init_weights(weight_init='xavier')
 
@@ -76,7 +83,9 @@ class RoIHead(nn.Module):
             if self.model_cfg['dp_ratio'] > 0:
                 fc_layers.append(nn.Dropout(self.model_cfg['dp_ratio']))
         if output_channels is not None:
-            fc_layers.append(nn.Conv1d(pre_channel, output_channels, kernel_size=1, bias=True))
+            fc_layers.append(
+                nn.Conv1d(pre_channel, output_channels, kernel_size=1,
+                          bias=True))
         fc_layers = nn.Sequential(*fc_layers)
         return fc_layers, pre_channel
 
@@ -84,7 +93,10 @@ class RoIHead(nn.Module):
         rois = rois.view(-1, rois.shape[-1])
         batch_size_rcnn = rois.shape[0]
 
-        local_roi_grid_points = self.get_dense_grid_points(rois, batch_size_rcnn, self.grid_size)  # (B, 6x6x6, 3)
+        # (B, 6x6x6, 3)
+        local_roi_grid_points = self.get_dense_grid_points(rois,
+                                                           batch_size_rcnn,
+                                                           self.grid_size)
         global_roi_grid_points = common_utils.rotate_points_along_z(
             local_roi_grid_points.clone(), rois[:, 6]
         ).squeeze(dim=1)
@@ -95,16 +107,21 @@ class RoIHead(nn.Module):
     @staticmethod
     def get_dense_grid_points(rois, batch_size_rcnn, grid_size):
         """
-        Get the local coordinates of each grid point of a roi in the coordinate system of the roi(origin lies in the
-        center of this roi.
+        Get the local coordinates of each grid point of a roi in the coordinate
+        system of the roi(origin lies in the center of this roi.
         """
         faked_features = rois.new_ones((grid_size, grid_size, grid_size))
-        dense_idx = torch.stack(torch.where(faked_features), dim=1)  # (N, 3) [x_idx, y_idx, z_idx]
-        dense_idx = dense_idx.repeat(batch_size_rcnn, 1, 1).float()  # (B, 6x6x6, 3)
+        dense_idx = torch.stack(torch.where(faked_features),
+                                dim=1)  # (N, 3) [x_idx, y_idx, z_idx]
+        dense_idx = dense_idx.repeat(batch_size_rcnn, 1,
+                                     1).float()  # (B, 6x6x6, 3)
 
         local_roi_size = rois.view(batch_size_rcnn, -1)[:, 3:6]
-        roi_grid_points = (dense_idx + 0.5) / grid_size * local_roi_size.unsqueeze(dim=1) \
-                          - (local_roi_size.unsqueeze(dim=1) / 2)  # (B, 6x6x6, 3)
+        roi_grid_points = (
+                                  dense_idx + 0.5) / grid_size * local_roi_size.unsqueeze(
+            dim=1) \
+                          - (local_roi_size.unsqueeze(
+            dim=1) / 2)  # (B, 6x6x6, 3)
         return roi_grid_points
 
     def assign_targets(self, batch_dict):
@@ -121,7 +138,8 @@ class RoIHead(nn.Module):
         # pred_boxes = [boxes[:, [0, 1, 2, 5, 4, 3, 6]] for boxes in batch_dict['boxes_fused']]
         pred_boxes = batch_dict['boxes_fused']
         gt_boxes = [b[m][:, [0, 1, 2, 5, 4, 3, 6]].float() for b, m in
-                    zip(batch_dict['object_bbx_center'], batch_dict['object_bbx_mask'].bool())]
+                    zip(batch_dict['object_bbx_center'],
+                        batch_dict['object_bbx_mask'].bool())]
         for rois, gts in zip(pred_boxes, gt_boxes):
             gts[:, -1] *= 1
             ious = boxes_iou3d_gpu(rois, gts)
@@ -129,54 +147,61 @@ class RoIHead(nn.Module):
             gt_of_rois = gts[gt_inds]
             rcnn_labels = (max_ious > 0.3).float()
             mask = torch.logical_not(rcnn_labels.bool())
-            gt_of_rois[mask] = rois[mask] # set negative samples back to rois, no correction in stage2 for them
+
+            # set negative samples back to rois, no correction in stage2 for them
+            gt_of_rois[mask] = rois[mask]
             gt_of_rois_src = gt_of_rois.clone().detach()
 
             # canoical transformation
             roi_center = rois[:, 0:3]
-            #TODO: roi_ry > 0 in pcdet
+            # TODO: roi_ry > 0 in pcdet
             roi_ry = rois[:, 6] % (2 * np.pi)
             gt_of_rois[:, 0:3] = gt_of_rois[:, 0:3] - roi_center
             gt_of_rois[:, 6] = gt_of_rois[:, 6] - roi_ry
 
             # transfer LiDAR coords to local coords
             gt_of_rois = common_utils.rotate_points_along_z(
-                points=gt_of_rois.view(-1, 1, gt_of_rois.shape[-1]), angle=-roi_ry.view(-1)
+                points=gt_of_rois.view(-1, 1, gt_of_rois.shape[-1]),
+                angle=-roi_ry.view(-1)
             ).view(-1, gt_of_rois.shape[-1])
 
             # flip orientation if rois have opposite orientation
-            heading_label = (gt_of_rois[:, 6] + (torch.div(torch.abs(gt_of_rois[:, 6].min()),
-                                                           (2 * np.pi), rounding_mode='trunc')
-                                                 + 1) * 2 * np.pi) % (2 * np.pi)  # 0 ~ 2pi
-            opposite_flag = (heading_label > np.pi * 0.5) & (heading_label < np.pi * 1.5)
-            heading_label[opposite_flag] = (heading_label[opposite_flag] + np.pi) % (2 * np.pi)  # (0 ~ pi/2, 3pi/2 ~ 2pi)
+            heading_label = (gt_of_rois[:, 6] + (
+                    torch.div(torch.abs(gt_of_rois[:, 6].min()),
+                              (2 * np.pi), rounding_mode='trunc')
+                    + 1) * 2 * np.pi) % (2 * np.pi)  # 0 ~ 2pi
+            opposite_flag = (heading_label > np.pi * 0.5) & (
+                    heading_label < np.pi * 1.5)
+
+            # (0 ~ pi/2, 3pi/2 ~ 2pi)
+            heading_label[opposite_flag] = (heading_label[
+                                                opposite_flag] + np.pi) % (
+                                                   2 * np.pi)
             flag = heading_label > np.pi
-            heading_label[flag] = heading_label[flag] - np.pi * 2  # (-pi/2, pi/2)
-            heading_label = torch.clamp(heading_label, min=-np.pi / 2, max=np.pi / 2)
+            heading_label[flag] = heading_label[
+                                      flag] - np.pi * 2  # (-pi/2, pi/2)
+            heading_label = torch.clamp(heading_label, min=-np.pi / 2,
+                                        max=np.pi / 2)
             gt_of_rois[:, 6] = heading_label
 
             # generate regression target
             rois_anchor = rois.clone().detach().view(-1, self.code_size)
             rois_anchor[:, 0:3] = 0
             rois_anchor[:, 6] = 0
-            # rcnn_batch_size = gt_of_rois.view(-1, self.code_size).shape[0]
-            # from opencood.utils import visulizor
-            # visulizor.draw_points_boxes_plt_2d(pc_range=[-100, -41.6, -3, 140.8, 41.6, 1],
-            #                                    boxes_pred=rois,
-            #                                    boxes_gt=gts)
+
             reg_targets = box_utils.box_encode(
                 gt_of_rois.view(-1, self.code_size), rois_anchor
             )
-            # reg_targets = gt_of_rois.view(-1, self.code_size) - rois_anchor
 
-            batch_dict['rcnn_label_dict'][          'rois'].append(rois)
-            batch_dict['rcnn_label_dict'][    'gt_of_rois'].append(gt_of_rois)
-            batch_dict['rcnn_label_dict']['gt_of_rois_src'].append(gt_of_rois_src)
-            batch_dict['rcnn_label_dict'][       'cls_tgt'].append(rcnn_labels)
-            batch_dict['rcnn_label_dict'][       'reg_tgt'].append(reg_targets)
-            batch_dict['rcnn_label_dict'][       'iou_tgt'].append(max_ious)
-            batch_dict['rcnn_label_dict'][   'rois_anchor'].append(rois_anchor)
-            batch_dict['rcnn_label_dict'][   'record_len'].append(rois.shape[0])
+            batch_dict['rcnn_label_dict']['rois'].append(rois)
+            batch_dict['rcnn_label_dict']['gt_of_rois'].append(gt_of_rois)
+            batch_dict['rcnn_label_dict']['gt_of_rois_src'].append(
+                gt_of_rois_src)
+            batch_dict['rcnn_label_dict']['cls_tgt'].append(rcnn_labels)
+            batch_dict['rcnn_label_dict']['reg_tgt'].append(reg_targets)
+            batch_dict['rcnn_label_dict']['iou_tgt'].append(max_ious)
+            batch_dict['rcnn_label_dict']['rois_anchor'].append(rois_anchor)
+            batch_dict['rcnn_label_dict']['record_len'].append(rois.shape[0])
 
         # cat list to tensor
         for k, v in batch_dict['rcnn_label_dict'].items():
@@ -189,14 +214,16 @@ class RoIHead(nn.Module):
     def roi_grid_pool(self, batch_dict):
         batch_size = len(batch_dict['record_len'])
         rois = batch_dict['rcnn_label_dict']['rois']
-        point_coords = batch_dict['processed_lidar']['point_coords']
-        point_features = batch_dict['processed_lidar']['point_features']
+        point_coords = batch_dict['point_coords']
+        point_features = batch_dict['point_features']
         label_record_len = batch_dict['rcnn_label_dict']['record_len']
 
         point_features = torch.cat(point_features, dim=0)
-
-        global_roi_grid_points, local_roi_grid_points = self.get_global_grid_points_of_roi(rois)  # (BxN, 6x6x6, 3)
-        global_roi_grid_points = global_roi_grid_points.view(batch_size, -1, 3)  # (B, Nx6x6x6, 3)
+        # (BxN, 6x6x6, 3)
+        global_roi_grid_points, local_roi_grid_points = \
+            self.get_global_grid_points_of_roi(rois)
+        # (B, Nx6x6x6, 3)
+        global_roi_grid_points = global_roi_grid_points.view(batch_size, -1, 3)
 
         xyz = torch.cat(point_coords, dim=0)
         xyz_batch_cnt = xyz.new_zeros(batch_size).int()
@@ -205,18 +232,19 @@ class RoIHead(nn.Module):
         new_xyz = global_roi_grid_points.view(-1, 3)
         new_xyz_batch_cnt = xyz.new_zeros(batch_size).int()
         for bs_idx in range(batch_size):
-            new_xyz_batch_cnt[bs_idx] = label_record_len[bs_idx] * self.grid_size ** 3
+            new_xyz_batch_cnt[bs_idx] = label_record_len[
+                                            bs_idx] * self.grid_size ** 3
 
         pooled_points, pooled_features = self.roi_grid_pool_layer(
             xyz=xyz[:, :3].contiguous(),
             xyz_batch_cnt=xyz_batch_cnt,
             new_xyz=new_xyz[:, :3].contiguous(),
             new_xyz_batch_cnt=new_xyz_batch_cnt,
-            features=point_features.contiguous(),   # weighted point features
+            features=point_features.contiguous(),  # weighted point features
         )  # (M1 + M2 ..., C)
-
+        # (BxN, 6x6x6, C)
         pooled_features = pooled_features.view(-1, self.grid_size ** 3,
-                                               pooled_features.shape[-1])  # (BxN, 6x6x6, C)
+                                               pooled_features.shape[-1])
 
         return pooled_features
 
@@ -226,18 +254,25 @@ class RoIHead(nn.Module):
         pooled_features = self.roi_grid_pool(batch_dict)  # (BxN, 6x6x6, C)
 
         batch_size_rcnn = pooled_features.shape[0]
-        pooled_features = pooled_features.permute(0, 2, 1).\
-            contiguous().view(batch_size_rcnn, -1, self.grid_size, self.grid_size, self.grid_size)  # (BxN, C, 6, 6, 6)
-        shared_features = self.shared_fc_layers(pooled_features.view(batch_size_rcnn, -1, 1))
-        rcnn_cls = self.cls_layers(shared_features).transpose(1, 2).contiguous().squeeze(dim=1)  # (B, 1 or 2)
-        rcnn_iou = self.iou_layers(shared_features).transpose(1, 2).contiguous().squeeze(dim=1)  # (B, 1)
-        rcnn_reg = self.reg_layers(shared_features).transpose(1, 2).contiguous().squeeze(dim=1)  # (B, C)
+        pooled_features = pooled_features.permute(0, 2, 1). \
+            contiguous().view(batch_size_rcnn, -1, self.grid_size,
+                              self.grid_size,
+                              self.grid_size)  # (BxN, C, 6, 6, 6)
+        shared_features = self.shared_fc_layers(
+            pooled_features.view(batch_size_rcnn, -1, 1))
+        rcnn_cls = self.cls_layers(shared_features).transpose(1,
+                                                              2).contiguous().squeeze(
+            dim=1)  # (B, 1 or 2)
+        rcnn_iou = self.iou_layers(shared_features).transpose(1,
+                                                              2).contiguous().squeeze(
+            dim=1)  # (B, 1)
+        rcnn_reg = self.reg_layers(shared_features).transpose(1,
+                                                              2).contiguous().squeeze(
+            dim=1)  # (B, C)
 
         batch_dict['fpvrcnn_out'] = {
-        'rcnn_cls': rcnn_cls,
-        'rcnn_iou': rcnn_iou,
-        'rcnn_reg': rcnn_reg,
+            'rcnn_cls': rcnn_cls,
+            'rcnn_iou': rcnn_iou,
+            'rcnn_reg': rcnn_reg,
         }
         return batch_dict
-
-

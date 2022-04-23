@@ -14,8 +14,6 @@ from opencood.utils import common_utils
 class FpvrcnnPostprocessor(VoxelPostprocessor):
     def __init__(self, anchor_params, train):
         super(FpvrcnnPostprocessor, self).__init__(anchor_params, train)
-        self.train = train
-        self.anchor_num = self.params['anchor_args']['num']
 
     def post_process(self, data_dict, output_dict, stage1=False):
         if stage1:
@@ -74,7 +72,7 @@ class FpvrcnnPostprocessor(VoxelPostprocessor):
 
             # convert regression map back to bounding box
             # (N, W*L*anchor_num, 7)
-            batch_box3d = self.delta_to_boxes3d(reg, anchor_box)
+            batch_box3d = self.delta_to_boxes3d(reg, anchor_box, False)
             mask = torch.gt(prob, self.params['target_args']['score_threshold'])
             batch_num_box_count = [int(m.sum()) for m in mask]
             mask = mask.view(1, -1)

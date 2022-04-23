@@ -66,9 +66,6 @@ def main():
                    0.7: {'tp': [], 'fp': [], 'gt': 0}}
 
     for i, batch_data in tqdm(enumerate(data_loader)):
-        # if i < 1724:
-        #     continue
-        # print(i)
         with torch.no_grad():
             batch_data = train_utils.to_device(batch_data, device)
             if opt.fusion_method == 'late':
