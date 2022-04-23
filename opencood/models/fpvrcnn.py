@@ -18,7 +18,8 @@ class FPVRCNN(nn.Module):
         lidar_range = np.array(args['lidar_range'])
         grid_size = np.round((lidar_range[3:6] - lidar_range[:3]) /
                              np.array(args['voxel_size'])).astype(np.int64)
-        self.vfe = MeanVFE(args['mean_vfe'], args['mean_vfe']['num_point_features'])
+        self.vfe = MeanVFE(args['mean_vfe'],
+                           args['mean_vfe']['num_point_features'])
         self.spconv_block = VoxelBackBone8x(args['spconv'],
                                             input_channels=args['spconv']['num_features_in'],
                                             grid_size=grid_size)
@@ -33,18 +34,21 @@ class FPVRCNN(nn.Module):
 
     def forward(self, batch_dict):
         batch_dict['batch_size'] = int(batch_dict['record_len'].sum())
+
         batch_dict = self.vfe(batch_dict)
         batch_dict = self.spconv_block(batch_dict)
         batch_dict = self.map_to_bev(batch_dict)
+
         out = self.ssfa(batch_dict['processed_lidar']['spatial_features'])
         batch_dict['preds_dict_stage1'] = self.head(out)
         data_dict, output_dict = {}, {}
         data_dict['ego'], output_dict['ego'] = batch_dict, batch_dict
-        # The data structure is a little confusing, same data pointer is passed two times,
-        # because it should match the format of the main framwork
-        pred_box3d_list, scores_list = self.post_processor.post_process(data_dict, output_dict, stage1=True)
+
+        pred_box3d_list, scores_list = \
+            self.post_processor.post_process(data_dict, output_dict, stage1=True)
         batch_dict['det_boxes'] = pred_box3d_list
         batch_dict['det_scores'] = scores_list
+
         if pred_box3d_list is not None:
             batch_dict = self.vsa(batch_dict)
             batch_dict = self.matcher(batch_dict)
