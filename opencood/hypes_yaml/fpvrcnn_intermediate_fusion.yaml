@@ -11,7 +11,7 @@ train_params:
   save_freq: 1
 
 fusion:
-  core_method: 'IntermediateFusionDatasetV2' # LateFusionDataset, EarlyFusionDataset, IntermediateFusionDataset supported
+  core_method: 'IntermediateFusionDatasetV2' # LateFusionDataset, EarlyFusionDataset, IntermediateFusionDataset IntermediateFusionDatasetV2 supported
   args: []
 
 # preprocess-related

@@ -19,8 +19,7 @@ from opencood.utils import box_utils
 from opencood.data_utils.datasets import basedataset
 from opencood.data_utils.pre_processor import build_preprocessor
 from opencood.utils.pcd_utils import \
-    mask_points_by_range, mask_ego_points, shuffle_points, \
-    downsample_lidar_minimum
+    mask_points_by_range, mask_ego_points, shuffle_points
 from opencood.utils.transformation_utils import x1_to_x2
 from opencood.pcdet_utils.roiaware_pool3d.roiaware_pool3d_utils import \
     points_in_boxes_cpu
@@ -373,3 +372,19 @@ class IntermediateFusionDatasetV2(basedataset.BaseDataset):
         gt_box_tensor = self.post_processor.generate_gt_bbx(data_dict)
 
         return pred_box_tensor, pred_score, gt_box_tensor
+
+    def visualize_result(self, pred_box_tensor,
+                         gt_tensor,
+                         pcd,
+                         show_vis,
+                         save_path,
+                         dataset=None):
+        # we need to convert the pcd from [n, 5] -> [n, 4]
+        pcd = pcd[:, 1:]
+        # visualize the model output
+        self.post_processor.visualize(pred_box_tensor,
+                                      gt_tensor,
+                                      pcd,
+                                      show_vis,
+                                      save_path,
+                                      dataset=dataset)
