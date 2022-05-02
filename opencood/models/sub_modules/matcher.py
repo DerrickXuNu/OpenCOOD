@@ -3,7 +3,6 @@ from torch import nn
 
 from opencood.pcdet_utils.iou3d_nms.iou3d_nms_utils import boxes_iou3d_gpu
 
-
 pi = 3.141592653
 
 
@@ -14,6 +13,7 @@ def limit_period(val, offset=0.5, period=2 * pi):
 class Matcher(nn.Module):
     """Correct localization error and use Algorithm 1:
      BBox matching with scores to fuse the proposal BBoxes"""
+
     def __init__(self, cfg, pc_range):
         super(Matcher, self).__init__()
         self.pc_range = pc_range
@@ -21,7 +21,8 @@ class Matcher(nn.Module):
     @torch.no_grad()
     def forward(self, data_dict):
         clusters, scores = self.clustering(data_dict)
-        data_dict['boxes_fused'], data_dict['scores_fused'] = self.cluster_fusion(clusters, scores)
+        data_dict['boxes_fused'], data_dict[
+            'scores_fused'] = self.cluster_fusion(clusters, scores)
         self.merge_keypoints(data_dict)
         return data_dict
 
@@ -69,9 +70,11 @@ class Matcher(nn.Module):
                 max_score_idx = torch.argmax(s)
                 dirs_diff = torch.abs(dirs - dirs[max_score_idx].item())
                 lt_pi = (dirs_diff > pi).int()
-                dirs_diff = dirs_diff * (1 - lt_pi) + (2 * pi - dirs_diff) * lt_pi
-                score_lt_half_pi = s[dirs_diff > pi / 2].sum() # larger than
-                score_set_half_pi = s[dirs_diff <= pi / 2].sum() # small equal than
+                dirs_diff = dirs_diff * (1 - lt_pi) + (
+                            2 * pi - dirs_diff) * lt_pi
+                score_lt_half_pi = s[dirs_diff > pi / 2].sum()  # larger than
+                score_set_half_pi = s[
+                    dirs_diff <= pi / 2].sum()  # small equal than
                 # select larger scored direction as final direction
                 if score_lt_half_pi <= score_set_half_pi:
                     dirs[dirs_diff > pi / 2] += pi
@@ -81,22 +84,26 @@ class Matcher(nn.Module):
                 s_normalized = s / s.sum()
                 sint = torch.sin(dirs) * s_normalized
                 cost = torch.cos(dirs) * s_normalized
-                theta = torch.atan2(sint.sum(), cost.sum()).view(1,)
+                theta = torch.atan2(sint.sum(), cost.sum()).view(1, )
                 center_dim = c[:, :-1] * s_normalized[:, None]
                 boxes_fused.append(torch.cat([center_dim.sum(dim=0), theta]))
                 s_sorted = torch.sort(s, descending=True).values
                 s_fused = 0
                 for i, ss in enumerate(s_sorted):
-                    s_fused += ss**(i+1)
+                    s_fused += ss ** (i + 1)
                 s_fused = torch.tensor([min(s_fused, 1.0)], device=s.device)
                 scores_fused.append(s_fused)
 
         assert len(boxes_fused) > 0
         boxes_fused = torch.stack(boxes_fused, dim=0)
         len_records = [len(c) for c in clusters]
-        boxes_fused = [boxes_fused[sum(len_records[:i]):sum(len_records[:i])+l] for i, l in enumerate(len_records)]
+        boxes_fused = [
+            boxes_fused[sum(len_records[:i]):sum(len_records[:i]) + l] for i, l
+            in enumerate(len_records)]
         scores_fused = torch.stack(scores_fused, dim=0)
-        scores_fused = [scores_fused[sum(len_records[:i]):sum(len_records[:i]) + l] for i, l in enumerate(len_records)]
+        scores_fused = [
+            scores_fused[sum(len_records[:i]):sum(len_records[:i]) + l] for
+            i, l in enumerate(len_records)]
 
         return boxes_fused, scores_fused
 
@@ -108,11 +115,10 @@ class Matcher(nn.Module):
         keypoints_coords = data_dict['point_coords']
         idx = 0
         for l in data_dict['record_len']:
-            kpts_coor_out.append(torch.cat(keypoints_coords[idx:l+idx], dim=0))
-            kpts_feat_out.append(torch.cat(keypoints_features[idx:l+idx], dim=0))
+            kpts_coor_out.append(
+                torch.cat(keypoints_coords[idx:l + idx], dim=0))
+            kpts_feat_out.append(
+                torch.cat(keypoints_features[idx:l + idx], dim=0))
             idx += l
         data_dict['point_features'] = kpts_feat_out
         data_dict['point_coords'] = kpts_coor_out
-
-
-

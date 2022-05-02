@@ -1,14 +1,14 @@
 import argparse
 import os
 import statistics
-import random, numpy
+
 import torch
-from torch.utils.data import DataLoader
 from tensorboardX import SummaryWriter
+from torch.utils.data import DataLoader
 
 import opencood.hypes_yaml.yaml_utils as yaml_utils
-from opencood.tools import train_utils
 from opencood.data_utils.datasets import build_dataset
+from opencood.tools import train_utils
 
 
 def train_parser():
@@ -22,11 +22,6 @@ def train_parser():
 
 
 def main():
-    # set random seeds
-    torch.manual_seed(0)
-    random.seed(0)
-    numpy.random.seed(0)
-
     opt = train_parser()
     hypes = yaml_utils.load_yaml(opt.hypes_yaml, opt)
 
@@ -87,8 +82,11 @@ def main():
     # used to help schedule learning rate
 
     for epoch in range(init_epoch, max(epoches, init_epoch)):
+        scheduler.step()
+
         for param_group in optimizer.param_groups:
             print('learning rate %f' % param_group["lr"])
+
         for i, batch_data in enumerate(train_loader):
             # the model will be evaluation mode during validation
             model.train()
@@ -135,7 +133,6 @@ def main():
             torch.save(model.state_dict(),
                        os.path.join(saved_path,
                                     'net_epoch%d.pth' % (epoch + 1)))
-        scheduler.step()
 
     print('Training Finished, checkpoints saved to %s' % saved_path)
 
