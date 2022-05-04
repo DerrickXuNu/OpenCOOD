@@ -36,6 +36,14 @@ class Matcher(nn.Module):
         for i, l in enumerate(record_len):
             cur_boxes_list = data_dict['det_boxes'][sum(record_len[:i]):sum(record_len[:i])+l]
             cur_scores_list = data_dict['det_scores'][sum(record_len[:i]):sum(record_len[:i])+l]
+            cur_boxes_list = [b for b in cur_boxes_list if len(b) > 0]
+            cur_scores_list = [s for s in cur_scores_list if len(s) > 0]
+            if len(cur_scores_list) == 0:
+                clusters_batch.append([torch.Tensor([0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.57]).
+                                      to(torch.device('cuda:0')).view(1, 7)])
+                scores_batch.append([torch.Tensor([0.01]).to(torch.device('cuda:0')).view(-1)])
+                continue
+
             pred_boxes_cat = torch.cat(cur_boxes_list, dim=0)
             pred_boxes_cat[:, -1] = limit_period(pred_boxes_cat[:, -1])
             pred_scores_cat = torch.cat(cur_scores_list, dim=0)
@@ -49,7 +57,7 @@ class Matcher(nn.Module):
                 cur_cluster_id += 1
             clusters = []
             scores = []
-            for j in range(1, cluster_indices.max().item() + 1):
+            for j in range(1, cur_cluster_id):
                 clusters.append(pred_boxes_cat[cluster_indices==j])
                 scores.append(pred_scores_cat[cluster_indices==j])
             clusters_batch.append(clusters)

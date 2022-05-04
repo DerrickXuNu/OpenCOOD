@@ -1,11 +1,11 @@
 name: fpvrcnn_intermediate_fusion
 
 yaml_parser: "load_voxel_params"
-root_dir: "/home/runshengxu/project/OpenCOOD/opv2v_data_dumping/train"
-validate_dir: "/home/runshengxu/project/OpenCOOD/opv2v_data_dumping/validate"
+root_dir: "/media/hdd/yuan/koko/data/OPV2V/train" #"/home/runshengxu/project/OpenCOOD/opv2v_data_dumping/train"
+validate_dir: "/media/hdd/yuan/koko/data/OPV2V/validate" #"/home/runshengxu/project/OpenCOOD/opv2v_data_dumping/validate"
 
 train_params:
-  batch_size: &batch_size 1 # FPV-RCNN currently only support batch size = 1
+  batch_size: &batch_size 2 # FPV-RCNN currently only support batch size = 1
   epoches: 70
   eval_freq: 1
   save_freq: 1
@@ -39,7 +39,7 @@ data_augment:
 
 # anchor box related
 postprocess: &postprocess_params
-  core_method: 'VoxelPostprocessor' # VoxelPostprocessor, BevPostprocessor, FpvrcnnPostprocessor supported
+  core_method: 'FpvrcnnPostprocessor' # VoxelPostprocessor, BevPostprocessor, FpvrcnnPostprocessor supported
   anchor_args:
     cav_lidar_range: *cav_lidar
     l: 3.9

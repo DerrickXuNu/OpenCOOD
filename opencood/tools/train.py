@@ -82,13 +82,14 @@ def main():
     # used to help schedule learning rate
 
     for epoch in range(init_epoch, max(epoches, init_epoch)):
-        scheduler.step()
 
         for param_group in optimizer.param_groups:
             print('learning rate %f' % param_group["lr"])
 
         for i, batch_data in enumerate(train_loader):
             # the model will be evaluation mode during validation
+            # if batch_data['ego']['record_len'].sum() > 3:
+            #     continue
             model.train()
             model.zero_grad()
             optimizer.zero_grad()
@@ -110,6 +111,7 @@ def main():
             # back-propagation
             final_loss.backward()
             optimizer.step()
+            scheduler.step()
 
         if epoch % hypes['train_params']['eval_freq'] == 0:
             valid_ave_loss = []

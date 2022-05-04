@@ -10,6 +10,7 @@ from opencood.tools import train_utils, infrence_utils
 from opencood.data_utils.datasets import build_dataset
 from opencood.visualization import vis_utils
 from opencood.utils import eval_utils
+from opencood.utils.draco_compression import save_ply
 import matplotlib.pyplot as plt
 
 
@@ -25,6 +26,9 @@ def test_parser():
     parser.add_argument('--save_vis', action='store_true',
                         help='whether to save visualization result')
     parser.add_argument('--save_npy', action='store_true',
+                        help='whether to save prediction and gt result'
+                             'in npy_test file')
+    parser.add_argument('--save_cpm', action='store_true',
                         help='whether to save prediction and gt result'
                              'in npy_test file')
     opt = parser.parse_args()
@@ -112,6 +116,11 @@ def main():
                                                       'origin_lidar'][0],
                                                   i,
                                                   npy_save_path)
+            if opt.save_cpm:
+                cpm_save_path = os.path.join(opt.model_dir, 'cpms')
+                if not os.path.exists(cpm_save_path):
+                    os.makedirs(cpm_save_path)
+                save_ply(cpm_save_path, batch_data['batch_coords'], batch_data['batch_features'])
 
             if opt.show_vis or opt.save_vis:
                 vis_save_path = ''

@@ -82,7 +82,7 @@ class VoxelSetAbstraction(nn.Module):
             c_in += c_bev
 
         if 'raw_points' in self.model_cfg['features_source']:
-            mlps = SA_cfg['raw_points']['mlps']
+            mlps = copy.copy(SA_cfg['raw_points']['mlps'])
             for k in range(len(mlps)):
                 mlps[k] = [num_rawpoint_features - 3] + mlps[k]
 
@@ -206,8 +206,7 @@ class VoxelSetAbstraction(nn.Module):
         # Ensure there are more than 2 points are selected to satisfy the
         # condition of batch norm in the FC layers of feature fusion module
         if (kpt_mask).sum() < 2:
-            kpt_mask[0, random.randint(0, 1024)] = True
-            kpt_mask[1, random.randint(0, 1024)] = True
+            kpt_mask[0, torch.randint(0, 1024, (2,))] = True
 
         point_features_list = []
         if 'bev' in self.model_cfg['features_source']:

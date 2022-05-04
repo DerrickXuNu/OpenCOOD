@@ -109,8 +109,8 @@ class FpvrcnnPostprocessor(VoxelPostprocessor):
 
                 # if the number of boxes is too huge, this would consume a lot of memory in the second stage
                 # therefore, randomly select some boxes if the box number is too big at the beginning of the training
-                if len(boxes3d) > 300:
-                    keep_idx = torch.multinomial(scores, 300)
+                if len(boxes3d) > 100:
+                    keep_idx = torch.multinomial(scores, 100)
                     idx_start = 0
                     count = []
                     for i, n in enumerate(batch_num_box_count):
