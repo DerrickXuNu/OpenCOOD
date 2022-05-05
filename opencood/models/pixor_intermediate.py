@@ -1,8 +1,13 @@
+# -*- coding: utf-8 -*-
+# Author: Hao Xiang <haxiang@g.ucla.edu>
+# License: TDG-Attribution-NonCommercial-NoDistrib
+
+
 import math
 
 import torch.nn as nn
 
-from opencood.models.sub_modules.self_attn import AttFusion
+from opencood.models.fuse_modules.self_attn import AttFusion
 from opencood.models.pixor import Bottleneck, BackBone, Header
 
 

@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+# Author: Runsheng Xu <rxx3386@ucla.edu>, Hao Xiang <haxiang@g.ucla.edu>,
+# License: TDG-Attribution-NonCommercial-NoDistrib
+
+
 """
 Bounding box related utility functions
 """
@@ -179,7 +184,8 @@ def boxes_to_corners_3d(boxes3d, order):
 
     corners3d = boxes3d_[:, None, 3:6].repeat(1, 8, 1) * template[None, :, :]
     corners3d = common_utils.rotate_points_along_z(corners3d.view(-1, 8, 3),
-                                                   boxes3d_[:, 6]).view(-1, 8, 3)
+                                                   boxes3d_[:, 6]).view(-1, 8,
+                                                                        3)
     corners3d += boxes3d_[:, None, 0:3]
 
     return corners3d.numpy() if is_numpy else corners3d
@@ -360,7 +366,7 @@ def get_mask_for_boxes_within_range_torch(boxes):
 
 
 def mask_boxes_outside_range_numpy(boxes, limit_range, order,
-                                   min_num_corners=8):
+                                   min_num_corners=8, return_mask=False):
     """
     Parameters
     ----------
@@ -375,6 +381,9 @@ def mask_boxes_outside_range_numpy(boxes, limit_range, order,
 
     order : str
         'lwh' or 'hwl'
+
+    return_mask : bool
+        Whether return the mask.
 
     Returns
     -------
@@ -391,6 +400,8 @@ def mask_boxes_outside_range_numpy(boxes, limit_range, order,
             (new_boxes <= limit_range[3:6])).all(axis=2)
     mask = mask.sum(axis=1) >= min_num_corners  # (N)
 
+    if return_mask:
+        return boxes[mask], mask
     return boxes[mask]
 
 

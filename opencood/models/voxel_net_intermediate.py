@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+# Author: Runsheng Xu <rxx3386@ucla.edu>
+# License: TDG-Attribution-NonCommercial-NoDistrib
+
+
 """
 VoxelNet for intermediate fusion
 """
@@ -10,7 +15,7 @@ from torch.autograd import Variable
 from opencood.models.voxel_net import RPN, CML
 from opencood.models.sub_modules.pillar_vfe import PillarVFE
 from opencood.utils.common_utils import torch_tensor_to_numpy
-from opencood.models.sub_modules.self_attn import AttFusion
+from opencood.models.fuse_modules.self_attn import AttFusion
 from opencood.models.sub_modules.auto_encoder import AutoEncoder
 
 

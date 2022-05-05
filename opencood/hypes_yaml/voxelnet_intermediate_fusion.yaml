@@ -1,4 +1,4 @@
-name: voxelnet_intermediate_fusion_compression_4
+name: voxelnet_intermediate_fusion
 
 yaml_parser: "load_voxel_params"
 root_dir: "opv2v_data_dumping/train"
@@ -63,7 +63,7 @@ model:
     lidar_range: *cav_lidar
     voxel_size: *voxel_size
     anchor_num: *achor_num
-    compression: 4
+    compression: 0
     pillar_vfe:
       use_norm: true
       with_distance: false

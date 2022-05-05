@@ -1,5 +1,6 @@
 # OpenCOOD
-[![Documentation Status](https://readthedocs.org/projects/opencood/badge/?version=latest)](https://opencood.readthedocs.io/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/opencood/badge/?version=latest)](https://opencood.readthedocs.io/en/latest/?badge=latest) 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) 
 
 OpenCOOD is an <strong>Open</strong> <strong>COO</strong>perative <strong>D</strong>etection framework for autonomous driving. It is also the official implementation of the <strong> ICRA 2022  </strong>
 paper [OPV2V.](https://arxiv.org/abs/2109.07644)
@@ -10,6 +11,12 @@ paper [OPV2V.](https://arxiv.org/abs/2109.07644)
 </p>
 
 ## News
+**03/17/2022**:  [V2VNet](https://arxiv.org/abs/2008.07519) is supported and the results/trained model are provided in the benchmark table.
+
+**03/10/2022**: Results and pretrained weights for Attentive Fusion with **compression** are provided.
+
+**02/20/2022**: [F-Cooper](https://arxiv.org/abs/1909.06459) now is supported and the results/traiend model can be found in the benchmark table.
+
 **01/31/2022**: Our paper *OPV2V: An Open Benchmark Dataset and Fusion Pipeline for Perception with Vehicle-to-Vehicle Communication* has been accpted by ICRA2022!
 
 **09/21/2021**: OPV2V dataset is public available: https://mobility-lab.seas.ucla.edu/opv2v/
@@ -28,7 +35,7 @@ convert to PyTorch Tesnor directly for model use.
 - **Support several SOTA multi-agent visual fusion model** 
 
     It supports the most recent multi-agent perception algorithms (currently up to Sep. 2021) including [Attentive Fusion](https://arxiv.org/abs/2109.07644),
-    [Cooper (early fusion)](https://arxiv.org/abs/1905.05265), [F-Cooper](https://arxiv.org/abs/1909.06459), etc. We will keep updating
+    [Cooper (early fusion)](https://arxiv.org/abs/1905.05265), [F-Cooper](https://arxiv.org/abs/1909.06459), [V2VNet](https://arxiv.org/abs/2008.07519) etc. We will keep updating
     the newest algorithms.
 - **Provide a convenient log replay toolbox for OPV2V dataset (coming soon)**
 
@@ -36,6 +43,14 @@ convert to PyTorch Tesnor directly for model use.
  attaching new sensors or define additional tasks (e.g. tracking, prediction)
     without changing the events in the initial dataset (e.g. positions and number of all vehicles, traffic speed).
 
+## Data Downloading
+All the data can be downloaded from [google drive](https://drive.google.com/drive/folders/1dkDeHlwOVbmgXcDazZvO6TFEZ6V_7WUu). If you have a good internet, you can directly
+download the complete large zip file such as `train.zip`. In case you suffer from downloading large fiels, we also split each data set into small chunks, which can be found 
+in the directory ending with `_chunks`, such as `train_chunks`. After downloading, please run the following command to each set to merge those chunks together:
+```python
+cat train.zip.parta* > train.zip
+unzip train.zip
+```
 
 ## Installation
 Please refer to [data introduction](https://opencood.readthedocs.io/en/latest/md_files/data_intro.html)
@@ -49,8 +64,12 @@ in your `opencood/hypes_yaml/visualization.yaml` to the opv2v data path on your 
 and the run the following commond:
 ```python
 cd ~/OpenCOOD
-python opencood/visualization/vis_data_sequence.py 
+python opencood/visualization/vis_data_sequence.py [--color_mode ${COLOR_RENDERING_MODE}]
 ```
+Arguments Explanation:
+- `color_mode` : str type, indicating the lidar color rendering mode. You can choose from 'constant', 'intensity' or 'z-value'.
+
+
 ### Train your model
 OpenCOOD uses yaml file to configure all the parameters for training. To train your own model
 from scratch or a continued checkpoint, run the following commonds:
@@ -68,19 +87,44 @@ Before you run the following command, first make sure the `validation_dir` in co
 refers to the testing dataset path, e.g. `opv2v_data_dumping/test`.
 
 ```python
-python opencood/tools/inference.py --model_dir ${CHECKPOINT_FOLDER} --fusion_method ${FUSION_STRATEGY} [--show_vis]
+python opencood/tools/inference.py --model_dir ${CHECKPOINT_FOLDER} --fusion_method ${FUSION_STRATEGY} [--show_vis] [--show_sequence]
 ```
 Arguments Explanation:
 - `model_dir`: the path to your saved model.
 - `fusion_method`: indicate the fusion strategy, currently support 'early', 'late', and 'intermediate'.
-- `show_vis`: whether to visualize the detection overlay with point cloud. 
+- `show_vis`: whether to visualize the detection overlay with point cloud.
+- `show_sequence` : the detection results will visualized in a video stream. It can NOT be set with `show_vis` at the same time.
 
 The evaluation results  will be dumped in the model directory.
 
 ## Benchmark and model zoo
-We currently provide 3D LiDAR detection benchmark on OPV2V dataset, please refer to [benchmark](docs/md_files/lidar_benchmark.md). More
-benchmark results of different data modalities/tasks will be revealed soon.
+### Results on OPV2V dataset (AP@0.7 for no-compression/ compression)
 
+|                    | Backbone   | Fusion Strategy  | Bandwidth (Megabit), <br/> before/after compression| Default Towns    |Culver City| Download |
+|--------------------| --------   | ---------------  | ---------------                | -------------    |-----------| -------- |
+| Naive Late         | PointPillar        | Late      |    **0.024**/**0.024** |   0.781/0.781        | 0.668/0.668         |    [url](https://drive.google.com/file/d/1WTKooW6k0exLqoIE5Czqy6ptycYlgKZz/view?usp=sharing)   |
+| [Cooper](https://arxiv.org/abs/1905.05265)       | PointPillar        | Early  |   7.68/7.68   | 0.800/x         | 0.696/x       | [url](https://drive.google.com/file/d/1N1p6syxGSKD18ELgtBQoSuUzR8tX1JeE/view?usp=sharing)     | 
+| [Attentive Fusion](https://arxiv.org/abs/2109.07644)         | PointPillar        | Intermediate  | 126.8/1.98   | 0.815/0.810       | **0.735**/**0.731**        | [url](https://drive.google.com/file/d/1u4w13SDzdGq6Irh2PHxT-qIlNXRT3z6Z/view?usp=sharing)     | 
+| [F-Cooper](https://arxiv.org/abs/1909.06459)         | PointPillar        | Intermediate  | 72.08/1.12    | 0.790/0.788     | 0.728/0.726        | [url](https://drive.google.com/file/d/1CjXu9Y2ZTzJA6Oo3hnqFhbTqBVKq3mQb/view?usp=sharing)     | 
+| [V2VNet](https://arxiv.org/abs/2008.07519)         | PointPillar        | Intermediate  | 72.08/1.12    | **0.822**/**0.814**     | 0.734/0.729    | [url](https://drive.google.com/file/d/14xl_gNEIHcDw-SvQyO1ioQwyzGym-tKX/view?usp=sharing)     | 
+| Naive Late         | VoxelNet        | Late  | **0.024**/**0.024**    | 0.738/0.738          | 0.588/0.588        | [url]()    |
+| Cooper    | VoxelNet        | Early   |   7.68/7.68  | 0.758/x        | 0.677/x        | [url](https://drive.google.com/file/d/14WD7iLLyyCJJ3lApbYYdr5KOUM1ACnve/view?usp=sharing)     | 
+| Attentive Fusion        | VoxelNet        | Intermediate |   576.71/1.12   | **0.864**/**0.852**        | **0.775**/**0.746**       | [url](https://drive.google.com/file/d/16q8CfcB8dS4EVhJMvvEfn0gM2ynxZB3E/view?usp=sharing)      | 
+| Naive Late         | SECOND        | Late |  **0.024**/**0.024**    |  0.775/0.775        |0.682/0.682        | [url](https://drive.google.com/file/d/1VG_FKe1mKagPVGXH7UGHpyaM5q3cxtD8/view?usp=sharing)      |
+| Cooper    | SECOND        | Early  |   7.68/7.68   |  0.813/x       |  0.738/x     | [url](https://drive.google.com/file/d/1Z9io1VNcU-urcRW8l0ogWCTVCB53mw4N/view?usp=sharing)     | 
+| Attentive         | SECOND        | Intermediate |  63.4/0.99     |   **0.826**/**0.783**     | **0.760**/**0.760**    | [url](https://drive.google.com/file/d/1zEB8EyZ0X-WQykHFOM0pVwI8jXunRz1Z/view?usp=sharing)      | 
+| Naive Late         | PIXOR        | Late |    **0.024**/**0.024** |    0.578/0.578       |  0.360/0.360      | [url]()      |
+| Cooper    | PIXOR        | Early |   7.68/7.68    |   0.678/x      | **0.558**/x      | [url](https://drive.google.com/file/d/1ZDLjtizZCuV6D92LloEPKRIw-LqxfE1j/view?usp=sharing)     | 
+| Attentive         | PIXOR        | Intermediate  |   313.75/1.22  |  **0.687**/**0.612**      | 0.546/**0.492**       | [url]()      |
+
+
+**Note**: 
+* We suggest using **PointPillar** as the backbone when you are creating your method and try to compare with
+our benchmark, as we implement most of the SOTA methods with this backbone only.
+* We assume the transimssion rate is 27Mbp/s. Considering the frequency of LiDAR is 10Hz, the 
+bandwidth requirement should be less than **2.7Mbp** to avoid severe delay. 
+* A 'x' in the benchmark table represents the bandwidth requirement is too large, which 
+can not be considered to employ in practice.
 ## Tutorials
 We have a series of tutorials to help you understand OpenCOOD more. Please check the series of our [tutorials](https://opencood.readthedocs.io/en/latest/md_files/config_tutorial.html).
 
@@ -95,10 +139,14 @@ We have a series of tutorials to help you understand OpenCOOD more. Please check
   year = {2022}}
 ```
 
+Also, under this LICENSE, OpenCOOD is for non-commercial research only. Researchers can modify the source code for their own research only. Contracted work that generates corporate revenues and other general commercial use are prohibited under this LICENSE. See the LICENSE file for details and possible opportunities for commercial use.
+
 ## Future Plans
 - [ ] Provide camera APIs for OPV2V
 - [ ] Provide the log replay toolbox
-- [ ] More SOTA models, such as [DiscoNet](https://arxiv.org/pdf/2111.00643.pdf) and [V2VNet](https://arxiv.org/abs/2008.07519).
+- [x] Implement F-Cooper 
+- [x] Implement V2VNet 
+- [ ] Implement DiscoNet
 
 
 ## Contributors
