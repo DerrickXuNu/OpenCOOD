@@ -1,8 +1,8 @@
 name: fpvrcnn_intermediate_fusion
 
 yaml_parser: "load_voxel_params"
-root_dir: "/home/runshengxu/project/OpenCOOD/opv2v_data_dumping/train" # "/media/hdd/yuan/koko/data/OPV2V/train" #
-validate_dir: "/home/runshengxu/project/OpenCOOD/opv2v_data_dumping/validate" #"/media/hdd/yuan/koko/data/OPV2V/validate" #
+root_dir: "opv2v_data_dumping/train"
+validate_dir: "opv2v_data_dumping/validate"
 
 train_params:
   batch_size: &batch_size 2 # FPV-RCNN currently only support batch size = 1
