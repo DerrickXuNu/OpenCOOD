@@ -1,8 +1,6 @@
 cmake
 easydict~=1.9
-torch~=1.6.0
-torchvision==0.7.0
-numpy~=1.19.5
+numpy
 numba==0.49.0
 opencv-python~=4.5.1.48
 matplotlib~=3.3.3
