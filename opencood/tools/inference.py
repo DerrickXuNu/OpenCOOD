@@ -164,7 +164,7 @@ def main():
                     vis_utils.visualize_inference_sample_dataloader(
                         pred_box_tensor,
                         gt_box_tensor,
-                        batch_data['ego']['origin_lidar'][0],
+                        batch_data['ego']['origin_lidar'],
                         vis_pcd,
                         mode='constant'
                         )

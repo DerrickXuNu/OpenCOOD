@@ -483,6 +483,10 @@ def visualize_inference_sample_dataloader(pred_box_tensor,
     # we only visualize the first cav for single sample
     if len(origin_lidar.shape) > 2:
         origin_lidar = origin_lidar[0]
+    # this is for 2-stage origin lidar, it has different format
+    if origin_lidar.shape[1] > 4:
+        origin_lidar = origin_lidar[:, 1:]
+
     origin_lidar_intcolor = \
         color_encoding(origin_lidar[:, -1] if mode == 'intensity'
                        else origin_lidar[:, 2], mode=mode)
