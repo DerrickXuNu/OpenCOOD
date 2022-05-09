@@ -58,9 +58,9 @@ class SceneManager:
         cav_sample = os.path.join(folder, cav_list[0])
 
         yaml_files = \
-            sorted([os.path.join(cav_sample, x)
-                    for x in os.listdir(cav_sample) if
-                    x.endswith('.yaml')])
+            sorted([os.path.join(cav_path, x)
+                    for x in os.listdir(cav_path) if
+                    x.endswith('.yaml') and 'additional' not in x])
         self.timestamps = self.extract_timestamps(yaml_files)
 
         # loop over all timestamps
@@ -151,7 +151,7 @@ class SceneManager:
 
         for i, (cav_id, cav_yml) in enumerate(cur_database.items()):
             cav_content = load_yaml(cav_yml['yaml'])
-
+            print(cav_yml['yaml'])
             if cav_id not in self.veh_dict:
                 self.spawn_cav(cav_id, cav_content, cur_timestamp)
             else:
