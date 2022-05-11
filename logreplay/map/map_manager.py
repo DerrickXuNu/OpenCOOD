@@ -104,6 +104,11 @@ class MapManager(object):
         if not self.activate:
             return
 
+        # save flags
+        self.save_yml = config['save_yml']
+        self.save_static = config['save_static']
+        self.save_dynamic = config['save_dynamic']
+
         # whether to visualize the bev map while running simulation
         self.visualize = config['visualize']
         # whether exclude the road that is unrelated to the ego vehicle
@@ -146,8 +151,16 @@ class MapManager(object):
         self.exclude_self = config['dynamic']['exclude_self']
         self.exclude_off_road = config['dynamic']['exclude_off_road']
 
+        # whether to check visibility in camera for ego only
+        self.visibility = config['dynamic']['visibility']
+        # visible agent id for ego
+        self.vis_ids = []
+
         # bev maps
         self.dynamic_bev = 255 * np.zeros(
+            shape=(self.raster_size[1], self.raster_size[0], 3),
+            dtype=np.uint8)
+        self.vis_mask = 255 * np.zeros(
             shape=(self.raster_size[1], self.raster_size[0], 3),
             dtype=np.uint8)
         self.static_bev = 255 * np.zeros(
@@ -176,6 +189,13 @@ class MapManager(object):
         self.agent_id = cav_id
         self.current_timstamp = cav_content['cur_count']
 
+        # clean buffer every round starts
+        self.vis_ids = []
+
+        if self.visibility:
+            self.vis_ids = self.check_visibility_single(cav_content,
+                                                        self.vis_ids)
+
         self.rasterize_static()
         self.rasterize_dynamic()
 
@@ -188,6 +208,26 @@ class MapManager(object):
                        self.vis_bev)
             cv2.waitKey(1)
         self.data_dump()
+
+    # check visibility agent list for ego vehicle
+    @staticmethod
+    def check_visibility_single(cav_content, vis_mask_list):
+        """
+        Retrieve visible objects in the ego camera.
+
+        Parameters
+        ----------
+        vis_mask_list : list
+        cav_content : dict
+        """
+
+        sensor_manager = cav_content['sensor_manager']
+        meta_data = sensor_manager.sensor_meta
+        for key, item in meta_data.items():
+            if 'semantic_lidar' in key:
+                vis_mask_list += item
+        vis_mask_list = list(set(vis_mask_list))
+        return vis_mask_list
 
     @staticmethod
     def get_bounds(left_lane, right_lane):
@@ -336,22 +376,34 @@ class MapManager(object):
             'pixel_per_meter': self.pixels_per_meter,
             'topology': self.valid_lane_info
         }}
-        # save metadata
-        save_yaml_name = os.path.join(save_name,
-                                      self.current_timstamp +
-                                      '_additional.yaml')
-        save_yaml_wo_overwriting(map_info, save_yaml_name)
+        if self.save_yml:
+            # save metadata
+            save_yaml_name = os.path.join(save_name,
+                                          self.current_timstamp +
+                                          '_additional.yaml')
+            save_yaml_wo_overwriting(map_info, save_yaml_name)
 
-        # save rgb image
-        save_static_name = os.path.join(save_name,
-                                        self.current_timstamp +
-                                        '_bev_static.png')
-        cv2.imwrite(save_static_name, self.static_bev)
-        # save dynamic bev
-        save_dynamic_name = os.path.join(save_name,
-                                         self.current_timstamp +
-                                         '_bev_dynamic.png')
-        cv2.imwrite(save_dynamic_name, self.dynamic_bev)
+        if self.save_static:
+            # save rgb image
+            save_static_name = os.path.join(save_name,
+                                            self.current_timstamp +
+                                            '_bev_static.png')
+            cv2.imwrite(save_static_name, self.static_bev)
+
+        if self.save_dynamic:
+            # save dynamic bev
+            save_dynamic_name = os.path.join(save_name,
+                                             self.current_timstamp +
+                                             '_bev_dynamic.png')
+            cv2.imwrite(save_dynamic_name, self.dynamic_bev)
+
+        if self.visibility:
+            # save  visibility map for ego agent
+            save_visibility_name = os.path.join(save_name,
+                                                self.current_timstamp +
+                                                '_bev_visibility.png')
+            cv2.imwrite(save_visibility_name, self.vis_mask)
+
         # save visualize bev
         save_vis_name = os.path.join(save_name,
                                      self.current_timstamp +
@@ -601,6 +653,9 @@ class MapManager(object):
         self.dynamic_bev = 255 * np.zeros(
             shape=(self.raster_size[1], self.raster_size[0], 3),
             dtype=np.uint8)
+        self.vis_mask = 255 * np.zeros(
+            shape=(self.raster_size[1], self.raster_size[0], 3),
+            dtype=np.uint8)
         # filter using half a radius from the center
         raster_radius = \
             float(np.linalg.norm(self.raster_size *
@@ -613,6 +668,7 @@ class MapManager(object):
                                             dynamic_agents)
 
         corner_list = []
+        vis_corner_list = []
         for agent_id, agent in final_agents.items():
             # in case we don't want to draw the cav itself
             if agent_id == self.actor_id and self.exclude_self:
@@ -620,8 +676,13 @@ class MapManager(object):
             agent_corner = self.generate_agent_area(agent['corners'])
             corner_list.append(agent_corner)
 
+            # get visibility for single vehicle
+            if agent_id in self.vis_ids:
+                vis_corner_list.append(agent_corner)
+
         self.dynamic_bev = draw_agent(corner_list, self.dynamic_bev)
         self.vis_bev = draw_agent(corner_list, self.vis_bev)
+        self.vis_mask = draw_agent(vis_corner_list, self.vis_mask)
 
     def rasterize_static(self):
         """

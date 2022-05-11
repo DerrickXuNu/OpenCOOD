@@ -58,8 +58,8 @@ class SceneManager:
         cav_sample = os.path.join(folder, cav_list[0])
 
         yaml_files = \
-            sorted([os.path.join(cav_path, x)
-                    for x in os.listdir(cav_path) if
+            sorted([os.path.join(cav_sample, x)
+                    for x in os.listdir(cav_sample) if
                     x.endswith('.yaml') and 'additional' not in x])
         self.timestamps = self.extract_timestamps(yaml_files)
 
@@ -198,8 +198,9 @@ class SceneManager:
         self.world.tick()
 
         # we dump data after tick() so the agent can retrieve the newest info
-        self.map_dumping()
         self.sensor_dumping(cur_timestamp)
+        self.map_dumping()
+
 
         return True
 

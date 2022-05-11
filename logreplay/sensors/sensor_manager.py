@@ -6,6 +6,7 @@ Sensor Manager for each cav
 # License: TDG-Attribution-NonCommercial-NoDistrib
 import importlib
 import os
+from collections import OrderedDict
 
 
 class SensorManager:
@@ -43,6 +44,8 @@ class SensorManager:
         self.vehicle = vehicle_content['actor']
         self.world = world
         self.sensor_list = []
+        # this is used to gather the meta information return from sensors
+        self.sensor_meta = OrderedDict()
 
         for sensor_content in config_yaml['sensor_list']:
             sensor = None
@@ -73,8 +76,13 @@ class SensorManager:
 
     def run_step(self, cur_timestamp):
         for sensor_instance in self.sensor_list:
+            sensor_name = sensor_instance.name
             sensor_instance.visualize_data()
 
+            meta_info = sensor_instance.tick()
+            self.sensor_meta.update({sensor_name: meta_info})
+
+            # for data dumping
             output_folder = os.path.join(self.output_root,
                                          self.agent_id)
             if not os.path.exists(output_folder):

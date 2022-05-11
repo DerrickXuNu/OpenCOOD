@@ -13,9 +13,10 @@ import numpy as np
 
 from opencood.hypes_yaml.yaml_utils import save_yaml_wo_overwriting
 from logreplay.sensors.utils import get_camera_intrinsic
+from logreplay.sensors.base_sensor import BaseSensor
 
 
-class BEVSemanticCamera:
+class BEVSemanticCamera(BaseSensor):
     """
     BEV camera for semantic segmentation.
 
@@ -43,10 +44,13 @@ class BEVSemanticCamera:
     """
 
     def __init__(self, agent_id, vehicle, world, config, global_position):
+        super().__init__(agent_id, vehicle, world, config, global_position)
         if vehicle is not None:
             world = vehicle.get_world()
 
         self.agent_id = agent_id
+        self.name = 'bev_semantic_camera'
+
         blueprint = world.get_blueprint_library(). \
             find('sensor.camera.semantic_segmentation')
         blueprint.set_attribute('fov', str(config['fov']))
@@ -210,7 +214,3 @@ class BEVSemanticCamera:
                                  }}
         save_yaml_wo_overwriting(bev_sem_cam_info,
                                  save_yaml_name)
-
-    def destroy(self):
-        self.sensor.destroy()
-        cv2.destroyAllWindows()

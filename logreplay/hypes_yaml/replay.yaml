@@ -1,8 +1,11 @@
 root_dir: '/home/runshengxu/project/OpenCOOD/opv2v_data_dumping/tmp'
-output_dir: '/home/runshengxu/project/OpenCOOD/opv2v_data_dumping/additional/tmp'
+output_dir: '/home/runshengxu/project/OpenCOOD/opv2v_data_dumping/additional_visible/tmp'
 map: # corresponding to bev map
   activate: true
   visualize: true
+  save_yml: false
+  save_static: false
+  save_dynamic: false
   radius: 50 # meter
   raster_size: [256, 256]
   lane_sample_resolution: 0.1
@@ -14,14 +17,36 @@ map: # corresponding to bev map
   dynamic:
     exclude_self: true
     exclude_off_road: true
+    visibility: true # wheather save visibility mask under ego coordinate
 
 sensor: # new attached sensor
   sensor_list:
-    - name: 'bev_semantic_camera'
+#    - name: 'bev_semantic_camera'
+#      args:
+#        visualize: true
+#        fov: 45
+#        image_size_x: 512
+#        image_size_y: 512
+#        height: 115.88
+    - name: 'semantic_lidar'
+      args: &base_semantic_lidar
+        upper_fov: 10
+        lower_fov: -30
+        channels: 32
+        rotation_frequency: 20
+        points_per_second: 250000
+        range: 50
+        relative_pose: front
+        thresh: 10 # mininum number of points hit to be regarded as visible
+    - name: 'semantic_lidar'
       args:
-        visualize: true
-        fov: 45
-        image_size_x: 512
-        image_size_y: 512
-        height: 115.88
-
+        <<: *base_semantic_lidar
+        relative_pose: left
+    - name: 'semantic_lidar'
+      args:
+        <<: *base_semantic_lidar
+        relative_pose: right
+    - name: 'semantic_lidar'
+      args:
+        <<: *base_semantic_lidar
+        relative_pose: back
