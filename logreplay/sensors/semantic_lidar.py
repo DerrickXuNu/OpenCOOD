@@ -37,6 +37,7 @@ class SemanticLidar(BaseSensor):
         spawn_point = self.spawn_point_estimation(relative_position,
                                                   global_position)
         self.name = 'semantic_lidar' + str(relative_position)
+        self.thresh = config['thresh']
 
         if vehicle is not None:
             self.sensor = world.spawn_actor(
@@ -129,5 +130,11 @@ class SemanticLidar(BaseSensor):
         vehicle_idx = self.obj_idx[self.obj_tag == 10]
         # each individual instance id
         vehicle_unique_id = list(np.unique(vehicle_idx))
+        vehicle_id_filter = []
+
+        for veh_id in vehicle_unique_id:
+            if vehicle_idx[vehicle_idx == veh_id].shape[0] > self.thresh:
+                vehicle_id_filter.append(veh_id)
+
         # these are the ids that are visible
-        return vehicle_unique_id
+        return vehicle_id_filter
