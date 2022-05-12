@@ -156,11 +156,19 @@ class MapManager(object):
         # visible agent id for ego
         self.vis_ids = []
 
+        # whether to check visibility in camera for multi-agent perspective
+        self.visibility_corp = config['dynamic']['visibility_corp']
+        # visible agent id for all vehicles
+        self.vis_corp_ids = []
+
         # bev maps
         self.dynamic_bev = 255 * np.zeros(
             shape=(self.raster_size[1], self.raster_size[0], 3),
             dtype=np.uint8)
         self.vis_mask = 255 * np.zeros(
+            shape=(self.raster_size[1], self.raster_size[0], 3),
+            dtype=np.uint8)
+        self.vis_corp_mask = 255 * np.zeros(
             shape=(self.raster_size[1], self.raster_size[0], 3),
             dtype=np.uint8)
         self.static_bev = 255 * np.zeros(
@@ -170,7 +178,7 @@ class MapManager(object):
             shape=(self.raster_size[1], self.raster_size[0], 3),
             dtype=np.uint8)
 
-    def run_step(self, cav_id, cav_content):
+    def run_step(self, cav_id, cav_content, veh_dict):
         """
         Rasterization + Visualize the bev map if needed.
 
@@ -180,6 +188,8 @@ class MapManager(object):
             The cav's original id in the dataset.
         cav_content : dict
             The cav's information.
+        veh_dict : dict
+            All vehicles' information. Used for visibility check for coop.
         """
         if not self.activate:
             return
@@ -191,10 +201,14 @@ class MapManager(object):
 
         # clean buffer every round starts
         self.vis_ids = []
+        self.vis_corp_ids = []
 
         if self.visibility:
             self.vis_ids = self.check_visibility_single(cav_content,
                                                         self.vis_ids)
+        if self.visibility_corp:
+            self.vis_corp_ids = self.check_visibility_corp(veh_dict,
+                                                           self.vis_corp_ids)
 
         self.rasterize_static()
         self.rasterize_dynamic()
@@ -208,6 +222,15 @@ class MapManager(object):
                        self.vis_bev)
             cv2.waitKey(1)
         self.data_dump()
+
+    def check_visibility_corp(self, veh_dict, vis_corp_mask_list):
+        for _, veh_contnet in veh_dict.items():
+            if 'cav' in veh_contnet:
+                vis_corp_mask_list += \
+                    self.check_visibility_single(veh_contnet,
+                                                 vis_corp_mask_list)
+        vis_corp_mask_list = list(set(vis_corp_mask_list))
+        return vis_corp_mask_list
 
     # check visibility agent list for ego vehicle
     @staticmethod
@@ -403,6 +426,13 @@ class MapManager(object):
                                                 self.current_timstamp +
                                                 '_bev_visibility.png')
             cv2.imwrite(save_visibility_name, self.vis_mask)
+
+        if self.visibility_corp:
+            # save  visibility map for ego agent
+            save_visibility_name = os.path.join(save_name,
+                                                self.current_timstamp +
+                                                '_bev_visibility_corp.png')
+            cv2.imwrite(save_visibility_name, self.vis_corp_mask)
 
         # save visualize bev
         save_vis_name = os.path.join(save_name,
@@ -656,6 +686,9 @@ class MapManager(object):
         self.vis_mask = 255 * np.zeros(
             shape=(self.raster_size[1], self.raster_size[0], 3),
             dtype=np.uint8)
+        self.vis_corp_mask = 255 * np.zeros(
+            shape=(self.raster_size[1], self.raster_size[0], 3),
+            dtype=np.uint8)
         # filter using half a radius from the center
         raster_radius = \
             float(np.linalg.norm(self.raster_size *
@@ -669,6 +702,7 @@ class MapManager(object):
 
         corner_list = []
         vis_corner_list = []
+        vis_corp_corner_list = []
         for agent_id, agent in final_agents.items():
             # in case we don't want to draw the cav itself
             if agent_id == self.actor_id and self.exclude_self:
@@ -679,10 +713,15 @@ class MapManager(object):
             # get visibility for single vehicle
             if agent_id in self.vis_ids:
                 vis_corner_list.append(agent_corner)
+            # get visibility for multi-agents
+            if agent_id in self.vis_corp_ids:
+                vis_corp_corner_list.append(agent_corner)
 
         self.dynamic_bev = draw_agent(corner_list, self.dynamic_bev)
         self.vis_bev = draw_agent(corner_list, self.vis_bev)
         self.vis_mask = draw_agent(vis_corner_list, self.vis_mask)
+        self.vis_corp_mask = draw_agent(vis_corp_corner_list,
+                                        self.vis_corp_mask)
 
     def rasterize_static(self):
         """

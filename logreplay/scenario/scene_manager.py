@@ -201,7 +201,6 @@ class SceneManager:
         self.sensor_dumping(cur_timestamp)
         self.map_dumping()
 
-
         return True
 
     def map_dumping(self):
@@ -213,7 +212,7 @@ class SceneManager:
         """
         for veh_id, veh_content in self.veh_dict.items():
             if 'cav' in veh_content:
-                self.map_manager.run_step(veh_id, veh_content)
+                self.map_manager.run_step(veh_id, veh_content, self.veh_dict)
 
     def sensor_dumping(self, cur_timestamp):
         for veh_id, veh_content in self.veh_dict.items():
