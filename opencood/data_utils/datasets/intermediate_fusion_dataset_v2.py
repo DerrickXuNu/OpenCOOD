@@ -6,7 +6,6 @@
 """
 Dataset class for 2-stage backbone intermediate fusion
 """
-import random
 import math
 from collections import OrderedDict
 
@@ -21,8 +20,6 @@ from opencood.data_utils.pre_processor import build_preprocessor
 from opencood.utils.pcd_utils import \
     mask_points_by_range, mask_ego_points, shuffle_points
 from opencood.utils.transformation_utils import x1_to_x2
-from opencood.pcdet_utils.roiaware_pool3d.roiaware_pool3d_utils import \
-    points_in_boxes_cpu
 
 
 class IntermediateFusionDatasetV2(basedataset.BaseDataset):
@@ -40,6 +37,9 @@ class IntermediateFusionDatasetV2(basedataset.BaseDataset):
             post_processor.build_postprocessor(params['postprocess'], train)
 
     def __getitem__(self, idx):
+        # put here to avoid initialization error
+        from opencood.pcdet_utils.roiaware_pool3d.roiaware_pool3d_utils \
+            import points_in_boxes_cpu
         base_data_dict = self.retrieve_base_data(idx)
 
         processed_data_dict = OrderedDict()
