@@ -7,7 +7,6 @@ import torch
 from opencood.data_utils.post_processor.voxel_postprocessor \
     import VoxelPostprocessor
 from opencood.utils import box_utils
-from opencood.pcdet_utils.iou3d_nms.iou3d_nms_utils import nms_gpu
 from opencood.utils import common_utils
 
 
@@ -164,6 +163,8 @@ class FpvrcnnPostprocessor(VoxelPostprocessor):
         return batch_pred_boxes3d, batch_scores
 
     def post_process_stage2(self, data_dict):
+        from opencood.pcdet_utils.iou3d_nms.iou3d_nms_utils import nms_gpu
+
         output_dict = data_dict['ego']['fpvrcnn_out']
         label_dict = data_dict['ego']['rcnn_label_dict']
         rcnn_cls = output_dict['rcnn_cls'].sigmoid().view(-1)
