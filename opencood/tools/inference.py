@@ -6,6 +6,7 @@
 import argparse
 import os
 import time
+from tqdm import tqdm
 
 import torch
 import open3d as o3d
@@ -34,7 +35,7 @@ def test_parser():
                         help='whether to save visualization result')
     parser.add_argument('--save_npy', action='store_true',
                         help='whether to save prediction and gt result'
-                             'in npy file')
+                             'in npy_test file')
     opt = parser.parse_args()
     return opt
 
@@ -50,6 +51,7 @@ def main():
 
     print('Dataset Building')
     opencood_dataset = build_dataset(hypes, visualize=True, train=False)
+    print(f"{len(opencood_dataset)} samples found.")
     data_loader = DataLoader(opencood_dataset,
                              batch_size=1,
                              num_workers=4,
@@ -92,7 +94,7 @@ def main():
             vis_aabbs_gt.append(o3d.geometry.LineSet())
             vis_aabbs_pred.append(o3d.geometry.LineSet())
 
-    for i, batch_data in enumerate(data_loader):
+    for i, batch_data in tqdm(enumerate(data_loader)):
         print(i)
         with torch.no_grad():
             batch_data = train_utils.to_device(batch_data, device)
@@ -152,7 +154,7 @@ def main():
                 opencood_dataset.visualize_result(pred_box_tensor,
                                                   gt_box_tensor,
                                                   batch_data['ego'][
-                                                      'origin_lidar'][0],
+                                                      'origin_lidar'],
                                                   opt.show_vis,
                                                   vis_save_path,
                                                   dataset=opencood_dataset)
@@ -162,7 +164,7 @@ def main():
                     vis_utils.visualize_inference_sample_dataloader(
                         pred_box_tensor,
                         gt_box_tensor,
-                        batch_data['ego']['origin_lidar'][0],
+                        batch_data['ego']['origin_lidar'],
                         vis_pcd,
                         mode='constant'
                         )

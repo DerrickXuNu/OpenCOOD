@@ -60,6 +60,7 @@ def load_saved_model(saved_path, model):
     return initial_epoch, model
 
 
+
 def setup_train(hypes):
     """
     Create folder for saved model based on current timestep and model name
