@@ -112,7 +112,7 @@ def road_exclude(static_road):
     return static_road
 
 
-def draw_lane(lane_area_list, lane_type_list, image):
+def draw_lane(lane_area_list, lane_type_list, image, vis=True):
     """
     Draw lanes on image (polylines).
 
@@ -127,12 +127,18 @@ def draw_lane(lane_area_list, lane_type_list, image):
     image : np.ndarray
         image to be drawn
 
+    vis : bool
+        Whether to visualize
+
     Returns
     -------
     drawed image.
     """
     for (lane_area, lane_type) in zip(lane_area_list, lane_type_list):
-        cv2.polylines(image, lane_area, False, Lane_COLOR[lane_type],
+        cv2.polylines(image,
+                      lane_area,
+                      False,
+                      Lane_COLOR[lane_type] if vis else (255, 255, 255),
                       **CV2_SUB_VALUES)
 
     return image

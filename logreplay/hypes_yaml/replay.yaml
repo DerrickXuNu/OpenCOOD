@@ -1,27 +1,29 @@
-root_dir: '/home/runshengxu/project/OpenCOOD/opv2v_data_dumping/tmp'
-output_dir: '/home/runshengxu/project/OpenCOOD/opv2v_data_dumping/additional_visible/test'
+root_dir: '/home/runshengxu/project/OpenCOOD/opv2v_data_dumping/train'
+output_dir: '/home/runshengxu/project/OpenCOOD/opv2v_data_dumping/additional_lane/train'
 map: # corresponding to bev map
   activate: true
   visualize: true
   save_yml: false
   save_static: false
+  save_lane: true
   save_dynamic: false
+  save_bev_vis: false
   radius: 50 # meter
   raster_size: [256, 256]
   lane_sample_resolution: 0.1
   static:
-    draw_lane: false
+    draw_lane: true
     draw_traffic_light: true
     exclude_road: false
     z_filter_value: 6
   dynamic:
     exclude_self: true
     exclude_off_road: true
-    visibility: true # wheather save visibility mask under ego coordinate
-    visibility_corp: true # wheather save visibility mask that can been seen for all cavs
+    visibility: false # wheather save visibility mask under ego coordinate
+    visibility_corp: false # wheather save visibility mask that can been seen for all cavs
 
 sensor: # new attached sensor
-  sensor_list:
+  sensor_list: []
 #    - name: 'bev_semantic_camera'
 #      args:
 #        visualize: true
@@ -29,25 +31,25 @@ sensor: # new attached sensor
 #        image_size_x: 512
 #        image_size_y: 512
 #        height: 115.88
-    - name: 'semantic_lidar'
-      args: &base_semantic_lidar
-        upper_fov: 10
-        lower_fov: -30
-        channels: 32
-        rotation_frequency: 20
-        points_per_second: 250000
-        range: 50
-        relative_pose: front
-        thresh: 5 # mininum number of points hit to be regarded as visible
-    - name: 'semantic_lidar'
-      args:
-        <<: *base_semantic_lidar
-        relative_pose: left
-    - name: 'semantic_lidar'
-      args:
-        <<: *base_semantic_lidar
-        relative_pose: right
-    - name: 'semantic_lidar'
-      args:
-        <<: *base_semantic_lidar
-        relative_pose: back
+#    - name: 'semantic_lidar'
+#      args: &base_semantic_lidar
+#        upper_fov: 10
+#        lower_fov: -30
+#        channels: 32
+#        rotation_frequency: 20
+#        points_per_second: 250000
+#        range: 50
+#        relative_pose: front
+#        thresh: 5 # mininum number of points hit to be regarded as visible
+#    - name: 'semantic_lidar'
+#      args:
+#        <<: *base_semantic_lidar
+#        relative_pose: left
+#    - name: 'semantic_lidar'
+#      args:
+#        <<: *base_semantic_lidar
+#        relative_pose: right
+#    - name: 'semantic_lidar'
+#      args:
+#        <<: *base_semantic_lidar
+#        relative_pose: back

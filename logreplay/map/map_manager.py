@@ -108,6 +108,8 @@ class MapManager(object):
         self.save_yml = config['save_yml']
         self.save_static = config['save_static']
         self.save_dynamic = config['save_dynamic']
+        self.save_lane = config['save_lane']
+        self.save_bev_vis = config['save_bev_vis']
 
         # whether to visualize the bev map while running simulation
         self.visualize = config['visualize']
@@ -172,6 +174,9 @@ class MapManager(object):
             shape=(self.raster_size[1], self.raster_size[0], 3),
             dtype=np.uint8)
         self.static_bev = 255 * np.zeros(
+            shape=(self.raster_size[1], self.raster_size[0], 3),
+            dtype=np.uint8)
+        self.lane_bev = 255 * np.zeros(
             shape=(self.raster_size[1], self.raster_size[0], 3),
             dtype=np.uint8)
         self.vis_bev = 255 * np.ones(
@@ -413,6 +418,13 @@ class MapManager(object):
                                             '_bev_static.png')
             cv2.imwrite(save_static_name, self.static_bev)
 
+        if self.save_lane:
+            # save lane topology seg
+            save_lane_name = os.path.join(save_name,
+                                          self.current_timstamp +
+                                          '_bev_lane.png')
+            cv2.imwrite(save_lane_name, self.lane_bev)
+
         if self.save_dynamic:
             # save dynamic bev
             save_dynamic_name = os.path.join(save_name,
@@ -434,11 +446,12 @@ class MapManager(object):
                                                 '_bev_visibility_corp.png')
             cv2.imwrite(save_visibility_name, self.vis_corp_mask)
 
-        # save visualize bev
-        save_vis_name = os.path.join(save_name,
-                                     self.current_timstamp +
-                                     '_bev_vis.png')
-        cv2.imwrite(save_vis_name, self.vis_bev)
+        if self.save_bev_vis:
+            # save visualize bev
+            save_vis_name = os.path.join(save_name,
+                                         self.current_timstamp +
+                                         '_bev_vis.png')
+            cv2.imwrite(save_vis_name, self.vis_bev)
 
     def generate_lane_cross_info(self):
         """
@@ -730,6 +743,9 @@ class MapManager(object):
         self.static_bev = 255 * np.zeros(
             shape=(self.raster_size[1], self.raster_size[0], 3),
             dtype=np.uint8)
+        self.lane_bev = 255 * np.zeros(
+            shape=(self.raster_size[1], self.raster_size[0], 3),
+            dtype=np.uint8)
         self.vis_bev = 255 * np.ones(
             shape=(self.raster_size[1], self.raster_size[0], 3),
             dtype=np.uint8)
@@ -774,8 +790,9 @@ class MapManager(object):
             self.static_bev = road_exclude(self.static_bev)
 
         if self.draw_lane:
-            self.static_bev = draw_lane(lanes_area_list, lane_type_list,
-                                        self.static_bev)
+            self.lane_bev = draw_lane(lanes_area_list, lane_type_list,
+                                      self.lane_bev, vis=False)
+            self.lane_bev[self.static_bev == 0] = 0
 
         # we try to draw everything for visualization, but only dumping the
         # elements we need.
