@@ -14,6 +14,8 @@ from torch.utils.data import DataLoader
 import opencood.hypes_yaml.yaml_utils as yaml_utils
 from opencood.data_utils.datasets import build_dataset
 from opencood.tools import train_utils
+import matplotlib.pyplot as plt
+from opencood.visualization.vis_utils import draw_points_boxes_plt
 
 
 def train_parser():
@@ -116,6 +118,34 @@ def main():
             # second argument is always your label dictionary.
             final_loss = criterion(ouput_dict, batch_data['ego']['label_dict'])
             criterion.logging(epoch, i, len(train_loader), writer)
+
+            ##########
+            vis_save_path = os.path.join(opt.model_dir, 'vis')
+            if not os.path.exists(vis_save_path):
+                os.makedirs(vis_save_path)
+            vis_save_path = os.path.join(vis_save_path, 'tmp.png')
+            ########PLOT###########
+
+            points = batch_data['ego']['origin_lidar'].cpu().numpy()
+            points = points[:, 1:]
+            gt_boxes = batch_data['ego']['object_bbx_center'][0][batch_data['ego']['object_bbx_mask'][0].bool()].cpu().numpy()
+            gt_boxes = gt_boxes[:, [0, 1, 2, 5, 4, 3, 6]]
+            draw_points_boxes_plt(pc_range=[-140.8, -41.6, -3, 140.8, 41.6, 1],
+                                  points=points, boxes_gt=gt_boxes, save_path=vis_save_path)
+
+            # boxes_pred = pred_box_tensor.cpu().numpy()
+            # boxes_gt = gt_box_tensor.cpu().numpy()
+            # fig = plt.figure(figsize=(15, 6))
+            # ax = fig.add_subplot(111)
+            # ax.plot(points[:, 0], points[:, 1], '.y', markersize=0.1)
+            # ax.axis('equal')
+            # for p, g in zip(boxes_pred, boxes_gt):
+            #     plt.plot(g[[0, 1, 2, 3, 0], 0], g[[0, 1, 2, 3, 0], 1], 'g', markersize=1)
+            # for p, g in zip(boxes_pred, boxes_gt):
+            #     plt.plot(p[[0, 1, 2, 3, 0], 0], p[[0, 1, 2, 3, 0], 1], 'r', markersize=0.1)
+            # plt.savefig(vis_save_path)
+            # plt.close()
+            #######################
 
             # back-propagation
             final_loss.backward()
