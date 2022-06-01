@@ -69,7 +69,7 @@ def main():
 
     print('Loading Model from checkpoint')
     saved_path = opt.model_dir
-    _, model = train_utils.load_saved_model(saved_path, model)
+    _, model, _ = train_utils.load_saved_model(saved_path, model)
     model.eval()
 
     # Create the dictionary for evaluation
@@ -95,7 +95,7 @@ def main():
             vis_aabbs_pred.append(o3d.geometry.LineSet())
 
     for i, batch_data in tqdm(enumerate(data_loader)):
-        print(i)
+        # print(i)
         with torch.no_grad():
             batch_data = train_utils.to_device(batch_data, device)
             if opt.fusion_method == 'late':

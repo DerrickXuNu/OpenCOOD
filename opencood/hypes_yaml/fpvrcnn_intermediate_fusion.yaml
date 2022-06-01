@@ -1,12 +1,12 @@
 name: fpvrcnn_intermediate_fusion
 
 yaml_parser: "load_voxel_params"
-root_dir: "opv2v_data_dumping/train"
-validate_dir: "opv2v_data_dumping/validate"
+root_dir: "/media/ExtHDD01/yuan/koko/data/OPV2V/train"
+validate_dir: "/media/ExtHDD01/yuan/koko/data/OPV2V/validate"
 
 train_params:
-  batch_size: &batch_size 2
-  epoches: 70
+  batch_size: &batch_size 6
+  epoches: 100
   eval_freq: 1
   save_freq: 1
 
@@ -164,7 +164,7 @@ loss:
 
 optimizer:
   core_method: Adam
-  lr: 0.002
+  lr: 0.001
   args:
     eps: 1e-10
     weight_decay: 1e-4

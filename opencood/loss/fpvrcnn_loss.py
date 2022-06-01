@@ -23,13 +23,13 @@ class FpvrcnnLoss(nn.Module):
         ciassd_loss = self.ciassd_loss(output_dict, label_dict)
 
         # only update ciassd if no bbox is detected in the first stage
-        if 'fpvrcnn_out' not in output_dict:
+        if 'fpvrcnn_out' not in output_dict or ciassd_loss > 2.0:
             self.loss_dict.update({
                 'loss': ciassd_loss,
-                'rcnn_loss': torch.Tensor([0]),
-                'cls_loss': torch.Tensor([0]),
-                'iou_loss': torch.Tensor([0]),
-                'reg_loss': torch.Tensor([0]),
+                # 'rcnn_loss': torch.Tensor([0]),
+                # 'cls_loss': torch.Tensor([0]),
+                # 'iou_loss': torch.Tensor([0]),
+                # 'reg_loss': torch.Tensor([0]),
             })
             return ciassd_loss
 
@@ -112,18 +112,20 @@ class FpvrcnnLoss(nn.Module):
         iou_loss = ciassd_loss_dict['iou_loss']
 
         if (batch_id + 1) % 10 == 0:
-            print(
-                "[epoch %d][%d/%d], || Loss: %.4f || Ciassd: %.4f || Rcnn: %.4f "
-                "|| Cls1: %.4f || Loc1: %.4f || Dir1: %.4f || Iou1: %.4f "
-                "|| Cls2: %.4f || Loc2: %.4f || Iou2: %.4f" % (
-                    epoch, batch_id + 1, batch_len, self.loss_dict['loss'],
-                    ciassd_total_loss.item(), self.loss_dict['rcnn_loss'],
-                    cls_loss.item(), reg_loss.item(), dir_loss.item(),
-                    iou_loss.item(),
-                    self.loss_dict['cls_loss'].item(),
-                    self.loss_dict['reg_loss'].item(),
-                    self.loss_dict['iou_loss'].item(),
-                ))
+            str_to_print = "[epoch %d][%d/%d], || Loss: %.4f || Ciassd: %.4f " \
+                           "|| Cls1: %.4f || Loc1: %.4f || Dir1: %.4f || Iou1: %.4f" % (
+                               epoch, batch_id + 1, batch_len, self.loss_dict['loss'],
+                               ciassd_total_loss.item(), cls_loss.item(), reg_loss.item(),
+                               dir_loss.item(), iou_loss.item(),
+                               )
+            if 'rcnn_loss' in self.loss_dict:
+                str_to_print += " || Rcnn: %.4f || Cls2: %.4f || Loc2: %.4f || Iou2: %.4f" % (
+                        self.loss_dict['rcnn_loss'],
+                        self.loss_dict['cls_loss'].item(),
+                        self.loss_dict['reg_loss'].item(),
+                        self.loss_dict['iou_loss'].item(),
+                    )
+            print(str_to_print)
 
         writer.add_scalar('Ciassd_regression_loss', reg_loss.item(),
                           epoch * batch_len + batch_id)
@@ -135,7 +137,7 @@ class FpvrcnnLoss(nn.Module):
                           epoch * batch_len + batch_id)
         writer.add_scalar('Ciassd_loss', ciassd_total_loss.item(),
                           epoch * batch_len + batch_id)
-        if not self.loss_dict['loss'].item() == 0:
+        if 'rcnn_loss' in self.loss_dict:
             writer.add_scalar('Rcnn_regression_loss',
                               self.loss_dict['reg_loss'].item(),
                               epoch * batch_len + batch_id)

@@ -51,14 +51,19 @@ def load_saved_model(saved_path, model):
         return 100, model
 
     initial_epoch = findLastCheckpoint(saved_path)
+    state_dict = None
     if initial_epoch > 0:
         print('resuming by loading epoch %d' % initial_epoch)
-        model.load_state_dict(torch.load(
-            os.path.join(saved_path,
-                         'net_epoch%d.pth' % initial_epoch)), strict=False)
+        state_dict = torch.load(os.path.join(saved_path,
+                                             'net_epoch%d.pth' % initial_epoch))
+        if 'model' in state_dict:
+            model.load_state_dict(state_dict['model'], strict=False)
+        else:
+            model.load_state_dict(state_dict)
+        if hasattr(model, 'forward_cnt') and 'scheduler' in state_dict:
+            model.forward_cnt = state_dict['scheduler']['_step_count']
 
-    return initial_epoch, model
-
+    return initial_epoch, model, state_dict
 
 
 def setup_train(hypes):

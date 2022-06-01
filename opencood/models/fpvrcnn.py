@@ -38,6 +38,7 @@ class FPVRCNN(nn.Module):
                                        num_rawpoint_features=3)
         self.matcher = Matcher(args['matcher'], args['lidar_range'])
         self.roi_head = RoIHead(args['roi_head'])
+        self.forward_cnt = 0
 
     def forward(self, batch_dict):
         voxel_features = batch_dict['processed_lidar']['voxel_features']
@@ -66,8 +67,8 @@ class FPVRCNN(nn.Module):
                                              stage1=True)
         batch_dict['det_boxes'] = pred_box3d_list
         batch_dict['det_scores'] = scores_list
-
-        if pred_box3d_list is not None:
+        self.forward_cnt += 1
+        if self.forward_cnt * batch_dict['batch_size'] > 1e5  and pred_box3d_list is not None:
             batch_dict = self.vsa(batch_dict)
             batch_dict = self.matcher(batch_dict)
             batch_dict = self.roi_head(batch_dict)

@@ -225,9 +225,10 @@ class VoxelSetAbstraction(nn.Module):
             raw_points = batch_dict['origin_lidar']
             xyz = raw_points[:, 1:4]
             xyz_batch_cnt = xyz.new_zeros(batch_size).int()
+            indices = raw_points[:, 0].long()
             for bs_idx in range(batch_size):
-                xyz_batch_cnt[bs_idx] = (raw_points[:, 0] == bs_idx).sum()
-            point_features =  None
+                xyz_batch_cnt[bs_idx] = (indices == bs_idx).sum()
+            point_features = None
 
             pooled_points, pooled_features = self.SA_rawpoints(
                 xyz=xyz.contiguous(),
