@@ -182,8 +182,14 @@ def draw_crosswalks(lane_area_list, image):
         cv2.line(image, (bottom_line[0, 0], bottom_line[0, 1]),
                  (bottom_line[-1, 0], bottom_line[-1, 1]),
                  (255, 255, 255), 2, **CV2_SUB_VALUES)
+        cv2.line(image, (up_line[0, 0], up_line[0, 1]),
+                 (bottom_line[-1, 0], bottom_line[-1, 1]),
+                 (255, 255, 255), 2, **CV2_SUB_VALUES)
+        cv2.line(image, (up_line[-1, 0], up_line[-1, 1]),
+                 (bottom_line[0, 0], bottom_line[0, 1]),
+                 (255, 255, 255), 2, **CV2_SUB_VALUES)
 
-        cv2.imshow('debug', image)
-        cv2.waitKey(0)
+        # cv2.imshow('debug', image)
+        # cv2.waitKey(0)
 
     return image

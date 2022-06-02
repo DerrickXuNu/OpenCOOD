@@ -24,7 +24,7 @@ from logreplay.map.map_drawing import \
     cv2_subpixel, draw_agent, draw_road, \
     draw_lane, road_exclude, draw_crosswalks
 from opencood.hypes_yaml.yaml_utils import save_yaml_wo_overwriting
-
+CV2_SUB_VALUES = {"shift": 9, "lineType": cv2.LINE_AA}
 
 class MapManager(object):
     """
@@ -676,9 +676,23 @@ class MapManager(object):
                              self.raster_size[0] // 2
         lane_area[:, :, 1] = lane_area[:, :, 1] * self.pixels_per_meter + \
                              self.raster_size[1] // 2
-
+        # print(lane_area)
         # to make more precise polygon
         lane_area = cv2_subpixel(lane_area)
+        #
+        # up_line = lane_area[0]
+        # bottom_line = lane_area[1]
+        #
+        # cv2.line(self.lane_bev, (up_line[0, 0], up_line[0, 1]),
+        #          (up_line[-1, 0], up_line[-1, 1]),
+        #          (255, 255, 255), 2, **CV2_SUB_VALUES)
+        # cv2.line(self.lane_bev, (bottom_line[0, 0], bottom_line[0, 1]),
+        #          (bottom_line[-1, 0], bottom_line[-1, 1]),
+        #          (255, 255, 255), 2, **CV2_SUB_VALUES)
+        #
+        # cv2.imshow('debug', self.lane_bev)
+        # cv2.waitKey(0)
+
 
         return lane_area
 
