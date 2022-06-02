@@ -1,13 +1,15 @@
-root_dir: '/home/runshengxu/project/OpenCOOD/opv2v_data_dumping/train'
-output_dir: '/home/runshengxu/project/OpenCOOD/opv2v_data_dumping/additional_lane/train'
+root_dir: '/home/runshengxu/project/OpenCOOD/opv2v_data_dumping/tmp'
+output_dir: '/home/runshengxu/project/OpenCOOD/opv2v_data_dumping/additional_lane/tmp'
 map: # corresponding to bev map
   activate: true
   visualize: true
+
   save_yml: false
   save_static: false
   save_lane: true
   save_dynamic: false
-  save_bev_vis: false
+  save_bev_vis: true
+
   radius: 50 # meter
   raster_size: [256, 256]
   lane_sample_resolution: 0.1

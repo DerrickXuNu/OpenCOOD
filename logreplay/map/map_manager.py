@@ -21,7 +21,8 @@ from logreplay.map.map_utils import \
     world_to_sensor, lateral_shift, list_loc2array, list_wpt2array, \
     convert_tl_status, exclude_off_road_agents
 from logreplay.map.map_drawing import \
-    cv2_subpixel, draw_agent, draw_road, draw_lane, road_exclude
+    cv2_subpixel, draw_agent, draw_road, \
+    draw_lane, road_exclude, draw_crosswalks
 from opencood.hypes_yaml.yaml_utils import save_yaml_wo_overwriting
 
 
@@ -466,11 +467,27 @@ class MapManager(object):
         lanes_bounds = np.empty((0, 3, 2), dtype=np.float)
         crosswalks_bounds = np.empty((0, 3, 2), dtype=np.float)
 
+        # for crosswalk information
+        crosswalks_list = self.split_cross_walks()
+        for (i, crosswalk) in enumerate(crosswalks_list):
+            crosswalk_id = uuid.uuid4().hex[:6].upper()
+            crosswalks_ids.append(crosswalk_id)
+
+            cross_marking = np.array(crosswalk)
+            bound = self.get_bounds(cross_marking, cross_marking)
+            crosswalks_bounds = np.append(crosswalks_bounds, bound, axis=0)
+
+            self.crosswalk_info.update({crosswalk_id: {'xyz': cross_marking}})
+            self.bound_info['crosswalks']['ids'] = crosswalks_ids
+            self.bound_info['crosswalks']['bounds'] = crosswalks_bounds
+
         # loop all waypoints to get lane information
         for (i, waypoint) in enumerate(self.topology):
             # unique id for each lane
             lane_id = uuid.uuid4().hex[:6].upper()
             lanes_id.append(lane_id)
+
+            intersection_flag = True if waypoint.is_intersection else False
 
             waypoints = [waypoint]
             nxt = waypoint.next(self.lane_sample_resolution)[0]
@@ -500,12 +517,29 @@ class MapManager(object):
             self.lane_info.update({lane_id: {'xyz_left': left_marking,
                                              'xyz_right': right_marking,
                                              'xyz_mid': mid_lane,
-                                             'tl_id': tl_id}})
+                                             'tl_id': tl_id,
+                                             'intersection_flag':
+                                                 intersection_flag}})
             # boundary information
             self.bound_info['lanes']['ids'] = lanes_id
             self.bound_info['lanes']['bounds'] = lanes_bounds
-            self.bound_info['crosswalks']['ids'] = crosswalks_ids
-            self.bound_info['crosswalks']['bounds'] = crosswalks_bounds
+
+    def split_cross_walks(self):
+        """
+        Find each crosswalk with their key points.
+        """
+        all_cross_walks = self.carla_map.get_crosswalks()
+        cross_walks_list = []
+
+        tmp_list = []
+        for key_points in all_cross_walks:
+            if (key_points.x, key_points.y, key_points.z) in tmp_list:
+                cross_walks_list.append(tmp_list)
+                tmp_list = []
+            else:
+                tmp_list.append((key_points.x, key_points.y, key_points.z))
+
+        return cross_walks_list
 
     def generate_tl_info(self, world):
         """
@@ -590,6 +624,49 @@ class MapManager(object):
         # to image coordinate frame
         lane_area[0] = xyz_left[:, :2]
         lane_area[1] = xyz_right[::-1, :2]
+        # switch x and y
+        lane_area = lane_area[..., ::-1]
+        # y revert
+        lane_area[:, :, 1] = -lane_area[:, :, 1]
+
+        lane_area[:, :, 0] = lane_area[:, :, 0] * self.pixels_per_meter + \
+                             self.raster_size[0] // 2
+        lane_area[:, :, 1] = lane_area[:, :, 1] * self.pixels_per_meter + \
+                             self.raster_size[1] // 2
+
+        # to make more precise polygon
+        lane_area = cv2_subpixel(lane_area)
+
+        return lane_area
+
+    def generate_cross_area(self, xyz):
+        """
+        Generate the cross lane under rasterization map's center
+        coordinate frame.
+
+        Parameters
+        ----------
+        xyz : np.ndarray
+            Crosswalk lane marking, shape: (n, 3).
+        Returns
+        -------
+        lane_area : np.ndarray
+            Combine up and down line together.
+        """
+        if xyz.shape[0] == 2:
+            print('dman')
+        lane_area = np.zeros((2, xyz.shape[0] // 2, 2))
+        # convert coordinates to center's coordinate frame
+        xyz = xyz.T
+        xyz = np.r_[
+            xyz, [np.ones(xyz.shape[1])]]
+
+        # ego's coordinate frame
+        xyz = world_to_sensor(xyz, self.center).T
+
+        # to image coordinate frame
+        lane_area[0] = xyz[:xyz.shape[0] // 2, :2]
+        lane_area[1] = xyz[xyz.shape[0] // 2:, :2]
         # switch x and y
         lane_area = lane_area[..., ::-1]
         # y revert
@@ -758,8 +835,21 @@ class MapManager(object):
         lane_indices = self.indices_in_bounds(self.bound_info['lanes'][
                                                   'bounds'],
                                               raster_radius)
+        cross_indices = self.indices_in_bounds(self.bound_info['crosswalks'][
+                                                  'bounds'],
+                                              raster_radius)
+
         lanes_area_list = []
+        cross_area_list = []
         lane_type_list = []
+        intersection_list = []
+
+        for idx, cross_idx in enumerate(cross_indices):
+            cross_idx = self.bound_info['crosswalks']['ids'][cross_idx]
+            cross_info = self.crosswalk_info[cross_idx]
+
+            cross_area = self.generate_cross_area(cross_info['xyz'])
+            cross_area_list.append(cross_area)
 
         for idx, lane_idx in enumerate(lane_indices):
             lane_idx = self.bound_info['lanes']['ids'][lane_idx]
@@ -774,6 +864,9 @@ class MapManager(object):
             # generate lane area
             lane_area = self.generate_lane_area(xyz_left, xyz_right)
             lanes_area_list.append(lane_area)
+
+            # intersection flag
+            intersection_list.append(lane_info['intersection_flag'])
 
             # check the associated traffic light
             associated_tl_id = lane_info['tl_id']
@@ -791,7 +884,9 @@ class MapManager(object):
 
         if self.draw_lane:
             self.lane_bev = draw_lane(lanes_area_list, lane_type_list,
-                                      self.lane_bev, vis=False)
+                                      self.lane_bev, intersection_list,
+                                      vis=False)
+            self.lane_bev = draw_crosswalks(cross_area_list, self.lane_bev)
             self.lane_bev[self.static_bev == 0] = 0
 
         # we try to draw everything for visualization, but only dumping the
@@ -800,7 +895,8 @@ class MapManager(object):
                                  self.vis_bev,
                                  visualize=True)
         self.vis_bev = draw_lane(lanes_area_list, lane_type_list,
-                                 self.vis_bev)
+                                 self.vis_bev, intersection_list)
+        self.vis_bev = draw_crosswalks(cross_area_list, self.vis_bev)
         self.vis_bev = cv2.cvtColor(self.vis_bev, cv2.COLOR_RGB2BGR)
 
     def destroy(self):

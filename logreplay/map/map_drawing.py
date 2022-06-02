@@ -112,12 +112,14 @@ def road_exclude(static_road):
     return static_road
 
 
-def draw_lane(lane_area_list, lane_type_list, image, vis=True):
+def draw_lane(lane_area_list, lane_type_list, image,
+              intersection_list=None, vis=True):
     """
     Draw lanes on image (polylines).
 
     Parameters
     ----------
+    intersection_list : list
     lane_area_list : list
         List of lane coordinates
 
@@ -134,11 +136,54 @@ def draw_lane(lane_area_list, lane_type_list, image, vis=True):
     -------
     drawed image.
     """
-    for (lane_area, lane_type) in zip(lane_area_list, lane_type_list):
+    if intersection_list is None:
+        intersection_list = [False] * len(lane_area_list)
+
+    for (lane_area, lane_type, inter_flag) in zip(lane_area_list,
+                                                  lane_type_list,
+                                                  intersection_list):
+        if inter_flag:
+            continue
         cv2.polylines(image,
                       lane_area,
                       False,
                       Lane_COLOR[lane_type] if vis else (255, 255, 255),
                       **CV2_SUB_VALUES)
+
+    return image
+
+
+def draw_crosswalks(lane_area_list, image):
+    """
+    Draw lanes on image (polylines).
+
+    Parameters
+    ----------
+    lane_area_list : list
+        List of cross coordinates
+
+    image : np.ndarray
+        image to be drawn
+
+    vis : bool
+        Whether to visualize
+
+    Returns
+    -------
+    drawed image.
+    """
+    for lane_area in lane_area_list:
+        up_line = lane_area[0]
+        bottom_line = lane_area[1]
+
+        cv2.line(image, (up_line[0, 0], up_line[0, 1]),
+                 (up_line[-1, 0], up_line[-1, 1]),
+                 (255, 255, 255), 2, **CV2_SUB_VALUES)
+        cv2.line(image, (bottom_line[0, 0], bottom_line[0, 1]),
+                 (bottom_line[-1, 0], bottom_line[-1, 1]),
+                 (255, 255, 255), 2, **CV2_SUB_VALUES)
+
+        cv2.imshow('debug', image)
+        cv2.waitKey(0)
 
     return image
