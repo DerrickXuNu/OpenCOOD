@@ -4,25 +4,27 @@ map: # corresponding to bev map
   activate: true
   visualize: true
 
-  save_yml: false
-  save_static: false
+  save_yml: true
+  save_static: true
   save_lane: true
-  save_dynamic: false
+  save_dynamic: true
   save_bev_vis: true
 
   radius: 50 # meter
   raster_size: [256, 256]
   lane_sample_resolution: 0.1
+
   static:
     draw_lane: true
     draw_traffic_light: true
     exclude_road: false
+    exclude_intersection_lane: true
     z_filter_value: 6
   dynamic:
     exclude_self: true
     exclude_off_road: true
-    visibility: false # wheather save visibility mask under ego coordinate
-    visibility_corp: false # wheather save visibility mask that can been seen for all cavs
+    visibility: true # wheather save visibility mask under ego coordinate. when set to true, semantic lidar has to be implenmented
+    visibility_corp: true # wheather save visibility mask that can been seen for all cavs. when set to true, semantic lidar has to be implenmented
 
 sensor: # new attached sensor
   sensor_list: []
@@ -33,25 +35,25 @@ sensor: # new attached sensor
 #        image_size_x: 512
 #        image_size_y: 512
 #        height: 115.88
-#    - name: 'semantic_lidar'
-#      args: &base_semantic_lidar
-#        upper_fov: 10
-#        lower_fov: -30
-#        channels: 32
-#        rotation_frequency: 20
-#        points_per_second: 250000
-#        range: 50
-#        relative_pose: front
-#        thresh: 5 # mininum number of points hit to be regarded as visible
-#    - name: 'semantic_lidar'
-#      args:
-#        <<: *base_semantic_lidar
-#        relative_pose: left
-#    - name: 'semantic_lidar'
-#      args:
-#        <<: *base_semantic_lidar
-#        relative_pose: right
-#    - name: 'semantic_lidar'
-#      args:
-#        <<: *base_semantic_lidar
-#        relative_pose: back
+    - name: 'semantic_lidar'
+      args: &base_semantic_lidar
+        upper_fov: 10
+        lower_fov: -30
+        channels: 32
+        rotation_frequency: 20
+        points_per_second: 250000
+        range: 50
+        relative_pose: front
+        thresh: 5 # mininum number of points hit to be regarded as visible
+    - name: 'semantic_lidar'
+      args:
+        <<: *base_semantic_lidar
+        relative_pose: left
+    - name: 'semantic_lidar'
+      args:
+        <<: *base_semantic_lidar
+        relative_pose: right
+    - name: 'semantic_lidar'
+      args:
+        <<: *base_semantic_lidar
+        relative_pose: back

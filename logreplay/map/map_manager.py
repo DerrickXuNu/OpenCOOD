@@ -121,6 +121,8 @@ class MapManager(object):
 
         self.radius_meter = config['radius']
         self.z_filter_value = config['static']['z_filter_value']
+        self.exclude_intersection_lane = \
+            config['static']['exclude_intersection_lane']
 
         assert config['raster_size'][0] == config['raster_size'][1]
         self.raster_size = np.array([config['raster_size'][0],
@@ -141,7 +143,9 @@ class MapManager(object):
         # this is mainly used for efficient filtering
         self.bound_info = {'lanes': {},
                            'crosswalks': {}}
+        self.traffic_stop_pos = []
 
+        self.retrieve_light_stop_pos()
         # generate information for traffic light
         self.generate_tl_info(self.world)
         # generate lane, crosswalk and boundary information
@@ -363,6 +367,14 @@ class MapManager(object):
         return np.nonzero(x_min_in & y_min_in & x_max_in & y_max_in
                           & z_flag)[0]
 
+    def retrieve_light_stop_pos(self):
+        # retrieve all stop and traffic light position
+        all_actors = self.world.get_actors()
+        for actor in all_actors:
+            if 'traffic_light' in actor.type_id or 'stop' in actor.type_id:
+                location = actor.get_transform().location
+                self.traffic_stop_pos.append((location.x, location.y))
+
     def associate_lane_tl(self, mid_lane):
         """
         Given the waypoints for a certain lane, find the traffic light that
@@ -478,8 +490,9 @@ class MapManager(object):
             crosswalks_bounds = np.append(crosswalks_bounds, bound, axis=0)
 
             self.crosswalk_info.update({crosswalk_id: {'xyz': cross_marking}})
-            self.bound_info['crosswalks']['ids'] = crosswalks_ids
-            self.bound_info['crosswalks']['bounds'] = crosswalks_bounds
+
+        self.bound_info['crosswalks']['ids'] = crosswalks_ids
+        self.bound_info['crosswalks']['bounds'] = crosswalks_bounds
 
         # loop all waypoints to get lane information
         for (i, waypoint) in enumerate(self.topology):
@@ -487,7 +500,17 @@ class MapManager(object):
             lane_id = uuid.uuid4().hex[:6].upper()
             lanes_id.append(lane_id)
 
-            intersection_flag = True if waypoint.is_intersection else False
+            intersection_flag = True if waypoint.is_intersection and \
+                                        self.exclude_intersection_lane else False
+            # we need to exclude the intersections without traffic light/stops
+            if intersection_flag:
+                intersection_flag = False
+                for t_pos in self.traffic_stop_pos:
+                    distance = np.sqrt((t_pos[0]-waypoint.transform.location.x)**2 +
+                                       (t_pos[1]-waypoint.transform.location.y)**2)
+                    if distance <= 30:
+                        intersection_flag = True
+                        break
 
             waypoints = [waypoint]
             nxt = waypoint.next(self.lane_sample_resolution)[0]
@@ -520,9 +543,9 @@ class MapManager(object):
                                              'tl_id': tl_id,
                                              'intersection_flag':
                                                  intersection_flag}})
-            # boundary information
-            self.bound_info['lanes']['ids'] = lanes_id
-            self.bound_info['lanes']['bounds'] = lanes_bounds
+        # boundary information
+        self.bound_info['lanes']['ids'] = lanes_id
+        self.bound_info['lanes']['bounds'] = lanes_bounds
 
     def split_cross_walks(self):
         """
