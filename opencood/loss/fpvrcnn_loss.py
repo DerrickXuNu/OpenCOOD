@@ -23,14 +23,10 @@ class FpvrcnnLoss(nn.Module):
         ciassd_loss = self.ciassd_loss(output_dict, label_dict)
 
         # only update ciassd if no bbox is detected in the first stage
-        if 'fpvrcnn_out' not in output_dict or ciassd_loss > 2.0:
-            self.loss_dict.update({
+        if 'fpvrcnn_out' not in output_dict:
+            self.loss_dict = {
                 'loss': ciassd_loss,
-                # 'rcnn_loss': torch.Tensor([0]),
-                # 'cls_loss': torch.Tensor([0]),
-                # 'iou_loss': torch.Tensor([0]),
-                # 'reg_loss': torch.Tensor([0]),
-            })
+            }
             return ciassd_loss
 
         # rcnn out

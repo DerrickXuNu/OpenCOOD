@@ -119,58 +119,30 @@ def main():
             final_loss = criterion(ouput_dict, batch_data['ego']['label_dict'])
             criterion.logging(epoch, i, len(train_loader), writer)
 
-            ##########
-            vis_save_path = os.path.join(opt.model_dir, 'vis')
-            if not os.path.exists(vis_save_path):
-                os.makedirs(vis_save_path)
-            vis_save_path = os.path.join(vis_save_path, 'tmp.png')
-            ########PLOT###########
-
-            points = batch_data['ego']['origin_lidar'].cpu().numpy()
-            points = points[:, 1:]
-            gt_boxes = batch_data['ego']['object_bbx_center'][0][batch_data['ego']['object_bbx_mask'][0].bool()].cpu().numpy()
-            gt_boxes = gt_boxes[:, [0, 1, 2, 5, 4, 3, 6]]
-            draw_points_boxes_plt(pc_range=[-140.8, -41.6, -3, 140.8, 41.6, 1],
-                                  points=points, boxes_gt=gt_boxes, save_path=vis_save_path)
-
-            # boxes_pred = pred_box_tensor.cpu().numpy()
-            # boxes_gt = gt_box_tensor.cpu().numpy()
-            # fig = plt.figure(figsize=(15, 6))
-            # ax = fig.add_subplot(111)
-            # ax.plot(points[:, 0], points[:, 1], '.y', markersize=0.1)
-            # ax.axis('equal')
-            # for p, g in zip(boxes_pred, boxes_gt):
-            #     plt.plot(g[[0, 1, 2, 3, 0], 0], g[[0, 1, 2, 3, 0], 1], 'g', markersize=1)
-            # for p, g in zip(boxes_pred, boxes_gt):
-            #     plt.plot(p[[0, 1, 2, 3, 0], 0], p[[0, 1, 2, 3, 0], 1], 'r', markersize=0.1)
-            # plt.savefig(vis_save_path)
-            # plt.close()
-            #######################
-
             # back-propagation
             final_loss.backward()
             optimizer.step()
-            scheduler.step()
 
-        # if epoch % hypes['train_params']['eval_freq'] == 0:
-        #     valid_ave_loss = []
-        #
-        #     with torch.no_grad():
-        #         for i, batch_data in enumerate(val_loader):
-        #             model.eval()
-        #
-        #             batch_data = train_utils.to_device(batch_data, device)
-        #             ouput_dict = model(batch_data['ego'])
-        #
-        #             final_loss = criterion(ouput_dict,
-        #                                    batch_data['ego']['label_dict'])
-        #             valid_ave_loss.append(final_loss.item())
-        #     valid_ave_loss = statistics.mean(valid_ave_loss)
-        #     print('At epoch %d, the validation loss is %f' % (epoch,
-        #                                                       valid_ave_loss))
-        #     writer.add_scalar('Validate_Loss', valid_ave_loss, epoch)
+        scheduler.step()
 
-        if epoch % hypes['train_params']['save_freq'] == 0:
+        if epoch % hypes['train_params']['eval_freq'] == 0:
+            valid_ave_loss = []
+
+            with torch.no_grad():
+                for i, batch_data in enumerate(val_loader):
+                    model.eval()
+
+                    batch_data = train_utils.to_device(batch_data, device)
+                    ouput_dict = model(batch_data['ego'])
+
+                    final_loss = criterion(ouput_dict,
+                                           batch_data['ego']['label_dict'])
+                    valid_ave_loss.append(final_loss.item())
+            valid_ave_loss = statistics.mean(valid_ave_loss)
+            print('At epoch %d, the validation loss is %f' % (epoch,
+                                                              valid_ave_loss))
+            writer.add_scalar('Validate_Loss', valid_ave_loss, epoch)
+
             torch.save({
                 'model': model.state_dict(),
                 'optimizer': optimizer.state_dict(),

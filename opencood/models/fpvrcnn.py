@@ -69,7 +69,7 @@ class FPVRCNN(nn.Module):
         batch_dict['det_scores'] = scores_list
         self.forward_cnt += 1
         if pred_box3d_list is not None and \
-                (not self.training or self.forward_cnt * batch_dict['batch_size'] > 1e5):
+                (not self.training or self.forward_cnt * len(batch_dict['record_len']) > 2e5):
             batch_dict = self.vsa(batch_dict)
             batch_dict = self.matcher(batch_dict)
             batch_dict = self.roi_head(batch_dict)

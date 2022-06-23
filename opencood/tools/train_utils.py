@@ -60,9 +60,8 @@ def load_saved_model(saved_path, model):
             model.load_state_dict(state_dict['model'], strict=False)
         else:
             model.load_state_dict(state_dict)
-        if hasattr(model, 'forward_cnt') and 'scheduler' in state_dict:
-            model.forward_cnt = state_dict['scheduler']['_step_count']
-
+        if hasattr(model, 'forward_cnt') and 'optimizer' in state_dict:
+            model.forward_cnt = state_dict['optimizer']['state'][0]['step']
     return initial_epoch, model, state_dict
 
 
