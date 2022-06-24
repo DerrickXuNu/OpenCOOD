@@ -152,11 +152,11 @@ def main():
                         os.makedirs(vis_save_path)
                     vis_save_path = os.path.join(vis_save_path, '%05d.png' % i)
 
-                if opt.save_vis:
-                    vis_save_path = os.path.join(opt.model_dir, 'vis')
-                    if not os.path.exists(vis_save_path):
-                        os.makedirs(vis_save_path)
-                    vis_save_path = os.path.join(vis_save_path, 'tmp.png')
+                # if opt.save_vis:
+                #     vis_save_path = os.path.join(opt.model_dir, 'vis')
+                #     if not os.path.exists(vis_save_path):
+                #         os.makedirs(vis_save_path)
+                #     vis_save_path = os.path.join(vis_save_path, 'tmp.png')
                     ########PLOT###########
 
                     points = batch_data['ego']['origin_lidar'].cpu().numpy()[:, 1:]

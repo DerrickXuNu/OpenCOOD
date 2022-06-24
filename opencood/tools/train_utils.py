@@ -56,12 +56,11 @@ def load_saved_model(saved_path, model):
         print('resuming by loading epoch %d' % initial_epoch)
         state_dict = torch.load(os.path.join(saved_path,
                                              'net_epoch%d.pth' % initial_epoch))
-        if 'model' in state_dict:
-            model.load_state_dict(state_dict['model'], strict=False)
-        else:
-            model.load_state_dict(state_dict)
-        if hasattr(model, 'forward_cnt') and 'optimizer' in state_dict:
-            model.forward_cnt = state_dict['optimizer']['state'][0]['step']
+        # if 'model' in state_dict:
+        #     model.load_state_dict(state_dict['model'], strict=False)
+        # else:
+        #     model.load_state_dict(state_dict)
+        model.load_state_dict(state_dict)
     return initial_epoch, model, state_dict
 
 

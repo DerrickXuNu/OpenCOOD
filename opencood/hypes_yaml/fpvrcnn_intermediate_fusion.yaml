@@ -60,6 +60,7 @@ postprocess: &postprocess_params
 model:
   core_method: fpvrcnn # corresponding to FPVRCNN
   args:
+    activate_stage2: False
     N: *batch_size
     T: *T
     lidar_range: *cav_lidar
@@ -172,4 +173,4 @@ optimizer:
 lr_scheduler:
   core_method: multistep #step, multistep and Exponential support
   gamma: 0.1
-  step_size: [15, 50]
+  step_size: [15, 30]

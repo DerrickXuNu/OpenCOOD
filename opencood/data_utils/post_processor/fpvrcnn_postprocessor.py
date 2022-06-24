@@ -108,15 +108,15 @@ class FpvrcnnPostprocessor(VoxelPostprocessor):
 
                 # if the number of boxes is too huge, this would consume a lot of memory in the second stage
                 # therefore, randomly select some boxes if the box number is too big at the beginning of the training
-                if len(boxes3d) > 300:
-                    keep_idx = torch.multinomial(scores, 300)
-                    idx_start = 0
-                    count = []
-                    for i, n in enumerate(batch_num_box_count):
-                        count.append(int(torch.logical_and(keep_idx>=idx_start, keep_idx<idx_start + n).sum()))
-                    batch_num_box_count = count
-                    boxes3d = boxes3d[keep_idx]
-                    scores = scores[keep_idx]
+                # if len(boxes3d) > 300:
+                #     keep_idx = torch.multinomial(scores, 300)
+                #     idx_start = 0
+                #     count = []
+                #     for i, n in enumerate(batch_num_box_count):
+                #         count.append(int(torch.logical_and(keep_idx>=idx_start, keep_idx<idx_start + n).sum()))
+                #     batch_num_box_count = count
+                #     boxes3d = boxes3d[keep_idx]
+                #     scores = scores[keep_idx]
 
                 pred_box3d_original_list.append(boxes3d.detach())
 
@@ -183,7 +183,7 @@ class FpvrcnnPostprocessor(VoxelPostprocessor):
         ).view(-1, boxes_local.shape[-1])
         detections[:, :3] = detections[:, :3] + roi_center
         detections[:, 6] = detections[:, 6] + roi_ry
-        mask = rcnn_score >= 0.1
+        mask = rcnn_score >= 0.01
         detections = detections[mask]
         scores = rcnn_score[mask]
         # gt_boxes = label_dict['gt_of_rois_src'][mask]
