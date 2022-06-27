@@ -74,10 +74,6 @@ def main():
     if opt.model_dir:
         saved_path = opt.model_dir
         init_epoch, model, state_dict = train_utils.load_saved_model(saved_path, model)
-        # if 'optimizer' in state_dict:
-        #     optimizer.load_state_dict(state_dict['optimizer'])
-        # if 'scheduler' in state_dict:
-        #     scheduler.load_state_dict(state_dict['scheduler'])
 
     else:
         init_epoch = 0
@@ -143,12 +139,6 @@ def main():
             print('At epoch %d, the validation loss is %f' % (epoch,
                                                               valid_ave_loss))
             writer.add_scalar('Validate_Loss', valid_ave_loss, epoch)
-
-            # torch.save({
-            #     'model': model.state_dict(),
-            #     'optimizer': optimizer.state_dict(),
-            #     'scheduler': scheduler.state_dict()
-            # }, os.path.join(saved_path, 'net_epoch%d.pth' % (epoch + 1)))
 
 
     print('Training Finished, checkpoints saved to %s' % saved_path)
