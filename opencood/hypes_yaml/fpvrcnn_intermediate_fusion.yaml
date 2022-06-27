@@ -1,12 +1,12 @@
 name: fpvrcnn_intermediate_fusion
 
 yaml_parser: "load_voxel_params"
-root_dir: "/media/hdd/yuan/koko/data/OPV2V/train"
-validate_dir: "/media/hdd/yuan/koko/data/OPV2V/validate"
+root_dir: "/data/opv2v/train"
+validate_dir: "/data/opv2v/validate"
 
 train_params:
-  batch_size: &batch_size 1
-  epoches: 70
+  batch_size: &batch_size 4
+  epoches: 20
   eval_freq: 1
   save_freq: 1
 
@@ -173,4 +173,4 @@ optimizer:
 lr_scheduler:
   core_method: multistep #step, multistep and Exponential support
   gamma: 0.1
-  step_size: [15, 30]
+  step_size: [10, 20]

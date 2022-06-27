@@ -40,14 +40,14 @@ def main():
 
     train_loader = DataLoader(opencood_train_dataset,
                               batch_size=hypes['train_params']['batch_size'],
-                              num_workers=6,
+                              num_workers=8,
                               collate_fn=opencood_train_dataset.collate_batch_train,
                               shuffle=True,
                               pin_memory=False,
                               drop_last=True)
     val_loader = DataLoader(opencood_validate_dataset,
-                            batch_size=hypes['train_params']['batch_size'],
-                            num_workers=6,
+                            batch_size=hypes['train_params']['batch_size'] // 2,
+                            num_workers=8,
                             collate_fn=opencood_train_dataset.collate_batch_train,
                             shuffle=False,
                             pin_memory=False,
@@ -99,8 +99,6 @@ def main():
 
         for i, batch_data in enumerate(train_loader):
             # the model will be evaluation mode during validation
-            # if batch_data['ego']['record_len'].sum() > 3:
-            #     continue
             model.train()
             model.zero_grad()
             optimizer.zero_grad()
@@ -125,6 +123,9 @@ def main():
 
         scheduler.step()
 
+        torch.save(model.state_dict(),
+            os.path.join(saved_path, 'net_epoch%d.pth' % (epoch + 1)))
+
         if epoch % hypes['train_params']['eval_freq'] == 0:
             valid_ave_loss = []
 
@@ -148,8 +149,7 @@ def main():
             #     'optimizer': optimizer.state_dict(),
             #     'scheduler': scheduler.state_dict()
             # }, os.path.join(saved_path, 'net_epoch%d.pth' % (epoch + 1)))
-            torch.save(model.state_dict(),
-                       os.path.join(saved_path, 'net_epoch%d.pth' % (epoch + 1)))
+
 
     print('Training Finished, checkpoints saved to %s' % saved_path)
 
