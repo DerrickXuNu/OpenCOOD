@@ -1,3 +1,5 @@
+import copy
+
 import torch.nn as nn
 import torch
 import numpy as np
@@ -15,7 +17,7 @@ class RoIHead(nn.Module):
         input_channels = model_cfg['in_channels']
         self.code_size = 7
 
-        mlps = self.model_cfg['roi_grid_pool']['mlps']
+        mlps = copy.copy(self.model_cfg['roi_grid_pool']['mlps'])
         for k in range(len(mlps)):
             mlps[k] = [input_channels] + mlps[k]
 

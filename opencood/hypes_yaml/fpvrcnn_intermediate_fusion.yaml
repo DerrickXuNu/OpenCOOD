@@ -1,12 +1,12 @@
 name: fpvrcnn_intermediate_fusion
 
 yaml_parser: "load_voxel_params"
-root_dir: "opv2v_data_dumping/train"
-validate_dir: "opv2v_data_dumping/validate"
+root_dir: "/data/opv2v/train"
+validate_dir: "/data/opv2v/validate"
 
 train_params:
-  batch_size: &batch_size 2
-  epoches: 70
+  batch_size: &batch_size 4
+  epoches: 20
   eval_freq: 1
   save_freq: 1
 
@@ -19,7 +19,7 @@ preprocess:
   # options: BasePreprocessor, VoxelPreprocessor, BevPreprocessor
   core_method: 'SpVoxelPreprocessor'
   args:
-    voxel_size: &voxel_size [0.4, 0.4, 0.1]
+    voxel_size: &voxel_size [0.1, 0.1, 0.1]
     max_points_per_voxel: &T 5
     max_voxel_train: 36000
     max_voxel_test: 70000
@@ -60,6 +60,7 @@ postprocess: &postprocess_params
 model:
   core_method: fpvrcnn # corresponding to FPVRCNN
   args:
+    activate_stage2: False
     N: *batch_size
     T: *T
     lidar_range: *cav_lidar
@@ -172,4 +173,4 @@ optimizer:
 lr_scheduler:
   core_method: multistep #step, multistep and Exponential support
   gamma: 0.1
-  step_size: [15, 50]
+  step_size: [10, 20]

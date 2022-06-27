@@ -17,6 +17,7 @@ from opencood.tools import train_utils, inference_utils
 from opencood.data_utils.datasets import build_dataset
 from opencood.utils import eval_utils
 from opencood.visualization import vis_utils
+import matplotlib.pyplot as plt
 
 
 def test_parser():
@@ -69,7 +70,7 @@ def main():
 
     print('Loading Model from checkpoint')
     saved_path = opt.model_dir
-    _, model = train_utils.load_saved_model(saved_path, model)
+    _, model, _ = train_utils.load_saved_model(saved_path, model)
     model.eval()
 
     # Create the dictionary for evaluation
@@ -95,7 +96,7 @@ def main():
             vis_aabbs_pred.append(o3d.geometry.LineSet())
 
     for i, batch_data in tqdm(enumerate(data_loader)):
-        print(i)
+        # print(i)
         with torch.no_grad():
             batch_data = train_utils.to_device(batch_data, device)
             if opt.fusion_method == 'late':
@@ -151,13 +152,35 @@ def main():
                         os.makedirs(vis_save_path)
                     vis_save_path = os.path.join(vis_save_path, '%05d.png' % i)
 
-                opencood_dataset.visualize_result(pred_box_tensor,
-                                                  gt_box_tensor,
-                                                  batch_data['ego'][
-                                                      'origin_lidar'],
-                                                  opt.show_vis,
-                                                  vis_save_path,
-                                                  dataset=opencood_dataset)
+                # if opt.save_vis:
+                #     vis_save_path = os.path.join(opt.model_dir, 'vis')
+                #     if not os.path.exists(vis_save_path):
+                #         os.makedirs(vis_save_path)
+                #     vis_save_path = os.path.join(vis_save_path, 'tmp.png')
+                    ########PLOT###########
+
+                    points = batch_data['ego']['origin_lidar'].cpu().numpy()[:, 1:]
+                    boxes_pred = pred_box_tensor.cpu().numpy()
+                    boxes_gt = gt_box_tensor.cpu().numpy()
+                    fig = plt.figure(figsize=(15, 6))
+                    ax = fig.add_subplot(111)
+                    ax.plot(points[:, 0], points[:, 1], '.y', markersize=0.1)
+                    ax.axis('equal')
+                    for g in boxes_gt:
+                        plt.plot(g[[0, 1, 2, 3, 0], 0], g[[0, 1, 2, 3, 0], 1], 'g', markersize=1)
+                    for p in boxes_pred:
+                        plt.plot(p[[0, 1, 2, 3, 0], 0], p[[0, 1, 2, 3, 0], 1], 'r', markersize=0.1)
+                    plt.savefig(vis_save_path)
+                    plt.close()
+                    #######################
+
+                # opencood_dataset.visualize_result(pred_box_tensor,
+                #                                   gt_box_tensor,
+                #                                   batch_data['ego'][
+                #                                       'origin_lidar'],
+                #                                   opt.show_vis,
+                #                                   vis_save_path,
+                #                                   dataset=opencood_dataset)
 
             if opt.show_sequence:
                 pcd, pred_o3d_box, gt_o3d_box = \
