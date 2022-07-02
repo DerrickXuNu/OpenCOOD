@@ -67,14 +67,18 @@ class VoxelBackBone8x(nn.Module):
         )
 
         last_pad = 0
+        if 'num_features_out' in self.model_cfg:
+            self.num_point_features = self.model_cfg['num_features_out']
+        else:
+            self.num_point_features = 128
         self.conv_out = spconv.SparseSequential(
             # [200, 150, 5] -> [200, 150, 2]
-            spconv.SparseConv3d(64, 128, (3, 1, 1), stride=(2, 1, 1), padding=last_pad,
+            spconv.SparseConv3d(64, self.num_point_features, (3, 1, 1), stride=(2, 1, 1), padding=last_pad,
                                 bias=False, indice_key='spconv_down2'),
-            norm_fn(128),
+            norm_fn(self.num_point_features),
             nn.ReLU(),
         )
-        self.num_point_features = 128
+
         self.backbone_channels = {
             'x_conv1': 16,
             'x_conv2': 32,

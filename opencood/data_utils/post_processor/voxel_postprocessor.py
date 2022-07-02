@@ -11,7 +11,6 @@ import sys
 
 import numpy as np
 import torch
-from torch.nn.functional import sigmoid
 import torch.nn.functional as F
 
 from opencood.data_utils.post_processor.base_postprocessor \
@@ -149,7 +148,7 @@ class VoxelPostprocessor(BasePostprocessor):
         id_pos, id_pos_gt = \
             np.where(iou >
                      self.params['target_args']['pos_threshold'])
-        #  find anchors iou  params['neg_iou']
+        #  find anchors iou < params['neg_iou']
         id_neg = np.where(np.sum(iou <
                                  self.params['target_args']['neg_threshold'],
                                  axis=1) == iou.shape[1])[0]
@@ -348,7 +347,7 @@ class VoxelPostprocessor(BasePostprocessor):
         return pred_box3d_tensor, scores
 
     @staticmethod
-    def delta_to_boxes3d(deltas, anchors):
+    def delta_to_boxes3d(deltas, anchors, channel_swap=True):
         """
         Convert the output delta to 3d bbx.
 
@@ -358,6 +357,9 @@ class VoxelPostprocessor(BasePostprocessor):
             (N, W, L, 14)
         anchors : torch.Tensor
             (W, L, 2, 7) -> xyzhwlr
+        channel_swap : bool
+            Whether to swap the channel of deltas. It is only false when using
+            FPV-RCNN
 
         Returns
         -------
@@ -366,9 +368,12 @@ class VoxelPostprocessor(BasePostprocessor):
         """
         # batch size
         N = deltas.shape[0]
-        deltas = deltas.permute(0, 2, 3, 1).contiguous().view(N, -1, 7)
-        boxes3d = torch.zeros_like(deltas)
+        if channel_swap:
+            deltas = deltas.permute(0, 2, 3, 1).contiguous().view(N, -1, 7)
+        else:
+            deltas = deltas.contiguous().view(N, -1, 7)
 
+        boxes3d = torch.zeros_like(deltas)
         if deltas.is_cuda:
             anchors = anchors.cuda()
             boxes3d = boxes3d.cuda()
