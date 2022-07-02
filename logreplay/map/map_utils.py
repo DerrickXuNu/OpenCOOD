@@ -8,7 +8,13 @@
 
 import carla
 import numpy as np
+import uuid
+import math
 from enum import IntEnum
+
+LABEL_TO_CARLA = {'building': carla.CityObjectLabel.Buildings,
+                  'terrain': carla.CityObjectLabel.Terrain,
+                  'sidewalk': carla.CityObjectLabel.Sidewalks}
 
 
 class InterpolationMethod(IntEnum):
@@ -161,3 +167,91 @@ def world_to_sensor(cords, sensor_transform):
 def exclude_off_road_agents(static_bev, dynamic_bev):
     dynamic_bev[static_bev == 0] = 0
     return dynamic_bev
+
+
+def retrieve_city_object_info(world, label_list):
+    """
+    A general function to retrieve object bbx in carla world except vehicle,
+    lane, crosswalk and road.
+
+    Parameters
+    ----------
+    world : carla.World
+        Carla world object
+    label_list : list of str
+        The label that users want to retrieve.
+
+    Returns
+    -------
+    A dictionary with information of the retrieved objects.
+    """
+    city_object_info = {}
+    for label_name in label_list:
+        object_ins = world.get_level_bbs(LABEL_TO_CARLA[label_name])
+
+        obj_info = {}
+
+        for obj in object_ins:
+            obj_id = uuid.uuid4().hex[:6].upper()
+
+            obj_transform = carla.Transform(obj.location,
+                                            obj.rotation)
+            obj_loc = [obj.location.x,
+                       obj.location.y,
+                       obj.location.z, ]
+            obj_yaw = obj.rotation.yaw
+
+            # calculate 4 corners
+            bb = obj.extent
+            corners = [
+                carla.Location(x=-bb.x, y=-bb.y),
+                carla.Location(x=-bb.x, y=bb.y),
+                carla.Location(x=bb.x, y=bb.y),
+                carla.Location(x=bb.x, y=-bb.y)
+            ]
+
+            obj_transform.transform(corners)
+            corners_reformat = [[x.x, x.y, x.z] for x in corners]
+
+            obj_info[obj_id] = {'location': obj_loc,
+                                'yaw': obj_yaw,
+                                'corners': corners_reformat}
+
+        city_object_info.update({label_name: obj_info})
+
+    return city_object_info
+
+
+def obj_in_range(center, radius, obj_info_dict):
+    """
+    Retrieve the object in range.
+
+    Parameters
+    ----------
+    center : carla.Transform
+        The ego position
+
+    radius : float
+        Valid radius.
+
+    obj_info_dict : dict
+
+    Returns
+    -------
+    A dictionary that contains objects in range.
+    """
+    final_objs = {}
+
+    for obj_category, obj_contents in obj_info_dict.items():
+        cur_objs = {}
+        for obj_id, obj_info in obj_contents.items():
+            corners = obj_info['corners']
+            for corner in corners:
+                distance = math.sqrt((corner[0] - center.location.x) ** 2 + \
+                                     (corner[1] - center.location.y) ** 2)
+                if distance < radius:
+                    cur_objs.update({obj_id: obj_info})
+                    break
+        final_objs.update({obj_category: cur_objs})
+
+    return final_objs

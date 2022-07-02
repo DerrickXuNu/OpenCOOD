@@ -21,6 +21,13 @@ Lane_COLOR = {'normal': (255, 217, 82),
               'red': (255, 0, 0),
               'yellow': (255, 255, 0),
               'green': (0, 255, 0)}
+BUILD_COLOR = (70, 70, 70)
+Terrain_COLOR = (145, 170, 100)
+SideWalk_COLOR = (244, 35, 232)
+# color map
+OBJ_COLOR_MAP = {'building': BUILD_COLOR,
+                 'terrain': Terrain_COLOR,
+                 'sidewalk': SideWalk_COLOR}
 
 
 def cv2_subpixel(coords: np.ndarray) -> np.ndarray:
@@ -188,8 +195,26 @@ def draw_crosswalks(lane_area_list, image):
         cv2.line(image, (up_line[-1, 0], up_line[-1, 1]),
                  (bottom_line[0, 0], bottom_line[0, 1]),
                  (255, 255, 255), 2, **CV2_SUB_VALUES)
-
-        # cv2.imshow('debug', image)
-        # cv2.waitKey(0)
-
     return image
+
+
+def draw_city_objects(city_obj_info, image):
+    """
+    Draw static objects other than lane, road, crosswalks on image.
+
+    Parameters
+    ----------
+    city_obj_info : dict
+    image : np.ndarray
+
+    Returns
+    -------
+    Drew image.
+    """
+    for obj_category, obj_content in city_obj_info.items():
+        for _, obj in obj_content.items():
+            obj_corner = obj['corner_area'].reshape(-1, 2)
+            cv2.fillPoly(image, [obj_corner], OBJ_COLOR_MAP[obj_category],
+                         **CV2_SUB_VALUES)
+    return image
+

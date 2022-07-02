@@ -19,12 +19,14 @@ from shapely.geometry import Polygon
 from logreplay.assets.presave_lib import EXCLUDE_ROAD_MAP, OR_Z_VALUE_MAP
 from logreplay.map.map_utils import \
     world_to_sensor, lateral_shift, list_loc2array, list_wpt2array, \
-    convert_tl_status, exclude_off_road_agents
+    convert_tl_status, exclude_off_road_agents, retrieve_city_object_info, \
+    obj_in_range
 from logreplay.map.map_drawing import \
     cv2_subpixel, draw_agent, draw_road, \
-    draw_lane, road_exclude, draw_crosswalks
+    draw_lane, road_exclude, draw_crosswalks, draw_city_objects
 from opencood.hypes_yaml.yaml_utils import save_yaml_wo_overwriting
 CV2_SUB_VALUES = {"shift": 9, "lineType": cv2.LINE_AA}
+
 
 class MapManager(object):
     """
@@ -123,6 +125,7 @@ class MapManager(object):
         self.z_filter_value = config['static']['z_filter_value']
         self.exclude_intersection_lane = \
             config['static']['exclude_intersection_lane']
+        self.other_render_objs = config['static']['other_objs']
 
         assert config['raster_size'][0] == config['raster_size'][1]
         self.raster_size = np.array([config['raster_size'][0],
@@ -150,6 +153,11 @@ class MapManager(object):
         self.generate_tl_info(self.world)
         # generate lane, crosswalk and boundary information
         self.generate_lane_cross_info()
+
+        # generate labels
+        self.other_objs_info = \
+            retrieve_city_object_info(self.world,
+                                      self.other_render_objs)
 
         # static related info
         self.draw_lane = config['static']['draw_lane']
@@ -699,23 +707,8 @@ class MapManager(object):
                              self.raster_size[0] // 2
         lane_area[:, :, 1] = lane_area[:, :, 1] * self.pixels_per_meter + \
                              self.raster_size[1] // 2
-        # print(lane_area)
         # to make more precise polygon
         lane_area = cv2_subpixel(lane_area)
-        #
-        # up_line = lane_area[0]
-        # bottom_line = lane_area[1]
-        #
-        # cv2.line(self.lane_bev, (up_line[0, 0], up_line[0, 1]),
-        #          (up_line[-1, 0], up_line[-1, 1]),
-        #          (255, 255, 255), 2, **CV2_SUB_VALUES)
-        # cv2.line(self.lane_bev, (bottom_line[0, 0], bottom_line[0, 1]),
-        #          (bottom_line[-1, 0], bottom_line[-1, 1]),
-        #          (255, 255, 255), 2, **CV2_SUB_VALUES)
-        #
-        # cv2.imshow('debug', self.lane_bev)
-        # cv2.waitKey(0)
-
 
         return lane_area
 
@@ -876,6 +869,7 @@ class MapManager(object):
                                                   'bounds'],
                                               raster_radius)
 
+        # --------- Retrieve road topology related first ---------- #
         lanes_area_list = []
         cross_area_list = []
         lane_type_list = []
@@ -926,8 +920,19 @@ class MapManager(object):
             self.lane_bev = draw_crosswalks(cross_area_list, self.lane_bev)
             self.lane_bev[self.static_bev == 0] = 0
 
+        # --------- Retrieve city objects such as buildings ---------- #
+        # first filter out objects out of range
+        final_city_objs = obj_in_range(self.center,
+                                       raster_radius,
+                                       self.other_objs_info)
+        for obj_cat, obj_content in final_city_objs.items():
+            for obj_id, obj in obj_content.items():
+                corner_area = self.generate_agent_area(obj['corners'])
+                obj['corner_area'] = corner_area
+
         # we try to draw everything for visualization, but only dumping the
         # elements we need.
+        self.vis_bev = draw_city_objects(final_city_objs, self.vis_bev)
         self.vis_bev = draw_road(lanes_area_list,
                                  self.vis_bev,
                                  visualize=True)

@@ -151,7 +151,6 @@ class SceneManager:
 
         for i, (cav_id, cav_yml) in enumerate(cur_database.items()):
             cav_content = load_yaml(cav_yml['yaml'])
-            print(cav_yml['yaml'])
             if cav_id not in self.veh_dict:
                 self.spawn_cav(cav_id, cav_content, cur_timestamp)
             else:
