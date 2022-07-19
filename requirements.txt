@@ -13,4 +13,3 @@ cython
 tensorboardX
 shapely
 einops
-torch
