@@ -14,8 +14,6 @@ from torch.utils.data import DataLoader
 import opencood.hypes_yaml.yaml_utils as yaml_utils
 from opencood.data_utils.datasets import build_dataset
 from opencood.tools import train_utils
-import matplotlib.pyplot as plt
-from opencood.visualization.vis_utils import draw_points_boxes_plt
 
 
 def train_parser():
@@ -46,7 +44,7 @@ def main():
                               pin_memory=False,
                               drop_last=True)
     val_loader = DataLoader(opencood_validate_dataset,
-                            batch_size=hypes['train_params']['batch_size'] // 2,
+                            batch_size=hypes['train_params']['batch_size'],
                             num_workers=8,
                             collate_fn=opencood_train_dataset.collate_batch_train,
                             shuffle=False,
@@ -55,12 +53,11 @@ def main():
 
     print('Creating Model')
     model = train_utils.create_model(hypes)
-    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     # we assume gpu is necessary
     if torch.cuda.is_available():
         model.to(device)
-        # model = torch.nnDataParallel(model, device_ids=[0, 1])
 
     # define the loss
     criterion = train_utils.create_loss(hypes)
@@ -73,7 +70,8 @@ def main():
     # if we want to train from last checkpoint.
     if opt.model_dir:
         saved_path = opt.model_dir
-        init_epoch, model, state_dict = train_utils.load_saved_model(saved_path, model)
+        init_epoch, model, state_dict = \
+            train_utils.load_saved_model(saved_path, model)
 
     else:
         init_epoch = 0
@@ -89,6 +87,7 @@ def main():
     # used to help schedule learning rate
 
     for epoch in range(init_epoch, max(epoches, init_epoch)):
+        scheduler.step()
 
         for param_group in optimizer.param_groups:
             print('learning rate %f' % param_group["lr"])
@@ -117,10 +116,9 @@ def main():
             final_loss.backward()
             optimizer.step()
 
-        scheduler.step()
-
-        torch.save(model.state_dict(),
-            os.path.join(saved_path, 'net_epoch%d.pth' % (epoch + 1)))
+        if epoch % hypes['train_params']['save_freq'] == 0:
+            torch.save(model.state_dict(),
+                os.path.join(saved_path, 'net_epoch%d.pth' % (epoch + 1)))
 
         if epoch % hypes['train_params']['eval_freq'] == 0:
             valid_ave_loss = []
@@ -139,7 +137,6 @@ def main():
             print('At epoch %d, the validation loss is %f' % (epoch,
                                                               valid_ave_loss))
             writer.add_scalar('Validate_Loss', valid_ave_loss, epoch)
-
 
     print('Training Finished, checkpoints saved to %s' % saved_path)
 
