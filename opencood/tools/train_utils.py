@@ -45,19 +45,19 @@ def load_saved_model(saved_path, model):
         return initial_epoch_
 
     if os.path.exists(os.path.join(saved_path, 'latest.pth')):
-        model.load_state_dict(torch.load(
-            os.path.join(saved_path,
-                         'latest.pth')))
-        return 100, model
+        state_dict = torch.load(os.path.join(saved_path,
+                                             'latest.pth'))
+        model.load_state_dict(state_dict)
+        return 100, model, state_dict
 
     initial_epoch = findLastCheckpoint(saved_path)
+    state_dict = None
     if initial_epoch > 0:
         print('resuming by loading epoch %d' % initial_epoch)
-        model.load_state_dict(torch.load(
-            os.path.join(saved_path,
-                         'net_epoch%d.pth' % initial_epoch)), strict=False)
-
-    return initial_epoch, model
+        state_dict = torch.load(os.path.join(saved_path,
+                                             'net_epoch%d.pth' % initial_epoch))
+        model.load_state_dict(state_dict)
+    return initial_epoch, model, state_dict
 
 
 def setup_train(hypes):

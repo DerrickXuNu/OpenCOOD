@@ -58,3 +58,9 @@ Install bbx nms calculation cuda version
   ```
 
 
+### 5. Dependencies for FPV-RCNN (optional)
+Install the dependencies for fpv-rcnn.
+  
+  ```bash
+  python opencood/pcdet_utils/setup.py build_ext --inplace
+  ```
