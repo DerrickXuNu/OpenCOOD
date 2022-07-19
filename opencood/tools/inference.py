@@ -152,35 +152,13 @@ def main():
                         os.makedirs(vis_save_path)
                     vis_save_path = os.path.join(vis_save_path, '%05d.png' % i)
 
-                # if opt.save_vis:
-                #     vis_save_path = os.path.join(opt.model_dir, 'vis')
-                #     if not os.path.exists(vis_save_path):
-                #         os.makedirs(vis_save_path)
-                #     vis_save_path = os.path.join(vis_save_path, 'tmp.png')
-                    ########PLOT###########
-
-                    points = batch_data['ego']['origin_lidar'].cpu().numpy()[:, 1:]
-                    boxes_pred = pred_box_tensor.cpu().numpy()
-                    boxes_gt = gt_box_tensor.cpu().numpy()
-                    fig = plt.figure(figsize=(15, 6))
-                    ax = fig.add_subplot(111)
-                    ax.plot(points[:, 0], points[:, 1], '.y', markersize=0.1)
-                    ax.axis('equal')
-                    for g in boxes_gt:
-                        plt.plot(g[[0, 1, 2, 3, 0], 0], g[[0, 1, 2, 3, 0], 1], 'g', markersize=1)
-                    for p in boxes_pred:
-                        plt.plot(p[[0, 1, 2, 3, 0], 0], p[[0, 1, 2, 3, 0], 1], 'r', markersize=0.1)
-                    plt.savefig(vis_save_path)
-                    plt.close()
-                    #######################
-
-                # opencood_dataset.visualize_result(pred_box_tensor,
-                #                                   gt_box_tensor,
-                #                                   batch_data['ego'][
-                #                                       'origin_lidar'],
-                #                                   opt.show_vis,
-                #                                   vis_save_path,
-                #                                   dataset=opencood_dataset)
+                opencood_dataset.visualize_result(pred_box_tensor,
+                                                  gt_box_tensor,
+                                                  batch_data['ego'][
+                                                      'origin_lidar'],
+                                                  opt.show_vis,
+                                                  vis_save_path,
+                                                  dataset=opencood_dataset)
 
             if opt.show_sequence:
                 pcd, pred_o3d_box, gt_o3d_box = \

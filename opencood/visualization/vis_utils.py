@@ -293,6 +293,8 @@ def visualize_single_sample_output_gt(pred_tensor,
         vis.run()
         vis.destroy_window()
 
+    if len(pcd.shape) == 3:
+        pcd = pcd[0]
     origin_lidar = pcd
     if not isinstance(pcd, np.ndarray):
         origin_lidar = common_utils.torch_tensor_to_numpy(pcd)

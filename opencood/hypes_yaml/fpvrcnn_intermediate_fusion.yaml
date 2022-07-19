@@ -1,8 +1,8 @@
 name: fpvrcnn_intermediate_fusion
 
 yaml_parser: "load_voxel_params"
-root_dir: "/data/opv2v/train"
-validate_dir: "/data/opv2v/validate"
+root_dir: "opv2v_data_dumping/train"
+validate_dir: "opv2v_data_dumping/validate"
 
 train_params:
   batch_size: &batch_size 4
