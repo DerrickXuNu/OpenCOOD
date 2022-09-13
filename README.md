@@ -138,6 +138,7 @@ We have a series of tutorials to help you understand OpenCOOD more. Please check
 
 ## Relevant Projects
 OpenCOOD has supported several projects in cooperative perception field.
+
 **CoBEVT: Cooperative Bird's Eye View Semantic Segmentation with Sparse Transformers** <br>
 Runsheng Xu*, Zhengzhong Tu*, Hao Xiang, Wei Shao, Bolei Zhou, Jiaqi Ma <br>
 *CoRL2022* <br>
