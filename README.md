@@ -11,6 +11,10 @@ paper [OPV2V.](https://arxiv.org/abs/2109.07644)
 </p>
 
 ## News
+**09/15/2022**: Powered by OpenCOOD, the paper *Where2comm: Communication-Efficient Collaborative Perception via Spatial Confidence Maps* has been accepted by **NeuRIPS 2022**!
+
+**09/06/2022**: Powered by OpenCOOD, our paper *CoBEVT: Cooperative Bird's Eye View Semantic Segmentation with Sparse Transformers* has been accepted by **CoRL2022**!
+
 **07/06/2022**: Powered by OpenCOOD, our paper *V2X-ViT: Vehicle-to-Everything Cooperative Perception with Vision Transformer* has been accepted by **ECCV2022**!
 
 **01/31/2022**: Our paper *OPV2V: An Open Benchmark Dataset and Fusion Pipeline for Perception with Vehicle-to-Vehicle Communication* has been accpted by ICRA2022!
@@ -138,6 +142,11 @@ We have a series of tutorials to help you understand OpenCOOD more. Please check
 
 ## Relevant Projects
 OpenCOOD has supported several projects in cooperative perception field.
+
+**Where2comm: Communication-Efficient Collaborative Perception via Spatial Confidence Maps** <br>
+Yue Hu, Shaoheng Fang, Zixing Lei, Yiqi Zhong, Siheng Chen<br>
+*Neurips 2022* <br>
+[[Paper]](https://arxiv.org/abs/2209.12836) [[Code]](https://github.774.gs/MediaBrain-SJTU/Where2comm)
 
 **CoBEVT: Cooperative Bird's Eye View Semantic Segmentation with Sparse Transformers** <br>
 Runsheng Xu*, Zhengzhong Tu*, Hao Xiang, Wei Shao, Bolei Zhou, Jiaqi Ma <br>
