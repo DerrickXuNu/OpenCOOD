@@ -98,7 +98,7 @@ Arguments Explanation:
 The evaluation results  will be dumped in the model directory.
 
 ## Benchmark and model zoo
-### Results on OPV2V dataset (AP@0.7 for no-compression/ compression)
+### Results on OPV2V LiDAR-track (AP@0.7 for no-compression/ compression)
 
 |                    | Backbone   | Fusion Strategy  | Bandwidth (Megabit), <br/> before/after compression| Default Towns    |Culver City| Download |
 |--------------------| --------   | ---------------  | ---------------                | -------------    |-----------| -------- |
@@ -118,7 +118,6 @@ The evaluation results  will be dumped in the model directory.
 | Cooper    | PIXOR        | Early |   7.68/7.68    |   0.678/x      | **0.558**/x      | [url](https://drive.google.com/file/d/1ZDLjtizZCuV6D92LloEPKRIw-LqxfE1j/view?usp=sharing)     | 
 | Attentive         | PIXOR        | Intermediate  |   313.75/1.22  |  **0.687**/**0.612**      | 0.546/**0.492**       | [url]()      |
 
-
 **Note**: 
 * We suggest using **PointPillar** as the backbone when you are creating your method and try to compare with
 our benchmark, as we implement most of the SOTA methods with this backbone only.
@@ -126,6 +125,24 @@ our benchmark, as we implement most of the SOTA methods with this backbone only.
 bandwidth requirement should be less than **2.7Mbp** to avoid severe delay. 
 * A 'x' in the benchmark table represents the bandwidth requirement is too large, which 
 can not be considered to employ in practice.
+
+
+### Results of BEV semantic segmentation on OPV2V camera-track (IoU)
+
+|                    | Backbone   | Fusion Strategy  | Vehicles| Road Surface   |Lane| Download |
+|--------------------| --------   | ---------------  | ---------------                | -------------    |-----------| -------- |
+| No Fusion        | CVT        | No Fusion      |    37.7 |   57.8        | 43.7     |    [None]()   |
+| Map Fusion      | CVT        | Late  |   45.1   |  60.0     | 44.1      | [None]()     | 
+| [Attentive Fusion](https://arxiv.org/abs/2109.07644)         | CVT        | Intermediate  | 51.9  |60.5       | 46.2        | [None]()     | 
+| [F-Cooper](https://arxiv.org/abs/1909.06459)         | CVT        | Intermediate  |52.5    | 60.4    | 46.5       | [None]()     | 
+| [V2VNet](https://arxiv.org/abs/2008.07519)         | CVT        | Intermediate  | 53.5     | 60.2     | 47.5   | [None]()     | 
+| [DiscoNet](https://arxiv.org/abs/2109.11615)         | CVT       | Intermediate  | 52.9   |  60.7   | 45.8    | [None]()     | 
+| [FuseBEVT](https://arxiv.org/pdf/2207.02202.pdf)        | CVT        | Intermediate  | 59.0     | 62.1        | 49.2      | [url]()    |
+| [CoBEVT](https://arxiv.org/pdf/2207.02202.pdf)        | SinBEVT        | Intermediate  | **60.4**     | **63.0**          | **53.0**      | [url](https://drive.google.com/drive/folders/1NLzyvMFxuv8Qy52q_OzcNsugTS5JacAT)    |
+
+**Note**: 
+To play with OPV2V camera data, please check here: https://github.com/DerrickXuNu/CoBEVT
+
 ## Tutorials
 We have a series of tutorials to help you understand OpenCOOD more. Please check the series of our [tutorials](https://opencood.readthedocs.io/en/latest/md_files/config_tutorial.html).
 
