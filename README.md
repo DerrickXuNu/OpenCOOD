@@ -1,4 +1,11 @@
-# OpenCOOD
+<div align="center">
+  <img src="images/opencood.png" width="600"/>
+  <div>&nbsp;</div>
+
+  <div>&nbsp;</div>
+</div>
+
+[![paper](https://img.shields.io/badge/arXiv-Paper-<COLOR>.svg)](https://arxiv.org/pdf/2109.07644.pdf)
 [![Documentation Status](https://readthedocs.org/projects/opencood/badge/?version=latest)](https://opencood.readthedocs.io/en/latest/?badge=latest) 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) 
 
@@ -10,16 +17,6 @@ paper [OPV2V.](https://arxiv.org/abs/2109.07644)
 <img src="images/camera_demo.gif" width="600"  alt="" class="img-responsive">
 </p>
 
-## News
-**09/15/2022**: Powered by OpenCOOD, the paper *Where2comm: Communication-Efficient Collaborative Perception via Spatial Confidence Maps* has been accepted by **NeuRIPS 2022**!
-
-**09/06/2022**: Powered by OpenCOOD, our paper *CoBEVT: Cooperative Bird's Eye View Semantic Segmentation with Sparse Transformers* has been accepted by **CoRL2022**!
-
-**07/06/2022**: Powered by OpenCOOD, our paper *V2X-ViT: Vehicle-to-Everything Cooperative Perception with Vision Transformer* has been accepted by **ECCV2022**!
-
-**01/31/2022**: Our paper *OPV2V: An Open Benchmark Dataset and Fusion Pipeline for Perception with Vehicle-to-Vehicle Communication* has been accpted by ICRA2022!
-
-**09/21/2021**: OPV2V dataset is public available: https://mobility-lab.seas.ucla.edu/opv2v/
 
 ## Features
 - Provide easy data API for multiple popular multi-agent perception dataset:
@@ -157,13 +154,19 @@ We have a series of tutorials to help you understand OpenCOOD more. Please check
   year = {2022}}
 ```
 
-## Relevant Projects
-OpenCOOD has supported several projects in cooperative perception field.
+## Supported Projects
+OpenCOOD has supported several top conference papers in cooperative perception field.
 
 **Where2comm: Communication-Efficient Collaborative Perception via Spatial Confidence Maps** <br>
 Yue Hu, Shaoheng Fang, Zixing Lei, Yiqi Zhong, Siheng Chen<br>
 *Neurips 2022* <br>
 [[Paper]](https://arxiv.org/abs/2209.12836) [[Code]](https://github.774.gs/MediaBrain-SJTU/Where2comm)
+
+**Adaptive Feature Fusion for Cooperative Perception using LiDAR Point Clouds** <br>
+Donghao Qiao, Farhana Zulkernine<br>
+*WACV 2023* <br>
+[[Paper]](https://arxiv.org/abs/2208.00116)
+
 
 **CoBEVT: Cooperative Bird's Eye View Semantic Segmentation with Sparse Transformers** <br>
 Runsheng Xu*, Zhengzhong Tu*, Hao Xiang, Wei Shao, Bolei Zhou, Jiaqi Ma <br>
