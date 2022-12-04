@@ -17,7 +17,11 @@ paper [OPV2V.](https://arxiv.org/abs/2109.07644)
 <img src="images/camera_demo.gif" width="600"  alt="" class="img-responsive">
 </p>
 
-
+## News:
+- 12/04/2022: The log replay tool for OPV2V is online now! With 
+this toolbox, you can 100% replay all the events in the offline dataset and add/change any sensors/groundtruth you
+want to explore the tasks that the origin dataset do not support. Check [here](logreplay/README.md) to see more details.
+- 09/15/2022: So far OpenCOOD has supported several top conference papers, including ECCV,ICRA,CoRL,NeurIPS,WACV! The bottom of this project page lists the detailed information.
 ## Features
 - Provide easy data API for multiple popular multi-agent perception dataset:
   - [x] [OPV2V [ICRA2022]](https://mobility-lab.seas.ucla.edu/opv2v/)
@@ -36,9 +40,7 @@ paper [OPV2V.](https://arxiv.org/abs/2109.07644)
     - [x] [FPV-RCNN [RAL2022]](https://arxiv.org/pdf/2109.11615.pdf)
     - [ ] [DiscoNet [NeurIPS2022]](https://arxiv.org/abs/2111.00643)
     - [ ] [V2X-ViT [ECCV2022]](https://github.com/DerrickXuNu/v2x-vit)
-- **Provide a convenient log replay toolbox for OPV2V dataset.** More importantly, it allows users to enrich the original dataset by
-    attaching new sensors or define additional tasks (e.g. tracking, prediction)
-    without changing the events in the initial dataset (e.g. positions and number of all vehicles, traffic speed).
+- **Provide a convenient log replay toolbox for OPV2V dataset.** Check [here](logreplay/README.md) to see more details.
 
 ## Data Downloading
 All the data can be downloaded from [google drive](https://drive.google.com/drive/folders/1dkDeHlwOVbmgXcDazZvO6TFEZ6V_7WUu). If you have a good internet, you can directly
