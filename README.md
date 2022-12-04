@@ -1,4 +1,11 @@
-# OpenCOOD
+<div align="center">
+  <img src="images/opencood.png" width="600"/>
+  <div>&nbsp;</div>
+
+  <div>&nbsp;</div>
+</div>
+
+[![paper](https://img.shields.io/badge/arXiv-Paper-<COLOR>.svg)](https://arxiv.org/pdf/2109.07644.pdf)
 [![Documentation Status](https://readthedocs.org/projects/opencood/badge/?version=latest)](https://opencood.readthedocs.io/en/latest/?badge=latest) 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) 
 
@@ -10,37 +17,27 @@ paper [OPV2V.](https://arxiv.org/abs/2109.07644)
 <img src="images/camera_demo.gif" width="600"  alt="" class="img-responsive">
 </p>
 
-## News
-**03/17/2022**:  [V2VNet](https://arxiv.org/abs/2008.07519) is supported and the results/trained model are provided in the benchmark table.
-
-**03/10/2022**: Results and pretrained weights for Attentive Fusion with **compression** are provided.
-
-**02/20/2022**: [F-Cooper](https://arxiv.org/abs/1909.06459) now is supported and the results/traiend model can be found in the benchmark table.
-
-**01/31/2022**: Our paper *OPV2V: An Open Benchmark Dataset and Fusion Pipeline for Perception with Vehicle-to-Vehicle Communication* has been accpted by ICRA2022!
-
-**09/21/2021**: OPV2V dataset is public available: https://mobility-lab.seas.ucla.edu/opv2v/
 
 ## Features
-- **Provide easy data API for the Vehicle-to-Vehicle (V2V) multi-modal perception dataset [OPV2V](https://mobility-lab.seas.ucla.edu/opv2v/)**
+- Provide easy data API for multiple popular multi-agent perception dataset:
+  - [x] [OPV2V [ICRA2022]](https://mobility-lab.seas.ucla.edu/opv2v/)
+  - [ ] [V2XSet [ECCV2022]]()
 
-    It currently provides easy API to load LiDAR data from multiple agents simultaneously in a structured format and
-convert to PyTorch Tesnor directly for model use. 
-- **Provide multiple SOTA 3D detection backbone**
-    
-    It supports state-of-the-art LiDAR detector including [PointPillar](https://arxiv.org/abs/1812.05784), [Pixor](https://arxiv.org/abs/1902.06326), [VoxelNet](https://arxiv.org/abs/1711.06396), and [SECOND](https://www.mdpi.com/1424-8220/18/10/3337).
-- **Support most common fusion strategies**
-  
-    It includes 3 most common fusion strategies: early fusion, late fusion, and intermediate fusion across different agents.
-- **Support several SOTA multi-agent visual fusion model** 
-
-    It supports the most recent multi-agent perception algorithms (currently up to Sep. 2021) including [Attentive Fusion](https://arxiv.org/abs/2109.07644),
-    [Cooper (early fusion)](https://arxiv.org/abs/1905.05265), [F-Cooper](https://arxiv.org/abs/1909.06459), [V2VNet](https://arxiv.org/abs/2008.07519) etc. We will keep updating
-    the newest algorithms.
-- **Provide a convenient log replay toolbox for OPV2V dataset (coming soon)**
-
-    It also provides an easy tool to replay the original OPV2V dataset. More importantly, it allows users to enrich the original dataset by
- attaching new sensors or define additional tasks (e.g. tracking, prediction)
+- Provide multiple SOTA 3D detection backbone:
+    - [X] [PointPillar](https://arxiv.org/abs/1812.05784)
+    - [X] [Pixor](https://arxiv.org/abs/1902.06326)
+    - [X] [VoxelNet](https://arxiv.org/abs/1711.06396)
+    - [X] [SECOND](https://www.mdpi.com/1424-8220/18/10/3337)
+- Support  SOTA multi-agent perception models:
+    - [x] [Attentive Fusion [ICRA2022]](https://arxiv.org/abs/2109.07644)
+    - [x] [Cooper [ICDCS]](https://arxiv.org/abs/1905.05265)
+    - [x] [F-Cooper [SEC2019]](https://arxiv.org/abs/1909.06459)
+    - [x] [V2VNet [ECCV2022]](https://arxiv.org/abs/2008.07519)
+    - [x] [FPV-RCNN [RAL2022]](https://arxiv.org/pdf/2109.11615.pdf)
+    - [ ] [DiscoNet [NeurIPS2022]](https://arxiv.org/abs/2111.00643)
+    - [ ] [V2X-ViT [ECCV2022]](https://github.com/DerrickXuNu/v2x-vit)
+- **Provide a convenient log replay toolbox for OPV2V dataset.** More importantly, it allows users to enrich the original dataset by
+    attaching new sensors or define additional tasks (e.g. tracking, prediction)
     without changing the events in the initial dataset (e.g. positions and number of all vehicles, traffic speed).
 
 ## Data Downloading
@@ -98,15 +95,16 @@ Arguments Explanation:
 The evaluation results  will be dumped in the model directory.
 
 ## Benchmark and model zoo
-### Results on OPV2V dataset (AP@0.7 for no-compression/ compression)
+### Results on OPV2V LiDAR-track (AP@0.7 for no-compression/ compression)
 
 |                    | Backbone   | Fusion Strategy  | Bandwidth (Megabit), <br/> before/after compression| Default Towns    |Culver City| Download |
 |--------------------| --------   | ---------------  | ---------------                | -------------    |-----------| -------- |
 | Naive Late         | PointPillar        | Late      |    **0.024**/**0.024** |   0.781/0.781        | 0.668/0.668         |    [url](https://drive.google.com/file/d/1WTKooW6k0exLqoIE5Czqy6ptycYlgKZz/view?usp=sharing)   |
 | [Cooper](https://arxiv.org/abs/1905.05265)       | PointPillar        | Early  |   7.68/7.68   | 0.800/x         | 0.696/x       | [url](https://drive.google.com/file/d/1N1p6syxGSKD18ELgtBQoSuUzR8tX1JeE/view?usp=sharing)     | 
-| [Attentive Fusion](https://arxiv.org/abs/2109.07644)         | PointPillar        | Intermediate  | 126.8/1.98   | 0.815/0.810       | **0.735**/**0.731**        | [url](https://drive.google.com/file/d/1u4w13SDzdGq6Irh2PHxT-qIlNXRT3z6Z/view?usp=sharing)     | 
+| [Attentive Fusion](https://arxiv.org/abs/2109.07644)         | PointPillar        | Intermediate  | 126.8/1.98   | 0.815/0.810       | 0.735/0.731        | [url](https://drive.google.com/file/d/1u4w13SDzdGq6Irh2PHxT-qIlNXRT3z6Z/view?usp=sharing)     | 
 | [F-Cooper](https://arxiv.org/abs/1909.06459)         | PointPillar        | Intermediate  | 72.08/1.12    | 0.790/0.788     | 0.728/0.726        | [url](https://drive.google.com/file/d/1CjXu9Y2ZTzJA6Oo3hnqFhbTqBVKq3mQb/view?usp=sharing)     | 
-| [V2VNet](https://arxiv.org/abs/2008.07519)         | PointPillar        | Intermediate  | 72.08/1.12    | **0.822**/**0.814**     | 0.734/0.729    | [url](https://drive.google.com/file/d/14xl_gNEIHcDw-SvQyO1ioQwyzGym-tKX/view?usp=sharing)     | 
+| [V2VNet](https://arxiv.org/abs/2008.07519)         | PointPillar        | Intermediate  | 72.08/1.12    | **0.822**/0.814     | 0.734/0.729    | [url](https://drive.google.com/file/d/14xl_gNEIHcDw-SvQyO1ioQwyzGym-tKX/view?usp=sharing)     | 
+| [FPV-RCNN](https://arxiv.org/abs/2109.11615)         | PV-RCNN        | Intermediate(2 stage)  | 0.24/0.24    | 0.820/**0.820**     | **0.763**/**0.763**    | [url](https://drive.google.com/file/d/1iOVi7holJ-Cu2P3dRv5HmOWlB5lkLukJ/view)     | 
 | Naive Late         | VoxelNet        | Late  | **0.024**/**0.024**    | 0.738/0.738          | 0.588/0.588        | [url]()    |
 | Cooper    | VoxelNet        | Early   |   7.68/7.68  | 0.758/x        | 0.677/x        | [url](https://drive.google.com/file/d/14WD7iLLyyCJJ3lApbYYdr5KOUM1ACnve/view?usp=sharing)     | 
 | Attentive Fusion        | VoxelNet        | Intermediate |   576.71/1.12   | **0.864**/**0.852**        | **0.775**/**0.746**       | [url](https://drive.google.com/file/d/16q8CfcB8dS4EVhJMvvEfn0gM2ynxZB3E/view?usp=sharing)      | 
@@ -117,7 +115,6 @@ The evaluation results  will be dumped in the model directory.
 | Cooper    | PIXOR        | Early |   7.68/7.68    |   0.678/x      | **0.558**/x      | [url](https://drive.google.com/file/d/1ZDLjtizZCuV6D92LloEPKRIw-LqxfE1j/view?usp=sharing)     | 
 | Attentive         | PIXOR        | Intermediate  |   313.75/1.22  |  **0.687**/**0.612**      | 0.546/**0.492**       | [url]()      |
 
-
 **Note**: 
 * We suggest using **PointPillar** as the backbone when you are creating your method and try to compare with
 our benchmark, as we implement most of the SOTA methods with this backbone only.
@@ -125,6 +122,24 @@ our benchmark, as we implement most of the SOTA methods with this backbone only.
 bandwidth requirement should be less than **2.7Mbp** to avoid severe delay. 
 * A 'x' in the benchmark table represents the bandwidth requirement is too large, which 
 can not be considered to employ in practice.
+
+
+### Results of BEV semantic segmentation on OPV2V camera-track (IoU)
+
+|                    | Backbone   | Fusion Strategy  | Vehicles| Road Surface   |Lane| Download |
+|--------------------| --------   | ---------------  | ---------------                | -------------    |-----------| -------- |
+| No Fusion        | CVT        | No Fusion      |    37.7 |   57.8        | 43.7     |    [None]()   |
+| Map Fusion      | CVT        | Late  |   45.1   |  60.0     | 44.1      | [None]()     | 
+| [Attentive Fusion](https://arxiv.org/abs/2109.07644)         | CVT        | Intermediate  | 51.9  |60.5       | 46.2        | [None]()     | 
+| [F-Cooper](https://arxiv.org/abs/1909.06459)         | CVT        | Intermediate  |52.5    | 60.4    | 46.5       | [None]()     | 
+| [V2VNet](https://arxiv.org/abs/2008.07519)         | CVT        | Intermediate  | 53.5     | 60.2     | 47.5   | [None]()     | 
+| [DiscoNet](https://arxiv.org/abs/2109.11615)         | CVT       | Intermediate  | 52.9   |  60.7   | 45.8    | [None]()     | 
+| [FuseBEVT](https://arxiv.org/pdf/2207.02202.pdf)        | CVT        | Intermediate  | 59.0     | 62.1        | 49.2      | [url]()    |
+| [CoBEVT](https://arxiv.org/pdf/2207.02202.pdf)        | SinBEVT        | Intermediate  | **60.4**     | **63.0**          | **53.0**      | [url](https://drive.google.com/drive/folders/1NLzyvMFxuv8Qy52q_OzcNsugTS5JacAT)    |
+
+**Note**: 
+To play with OPV2V camera data, please check here: https://github.com/DerrickXuNu/CoBEVT
+
 ## Tutorials
 We have a series of tutorials to help you understand OpenCOOD more. Please check the series of our [tutorials](https://opencood.readthedocs.io/en/latest/md_files/config_tutorial.html).
 
@@ -139,24 +154,31 @@ We have a series of tutorials to help you understand OpenCOOD more. Please check
   year = {2022}}
 ```
 
-Also, under this LICENSE, OpenCOOD is for non-commercial research only. Researchers can modify the source code for their own research only. Contracted work that generates corporate revenues and other general commercial use are prohibited under this LICENSE. See the LICENSE file for details and possible opportunities for commercial use.
+## Supported Projects
+OpenCOOD has supported several top conference papers in cooperative perception field.
 
-## Future Plans
-- [ ] Provide camera APIs for OPV2V
-- [ ] Provide the log replay toolbox
-- [x] Implement F-Cooper 
-- [x] Implement V2VNet 
-- [ ] Implement DiscoNet
+**Where2comm: Communication-Efficient Collaborative Perception via Spatial Confidence Maps** <br>
+Yue Hu, Shaoheng Fang, Zixing Lei, Yiqi Zhong, Siheng Chen<br>
+*Neurips 2022* <br>
+[[Paper]](https://arxiv.org/abs/2209.12836) [[Code]](https://github.774.gs/MediaBrain-SJTU/Where2comm)
+
+**Adaptive Feature Fusion for Cooperative Perception using LiDAR Point Clouds** <br>
+Donghao Qiao, Farhana Zulkernine<br>
+*WACV 2023* <br>
+[[Paper]](https://arxiv.org/abs/2208.00116)
 
 
-## Contributors
-OpenCOOD is supported by the [UCLA Mobility Lab](https://mobility-lab.seas.ucla.edu/). We also appreciate the great work from [OpenPCDet](https://github.com/open-mmlab/OpenPCDet), as 
-part of our works use their framework.<br>
+**CoBEVT: Cooperative Bird's Eye View Semantic Segmentation with Sparse Transformers** <br>
+Runsheng Xu*, Zhengzhong Tu*, Hao Xiang, Wei Shao, Bolei Zhou, Jiaqi Ma <br>
+*CoRL2022* <br>
+[[Paper]](https://arxiv.org/abs/2207.02202) [[Code]](https://github.com/DerrickXuNu/CoBEVT)
 
-### Lab Principal Investigator:
-- Dr. Jiaqi Ma ([linkedin](https://www.linkedin.com/in/jiaqi-ma-17037838/),
-               [UCLA Samueli](https://samueli.ucla.edu/people/jiaqi-ma/))
+**V2X-ViT: Vehicle-to-Everything Cooperative Perception with Vision Transformer** <br>
+Runsheng Xu*, Hao Xiang*, Zhengzhong Tu*, Xin Xia, Ming-Hsuan Yang, Jiaqi Ma <br>
+*ECCV2022* <br>
+[[Paper]](https://arxiv.org/abs/2203.10638) [[Code]](https://github.com/DerrickXuNu/v2x-vit) [[Talk]](https://course.zhidx.com/c/MmQ1YWUyMzM1M2I3YzVlZjE1NzM=)
 
-### Project Lead: <br>
- - Runsheng Xu ([linkedin](https://www.linkedin.com/in/runsheng-xu/), [github](https://github.com/DerrickXuNu))  <br>
- - Hao Xiang ([linkedin](https://www.linkedin.com/in/hao-xiang-42bb5a1b2/), [github](https://github.com/XHwind))
+**OPV2V: An Open Benchmark Dataset and Fusion Pipeline for Perception with Vehicle-to-Vehicle Communication** <br>
+Runsheng Xu*, Hao Xiang*, Xin Xia, Jinlong Li, Jiaqi Ma <br>
+*ICRA2022* <br>
+[[Paper]](https://arxiv.org/abs/2109.07644) [[Website]](https://mobility-lab.seas.ucla.edu/opv2v/) [[Code]](https://github.com/DerrickXuNu/OpenCOOD)
