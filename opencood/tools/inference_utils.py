@@ -100,4 +100,4 @@ def save_prediction_gt(pred_tensor, gt_tensor, pcd, timestamp, save_path):
 
     np.save(os.path.join(save_path, '%04d_pcd.npy' % timestamp), pcd_np)
     np.save(os.path.join(save_path, '%04d_pred.npy' % timestamp), pred_np)
-    np.save(os.path.join(save_path, '%04d_gt.npy' % timestamp), gt_np)
+    np.save(os.path.join(save_path, '%04d_gt.npy_test' % timestamp), gt_np)

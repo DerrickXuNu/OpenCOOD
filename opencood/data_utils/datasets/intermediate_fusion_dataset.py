@@ -3,22 +3,21 @@
 # License: TDG-Attribution-NonCommercial-NoDistrib
 
 """
-Dataset class for early fusion
+Dataset class for intermediate fusion
 """
 import random
 import math
+import warnings
 from collections import OrderedDict
 
 import numpy as np
 import torch
-from torch.utils.data import DataLoader
 
 import opencood.data_utils.datasets
 import opencood.data_utils.post_processor as post_processor
 from opencood.utils import box_utils
 from opencood.data_utils.datasets import basedataset
 from opencood.data_utils.pre_processor import build_preprocessor
-from opencood.hypes_yaml.yaml_utils import load_yaml
 from opencood.utils.pcd_utils import \
     mask_points_by_range, mask_ego_points, shuffle_points, \
     downsample_lidar_minimum
@@ -366,6 +365,9 @@ class IntermediateFusionDataset(basedataset.BaseDataset):
             # becomes identity
             pairwise_t_matrix[:, :] = np.identity(4)
         else:
+            warnings.warn("Projection later is not supported in "
+                          "the current version. Using it will throw"
+                          "an error.")
             t_list = []
 
             # save all transformation matrix in a list in order first.
