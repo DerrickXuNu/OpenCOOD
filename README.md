@@ -18,6 +18,7 @@ paper [OPV2V.](https://arxiv.org/abs/2109.07644)
 </p>
 
 ## News:
+- 12/16/2022: Both spconv 1.2.1 and spconv 2.x are supported! 
 - 12/04/2022: The log replay tool for OPV2V is online now! With 
 this toolbox, you can 100% replay all the events in the offline dataset and add/change any sensors/groundtruth you
 want to explore the tasks that the origin dataset do not support. Check [here](logreplay/README.md) to see more details.
@@ -32,6 +33,9 @@ want to explore the tasks that the origin dataset do not support. Check [here](l
     - [X] [Pixor](https://arxiv.org/abs/1902.06326)
     - [X] [VoxelNet](https://arxiv.org/abs/1711.06396)
     - [X] [SECOND](https://www.mdpi.com/1424-8220/18/10/3337)
+- Support multiple sparse convolution versions
+  - [X] Spconv 1.2.1
+  - [X] Spconv 2.x
 - Support  SOTA multi-agent perception models:
     - [x] [Attentive Fusion [ICRA2022]](https://arxiv.org/abs/2109.07644)
     - [x] [Cooper [ICDCS]](https://arxiv.org/abs/1905.05265)
@@ -99,23 +103,23 @@ The evaluation results  will be dumped in the model directory.
 ## Benchmark and model zoo
 ### Results on OPV2V LiDAR-track (AP@0.7 for no-compression/ compression)
 
-|                    | Backbone   | Fusion Strategy  | Bandwidth (Megabit), <br/> before/after compression| Default Towns    |Culver City| Download |
-|--------------------| --------   | ---------------  | ---------------                | -------------    |-----------| -------- |
-| Naive Late         | PointPillar        | Late      |    **0.024**/**0.024** |   0.781/0.781        | 0.668/0.668         |    [url](https://drive.google.com/file/d/1WTKooW6k0exLqoIE5Czqy6ptycYlgKZz/view?usp=sharing)   |
-| [Cooper](https://arxiv.org/abs/1905.05265)       | PointPillar        | Early  |   7.68/7.68   | 0.800/x         | 0.696/x       | [url](https://drive.google.com/file/d/1N1p6syxGSKD18ELgtBQoSuUzR8tX1JeE/view?usp=sharing)     | 
-| [Attentive Fusion](https://arxiv.org/abs/2109.07644)         | PointPillar        | Intermediate  | 126.8/1.98   | 0.815/0.810       | 0.735/0.731        | [url](https://drive.google.com/file/d/1u4w13SDzdGq6Irh2PHxT-qIlNXRT3z6Z/view?usp=sharing)     | 
-| [F-Cooper](https://arxiv.org/abs/1909.06459)         | PointPillar        | Intermediate  | 72.08/1.12    | 0.790/0.788     | 0.728/0.726        | [url](https://drive.google.com/file/d/1CjXu9Y2ZTzJA6Oo3hnqFhbTqBVKq3mQb/view?usp=sharing)     | 
-| [V2VNet](https://arxiv.org/abs/2008.07519)         | PointPillar        | Intermediate  | 72.08/1.12    | **0.822**/0.814     | 0.734/0.729    | [url](https://drive.google.com/file/d/14xl_gNEIHcDw-SvQyO1ioQwyzGym-tKX/view?usp=sharing)     | 
-| [FPV-RCNN](https://arxiv.org/abs/2109.11615)         | PV-RCNN        | Intermediate(2 stage)  | 0.24/0.24    | 0.820/**0.820**     | **0.763**/**0.763**    | [url](https://drive.google.com/file/d/1iOVi7holJ-Cu2P3dRv5HmOWlB5lkLukJ/view)     | 
-| Naive Late         | VoxelNet        | Late  | **0.024**/**0.024**    | 0.738/0.738          | 0.588/0.588        | [url]()    |
-| Cooper    | VoxelNet        | Early   |   7.68/7.68  | 0.758/x        | 0.677/x        | [url](https://drive.google.com/file/d/14WD7iLLyyCJJ3lApbYYdr5KOUM1ACnve/view?usp=sharing)     | 
-| Attentive Fusion        | VoxelNet        | Intermediate |   576.71/1.12   | **0.864**/**0.852**        | **0.775**/**0.746**       | [url](https://drive.google.com/file/d/16q8CfcB8dS4EVhJMvvEfn0gM2ynxZB3E/view?usp=sharing)      | 
-| Naive Late         | SECOND        | Late |  **0.024**/**0.024**    |  0.775/0.775        |0.682/0.682        | [url](https://drive.google.com/file/d/1VG_FKe1mKagPVGXH7UGHpyaM5q3cxtD8/view?usp=sharing)      |
-| Cooper    | SECOND        | Early  |   7.68/7.68   |  0.813/x       |  0.738/x     | [url](https://drive.google.com/file/d/1Z9io1VNcU-urcRW8l0ogWCTVCB53mw4N/view?usp=sharing)     | 
-| Attentive         | SECOND        | Intermediate |  63.4/0.99     |   **0.826**/**0.783**     | **0.760**/**0.760**    | [url](https://drive.google.com/file/d/1zEB8EyZ0X-WQykHFOM0pVwI8jXunRz1Z/view?usp=sharing)      | 
-| Naive Late         | PIXOR        | Late |    **0.024**/**0.024** |    0.578/0.578       |  0.360/0.360      | [url]()      |
-| Cooper    | PIXOR        | Early |   7.68/7.68    |   0.678/x      | **0.558**/x      | [url](https://drive.google.com/file/d/1ZDLjtizZCuV6D92LloEPKRIw-LqxfE1j/view?usp=sharing)     | 
-| Attentive         | PIXOR        | Intermediate  |   313.75/1.22  |  **0.687**/**0.612**      | 0.546/**0.492**       | [url]()      |
+|                    | Spconv Version| Backbone   | Fusion Strategy  | Bandwidth (Megabit), <br/> before/after compression| Default Towns    |Culver City| Download |
+|--------------------| -------|--------   | ---------------  | ---------------                | -------------    |-----------| -------- |
+| Naive Late         | 1.2.1 | PointPillar        | Late      |    **0.024**/**0.024** |   0.781/0.781        | 0.668/0.668         |    [url](https://drive.google.com/file/d/1WTKooW6k0exLqoIE5Czqy6ptycYlgKZz/view?usp=sharing)   |
+| [Cooper](https://arxiv.org/abs/1905.05265)   | 1.2.1     | PointPillar        | Early  |   7.68/7.68   | 0.800/x         | 0.696/x       | [url](https://drive.google.com/file/d/1N1p6syxGSKD18ELgtBQoSuUzR8tX1JeE/view?usp=sharing)     | 
+| [Attentive Fusion](https://arxiv.org/abs/2109.07644)  | 1.2.1        | PointPillar        | Intermediate  | 126.8/1.98   | 0.815/0.810       | 0.735/0.731        | [url](https://drive.google.com/file/d/1u4w13SDzdGq6Irh2PHxT-qIlNXRT3z6Z/view?usp=sharing)     | 
+| [F-Cooper](https://arxiv.org/abs/1909.06459)   | 1.2.1       | PointPillar        | Intermediate  | 72.08/1.12    | 0.790/0.788     | 0.728/0.726        | [url](https://drive.google.com/file/d/1CjXu9Y2ZTzJA6Oo3hnqFhbTqBVKq3mQb/view?usp=sharing)     | 
+| [V2VNet](https://arxiv.org/abs/2008.07519)  | 1.2.1        | PointPillar        | Intermediate  | 72.08/1.12    | **0.822**/0.814     | 0.734/0.729    | [url](https://drive.google.com/file/d/14xl_gNEIHcDw-SvQyO1ioQwyzGym-tKX/view?usp=sharing)     | 
+| [FPV-RCNN](https://arxiv.org/abs/2109.11615)   | 1.2.1       | PV-RCNN        | Intermediate(2 stage)  | 0.24/0.24    | 0.820/**0.820**     | **0.763**/**0.763**    | [url](https://drive.google.com/file/d/1iOVi7holJ-Cu2P3dRv5HmOWlB5lkLukJ/view)     | 
+| Naive Late    | 1.2.1      | VoxelNet        | Late  | **0.024**/**0.024**    | 0.738/0.738          | 0.588/0.588        | [url]()    |
+| Cooper   | 1.2.1  | VoxelNet        | Early   |   7.68/7.68  | 0.758/x        | 0.677/x        | [url](https://drive.google.com/file/d/14WD7iLLyyCJJ3lApbYYdr5KOUM1ACnve/view?usp=sharing)     | 
+| Attentive Fusion    | 1.2.1     | VoxelNet        | Intermediate |   576.71/1.12   | **0.864**/**0.852**        | **0.775**/**0.746**       | [url](https://drive.google.com/file/d/16q8CfcB8dS4EVhJMvvEfn0gM2ynxZB3E/view?usp=sharing)      | 
+| Naive Late    | 1.2.1      | SECOND        | Late |  **0.024**/**0.024**    |  0.775/0.775        |0.682/0.682        | [url](https://drive.google.com/file/d/1VG_FKe1mKagPVGXH7UGHpyaM5q3cxtD8/view?usp=sharing)      |
+| Cooper  | 1.2.1   | SECOND        | Early  |   7.68/7.68   |  0.813/x       |  0.738/x     | [url](https://drive.google.com/file/d/1Z9io1VNcU-urcRW8l0ogWCTVCB53mw4N/view?usp=sharing)     | 
+| Attentive     | 1.2.1     | SECOND        | Intermediate |  63.4/0.99     |   **0.826**/**0.783**     | **0.760**/**0.760**    | [url](https://drive.google.com/file/d/1zEB8EyZ0X-WQykHFOM0pVwI8jXunRz1Z/view?usp=sharing)      | 
+| Naive Late    | 1.2.1      | PIXOR        | Late |    **0.024**/**0.024** |    0.578/0.578       |  0.360/0.360      | [url]()      |
+| Cooper | 1.2.1    | PIXOR        | Early |   7.68/7.68    |   0.678/x      | **0.558**/x      | [url](https://drive.google.com/file/d/1ZDLjtizZCuV6D92LloEPKRIw-LqxfE1j/view?usp=sharing)     | 
+| Attentive   | 1.2.1       | PIXOR        | Intermediate  |   313.75/1.22  |  **0.687**/**0.612**      | 0.546/**0.492**       | [url]()      |
 
 **Note**: 
 * We suggest using **PointPillar** as the backbone when you are creating your method and try to compare with

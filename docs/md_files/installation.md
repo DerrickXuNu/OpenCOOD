@@ -39,16 +39,23 @@ If conda install failed,  install through pip
 pip install -r requirements.txt
 ```
 
-### 2. Pytorch Installation (>=1.8)
+### 2. Pytorch Installation (>=1.8, tested on 1.8-1.12.0)
 Go to https://pytorch.org/ to install pytorch cuda version.
 
-### 3. Spconv (1.2.1 requred)
-OpenCOOD currently uses the old spconv version to generate voxel features. We will 
-upgrade to spconv 2.0 in the short future. To install spconv 1.2.1, please follow the guide in https://github.com/traveller59/spconv/tree/v1.2.1.
+### 3. Spconv (1.2.1 or 2.x)
+OpenCOOD support both spconv 1.2.1 and 2.x to generate voxel features. 
 
+To install spconv 1.2.1, please follow the guide in https://github.com/traveller59/spconv/tree/v1.2.1.
+
+To install spconv 2.x, please run the following commands (if you are using cuda 11.3):
+```python
+pip install spconv-cu113
+```
 #### Tips for installing spconv 1.2.1:
 1. make sure your cmake version >= 3.13.2
 2. CUDNN and CUDA runtime library (use `nvcc --version` to check) needs to be installed on your machine.
+
+
 
 ### 4. Bbx IOU cuda version compile
 Install bbx nms calculation cuda version
