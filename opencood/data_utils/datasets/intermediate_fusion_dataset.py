@@ -41,6 +41,12 @@ class IntermediateFusionDataset(basedataset.BaseDataset):
             not params['fusion']['args']['proj_first']:
             self.proj_first = False
 
+        # whether there is a time delay between the time that cav project
+        # lidar to ego and the ego receive the delivered feature
+        self.cur_ego_pose_flag = True if 'cur_ego_pose_flag' not in \
+            params['fusion']['args'] else \
+            params['fusion']['args']['cur_ego_pose_flag']
+
         self.pre_processor = build_preprocessor(params['preprocess'],
                                                 train)
         self.post_processor = post_processor.build_postprocessor(
@@ -48,7 +54,8 @@ class IntermediateFusionDataset(basedataset.BaseDataset):
             train)
 
     def __getitem__(self, idx):
-        base_data_dict = self.retrieve_base_data(idx)
+        base_data_dict = self.retrieve_base_data(idx,
+                                                 cur_ego_pose_flag=self.cur_ego_pose_flag)
 
         processed_data_dict = OrderedDict()
         processed_data_dict['ego'] = {}
@@ -62,7 +69,6 @@ class IntermediateFusionDataset(basedataset.BaseDataset):
                 ego_id = cav_id
                 ego_lidar_pose = cav_content['params']['lidar_pose']
                 break
-
         assert cav_id == list(base_data_dict.keys())[
             0], "The first element in the OrderedDict must be ego"
         assert ego_id != -1
@@ -75,6 +81,13 @@ class IntermediateFusionDataset(basedataset.BaseDataset):
         processed_features = []
         object_stack = []
         object_id_stack = []
+
+        # prior knowledge for time delay correction and indicating data type
+        # (V2V vs V2i)
+        velocity = []
+        time_delay = []
+        infra = []
+        spatial_correction_matrix = []
 
         if self.visualize:
             projected_lidar_stack = []
@@ -99,6 +112,18 @@ class IntermediateFusionDataset(basedataset.BaseDataset):
             object_id_stack += selected_cav_processed['object_ids']
             processed_features.append(
                 selected_cav_processed['processed_features'])
+
+            velocity.append(selected_cav_processed['velocity'])
+            time_delay.append(float(selected_cav_base['time_delay']))
+            # this is only useful when proj_first = True, and communication
+            # delay is considered. Right now only V2X-ViT utilizes the
+            # spatial_correction. There is a time delay when the cavs project
+            # their lidar to ego and when the ego receives the feature, and
+            # this variable is used to correct such pose difference (ego_t-1 to
+            # ego_t)
+            spatial_correction_matrix.append(
+                selected_cav_base['params']['spatial_correction_matrix'])
+            infra.append(1 if int(cav_id) < 0 else 0)
 
             if self.visualize:
                 projected_lidar_stack.append(
@@ -131,6 +156,16 @@ class IntermediateFusionDataset(basedataset.BaseDataset):
                 anchors=anchor_box,
                 mask=mask)
 
+        # pad dv, dt, infra to max_cav
+        velocity = velocity + (self.max_cav - len(velocity)) * [0.]
+        time_delay = time_delay + (self.max_cav - len(time_delay)) * [0.]
+        infra = infra + (self.max_cav - len(infra)) * [0.]
+        spatial_correction_matrix = np.stack(spatial_correction_matrix)
+        padding_eye = np.tile(np.eye(4)[None],(self.max_cav - len(
+                                               spatial_correction_matrix),1,1))
+        spatial_correction_matrix = np.concatenate([spatial_correction_matrix,
+                                                   padding_eye], axis=0)
+
         processed_data_dict['ego'].update(
             {'object_bbx_center': object_bbx_center,
              'object_bbx_mask': mask,
@@ -139,6 +174,10 @@ class IntermediateFusionDataset(basedataset.BaseDataset):
              'processed_lidar': merged_feature_dict,
              'label_dict': label_dict,
              'cav_num': cav_num,
+             'velocity': velocity,
+             'time_delay': time_delay,
+             'infra': infra,
+             'spatial_correction_matrix': spatial_correction_matrix,
              'pairwise_t_matrix': pairwise_t_matrix})
 
         if self.visualize:
@@ -167,8 +206,7 @@ class IntermediateFusionDataset(basedataset.BaseDataset):
 
         # calculate the transformation matrix
         transformation_matrix = \
-            x1_to_x2(selected_cav_base['params']['lidar_pose'],
-                     ego_pose)
+            selected_cav_base['params']['transformation_matrix']
 
         # retrieve objects under ego coordinates
         object_bbx_center, object_bbx_mask, object_ids = \
@@ -190,11 +228,17 @@ class IntermediateFusionDataset(basedataset.BaseDataset):
                                             'cav_lidar_range'])
         processed_lidar = self.pre_processor.preprocess(lidar_np)
 
+        # velocity
+        velocity = selected_cav_base['params']['ego_speed']
+        # normalize veloccity by average speed 30 km/h
+        velocity = velocity / 30
+
         selected_cav_processed.update(
             {'object_bbx_center': object_bbx_center[object_bbx_mask == 1],
              'object_ids': object_ids,
              'projected_lidar': lidar_np,
-             'processed_features': processed_lidar})
+             'processed_features': processed_lidar,
+             'velocity': velocity})
 
         return selected_cav_processed
 
@@ -241,8 +285,17 @@ class IntermediateFusionDataset(basedataset.BaseDataset):
         record_len = []
         label_dict_list = []
 
+        # used for PriorEncoding for models
+        velocity = []
+        time_delay = []
+        infra = []
+
         # pairwise transformation matrix
         pairwise_t_matrix_list = []
+
+        # used for correcting the spatial transformation between delayed timestamp
+        # and current timestamp
+        spatial_correction_matrix_list = []
 
         if self.visualize:
             origin_lidar = []
@@ -258,9 +311,14 @@ class IntermediateFusionDataset(basedataset.BaseDataset):
             label_dict_list.append(ego_dict['label_dict'])
             pairwise_t_matrix_list.append(ego_dict['pairwise_t_matrix'])
 
+            velocity.append(ego_dict['velocity'])
+            time_delay.append(ego_dict['time_delay'])
+            infra.append(ego_dict['infra'])
+            spatial_correction_matrix_list.append(
+                ego_dict['spatial_correction_matrix'])
+
             if self.visualize:
                 origin_lidar.append(ego_dict['origin_lidar'])
-
         # convert to numpy, (B, max_num, 7)
         object_bbx_center = torch.from_numpy(np.array(object_bbx_center))
         object_bbx_mask = torch.from_numpy(np.array(object_bbx_mask))
@@ -276,6 +334,15 @@ class IntermediateFusionDataset(basedataset.BaseDataset):
             self.post_processor.collate_batch(label_dict_list)
 
         # (B, max_cav)
+        velocity = torch.from_numpy(np.array(velocity))
+        time_delay = torch.from_numpy(np.array(time_delay))
+        infra = torch.from_numpy(np.array(infra))
+        spatial_correction_matrix_list = \
+            torch.from_numpy(np.array(spatial_correction_matrix_list))
+        # (B, max_cav, 3)
+        prior_encoding = \
+            torch.stack([velocity, time_delay, infra], dim=-1).float()
+        # (B, max_cav)
         pairwise_t_matrix = torch.from_numpy(np.array(pairwise_t_matrix_list))
 
         # object id is only used during inference, where batch size is 1.
@@ -286,6 +353,8 @@ class IntermediateFusionDataset(basedataset.BaseDataset):
                                    'record_len': record_len,
                                    'label_dict': label_torch_dict,
                                    'object_ids': object_ids[0],
+                                   'prior_encoding': prior_encoding,
+                                   'spatial_correction_matrix': spatial_correction_matrix_list,
                                    'pairwise_t_matrix': pairwise_t_matrix})
 
         if self.visualize:

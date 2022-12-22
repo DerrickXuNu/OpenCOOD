@@ -18,6 +18,7 @@ paper [OPV2V.](https://arxiv.org/abs/2109.07644)
 </p>
 
 ## News:
+- 12/21/2022: V2XSet (ECCV2022) is supported by OpenCOOD now!
 - 12/16/2022: Both spconv 1.2.1 and spconv 2.x are supported! 
 - 12/04/2022: The log replay tool for OPV2V is online now! With 
 this toolbox, you can 100% replay all the events in the offline dataset and add/change any sensors/groundtruth you
@@ -26,7 +27,7 @@ want to explore the tasks that the origin dataset do not support. Check [here](l
 ## Features
 - Provide easy data API for multiple popular multi-agent perception dataset:
   - [x] [OPV2V [ICRA2022]](https://mobility-lab.seas.ucla.edu/opv2v/)
-  - [ ] [V2XSet [ECCV2022]]()
+  - [x] [V2XSet [ECCV2022]](https://arxiv.org/pdf/2203.10638.pdf)
 
 - Provide multiple SOTA 3D detection backbone:
     - [X] [PointPillar](https://arxiv.org/abs/1812.05784)
@@ -106,8 +107,8 @@ The evaluation results  will be dumped in the model directory.
 |                    | Spconv Version| Backbone   | Fusion Strategy  | Bandwidth (Megabit), <br/> before/after compression| Default Towns    |Culver City| Download |
 |--------------------| -------|--------   | ---------------  | ---------------                | -------------    |-----------| -------- |
 | Naive Late         | 1.2.1 | PointPillar        | Late      |    **0.024**/**0.024** |   0.781/0.781        | 0.668/0.668         |    [url](https://drive.google.com/file/d/1WTKooW6k0exLqoIE5Czqy6ptycYlgKZz/view?usp=sharing)   |
-| [Cooper](https://arxiv.org/abs/1905.05265)   | 1.2.1     | PointPillar        | Early  |   7.68/7.68   | 0.800/x         | 0.696/x       | [url](https://drive.google.com/file/d/1N1p6syxGSKD18ELgtBQoSuUzR8tX1JeE/view?usp=sharing)     | 
-| [Attentive Fusion](https://arxiv.org/abs/2109.07644)  | 1.2.1        | PointPillar        | Intermediate  | 126.8/1.98   | 0.815/0.810       | 0.735/0.731        | [url](https://drive.google.com/file/d/1u4w13SDzdGq6Irh2PHxT-qIlNXRT3z6Z/view?usp=sharing)     | 
+| [Cooper](https://arxiv.org/abs/1905.05265)   | 1.2.1     | PointPillar        | Early  |   7.68/7.68   | 0.800/x         | 0.696/x       | [url](https://drive.google.com/file/d/16hVkjpBUGfCByHjSmT8atCSZ2z2KuJBj/view?usp=share_link)     | 
+| [Attentive Fusion](https://arxiv.org/abs/2109.07644)  | 1.2.1        | PointPillar        | Intermediate  | 126.8/1.98   | 0.815/0.810       | 0.735/0.731        | [url](https://drive.google.com/file/d/11pG0kf2uR9N_o_ACBi_zfd7flGCgZt40/view?usp=sharing)     | 
 | [F-Cooper](https://arxiv.org/abs/1909.06459)   | 1.2.1       | PointPillar        | Intermediate  | 72.08/1.12    | 0.790/0.788     | 0.728/0.726        | [url](https://drive.google.com/file/d/1CjXu9Y2ZTzJA6Oo3hnqFhbTqBVKq3mQb/view?usp=sharing)     | 
 | [V2VNet](https://arxiv.org/abs/2008.07519)  | 1.2.1        | PointPillar        | Intermediate  | 72.08/1.12    | **0.822**/0.814     | 0.734/0.729    | [url](https://drive.google.com/file/d/14xl_gNEIHcDw-SvQyO1ioQwyzGym-tKX/view?usp=sharing)     | 
 | [FPV-RCNN](https://arxiv.org/abs/2109.11615)   | 1.2.1       | PV-RCNN        | Intermediate(2 stage)  | 0.24/0.24    | 0.820/**0.820**     | **0.763**/**0.763**    | [url](https://drive.google.com/file/d/1iOVi7holJ-Cu2P3dRv5HmOWlB5lkLukJ/view)     | 
