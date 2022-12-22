@@ -28,6 +28,7 @@ want to explore the tasks that the origin dataset do not support. Check [here](l
 - Provide easy data API for multiple popular multi-agent perception dataset:
   - [x] [OPV2V [ICRA2022]](https://mobility-lab.seas.ucla.edu/opv2v/)
   - [x] [V2XSet [ECCV2022]](https://arxiv.org/pdf/2203.10638.pdf)
+  - [ ] [DAIR-V2X [CVPR2022]](https://arxiv.org/abs/2204.05575)
 
 - Provide multiple SOTA 3D detection backbone:
     - [X] [PointPillar](https://arxiv.org/abs/1812.05784)
