@@ -157,7 +157,7 @@ To play with OPV2V camera data, please check here: https://github.com/DerrickXuN
 | [Attentive Fusion](https://arxiv.org/abs/2109.07644)     |       2.0      | PointPillar | 80.7           | 66.4           | 70.9         | 48.7         |                                                                          |
 | [V2VNet](https://arxiv.org/abs/2008.07519)         |       2.0      | PointPillar | 84.5           | 67.7           | 79.1         | 49.3         |                                                                          |
 | [DiscoNet](https://arxiv.org/abs/2109.11615)      |       2.0      | PointPillar | 84.4           | 69.5           | 79.8         | 54.1         |                                                                          |
-| [V2X-ViT](https://arxiv.org/pdf/2203.10638.pdf)      |       2.0      | PointPillar | 88.2           | 71.2           | 83.6         | 61.4         | https://drive.google.com/drive/folders/1h2UOPP2tNRkV_s6cbKcSfMvTgb8_ZFj9 |
+| [V2X-ViT](https://arxiv.org/pdf/2203.10638.pdf)      |       2.0      | PointPillar | 88.2           | 71.2           | 83.6         | 61.4         | [url](https://drive.google.com/drive/folders/1h2UOPP2tNRkV_s6cbKcSfMvTgb8_ZFj9) |
 
 <strong>Important Notes for Training in V2XSet:</strong>
 1. When you train from scratch, please first set `async` and `loc_err` to false to train on perfect setting. Also, set `compression` to 0 at beginning.
