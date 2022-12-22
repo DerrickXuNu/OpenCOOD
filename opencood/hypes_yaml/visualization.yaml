@@ -3,7 +3,7 @@ name: visualization
 
 yaml_parser: "load_voxel_params"
 root_dir: "opv2v_data_dumping/test"
-validate_dir: "/home/runshengxu/project/OpenCDA/opv2x_data_dumping/test"
+validate_dir: "opv2v_data_dumping/test"
 
 train_params:
   batch_size: &batch_size 4
