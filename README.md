@@ -18,6 +18,7 @@ paper [OPV2V.](https://arxiv.org/abs/2109.07644)
 </p>
 
 ## News:
+- 12/21/2022: V2XSet (ECCV2022) is supported by OpenCOOD now!
 - 12/16/2022: Both spconv 1.2.1 and spconv 2.x are supported! 
 - 12/04/2022: The log replay tool for OPV2V is online now! With 
 this toolbox, you can 100% replay all the events in the offline dataset and add/change any sensors/groundtruth you
@@ -26,7 +27,7 @@ want to explore the tasks that the origin dataset do not support. Check [here](l
 ## Features
 - Provide easy data API for multiple popular multi-agent perception dataset:
   - [x] [OPV2V [ICRA2022]](https://mobility-lab.seas.ucla.edu/opv2v/)
-  - [ ] [V2XSet [ECCV2022]]()
+  - [x] [V2XSet [ECCV2022]](https://arxiv.org/pdf/2203.10638.pdf)
 
 - Provide multiple SOTA 3D detection backbone:
     - [X] [PointPillar](https://arxiv.org/abs/1812.05784)
@@ -106,8 +107,8 @@ The evaluation results  will be dumped in the model directory.
 |                    | Spconv Version| Backbone   | Fusion Strategy  | Bandwidth (Megabit), <br/> before/after compression| Default Towns    |Culver City| Download |
 |--------------------| -------|--------   | ---------------  | ---------------                | -------------    |-----------| -------- |
 | Naive Late         | 1.2.1 | PointPillar        | Late      |    **0.024**/**0.024** |   0.781/0.781        | 0.668/0.668         |    [url](https://drive.google.com/file/d/1WTKooW6k0exLqoIE5Czqy6ptycYlgKZz/view?usp=sharing)   |
-| [Cooper](https://arxiv.org/abs/1905.05265)   | 1.2.1     | PointPillar        | Early  |   7.68/7.68   | 0.800/x         | 0.696/x       | [url](https://drive.google.com/file/d/1N1p6syxGSKD18ELgtBQoSuUzR8tX1JeE/view?usp=sharing)     | 
-| [Attentive Fusion](https://arxiv.org/abs/2109.07644)  | 1.2.1        | PointPillar        | Intermediate  | 126.8/1.98   | 0.815/0.810       | 0.735/0.731        | [url](https://drive.google.com/file/d/1u4w13SDzdGq6Irh2PHxT-qIlNXRT3z6Z/view?usp=sharing)     | 
+| [Cooper](https://arxiv.org/abs/1905.05265)   | 1.2.1     | PointPillar        | Early  |   7.68/7.68   | 0.800/x         | 0.696/x       | [url](https://drive.google.com/file/d/16hVkjpBUGfCByHjSmT8atCSZ2z2KuJBj/view?usp=share_link)     | 
+| [Attentive Fusion](https://arxiv.org/abs/2109.07644)  | 1.2.1        | PointPillar        | Intermediate  | 126.8/1.98   | 0.815/0.810       | 0.735/0.731        | [url](https://drive.google.com/file/d/11pG0kf2uR9N_o_ACBi_zfd7flGCgZt40/view?usp=sharing)     | 
 | [F-Cooper](https://arxiv.org/abs/1909.06459)   | 1.2.1       | PointPillar        | Intermediate  | 72.08/1.12    | 0.790/0.788     | 0.728/0.726        | [url](https://drive.google.com/file/d/1CjXu9Y2ZTzJA6Oo3hnqFhbTqBVKq3mQb/view?usp=sharing)     | 
 | [V2VNet](https://arxiv.org/abs/2008.07519)  | 1.2.1        | PointPillar        | Intermediate  | 72.08/1.12    | **0.822**/0.814     | 0.734/0.729    | [url](https://drive.google.com/file/d/14xl_gNEIHcDw-SvQyO1ioQwyzGym-tKX/view?usp=sharing)     | 
 | [FPV-RCNN](https://arxiv.org/abs/2109.11615)   | 1.2.1       | PV-RCNN        | Intermediate(2 stage)  | 0.24/0.24    | 0.820/**0.820**     | **0.763**/**0.763**    | [url](https://drive.google.com/file/d/1iOVi7holJ-Cu2P3dRv5HmOWlB5lkLukJ/view)     | 
@@ -145,6 +146,24 @@ can not be considered to employ in practice.
 
 **Note**: 
 To play with OPV2V camera data, please check here: https://github.com/DerrickXuNu/CoBEVT
+
+### Results of 3D Detection on V2XSet LiDAR-Track
+| Method       | Spconv Version | Backbone    | Perfect AP@0.5 | Perfect AP@0.7 | Noisy AP@0.5 | Noisy AP@0.7 | Download Link                                                            |
+|--------------|----------------|-------------|----------------|----------------|--------------|--------------|--------------------------------------------------------------------------|
+| No Fusion    |       2.0      | PointPillar | 60.6           | 40.2           | 60.6         | 40.2         |                                                                          |
+| Late Fusion  |       2.0      | PointPillar | 72.7           | 62.0           | 54.9         | 30.7         |                                                                          |
+| Early Fusion |       2.0      | PointPillar | 81.9           | 71.0           | 72.0         | 38.4         |                                                                          |
+| [F-Cooper](https://arxiv.org/abs/1909.06459) |       2.0      | PointPillar | 84.0           | 68.0           | 71.5         | 46.9         |                                                                          |
+| [Attentive Fusion](https://arxiv.org/abs/2109.07644)     |       2.0      | PointPillar | 80.7           | 66.4           | 70.9         | 48.7         |                                                                          |
+| [V2VNet](https://arxiv.org/abs/2008.07519)         |       2.0      | PointPillar | 84.5           | 67.7           | 79.1         | 49.3         |                                                                          |
+| [DiscoNet](https://arxiv.org/abs/2109.11615)      |       2.0      | PointPillar | 84.4           | 69.5           | 79.8         | 54.1         |                                                                          |
+| [V2X-ViT](https://arxiv.org/pdf/2203.10638.pdf)      |       2.0      | PointPillar | 88.2           | 71.2           | 83.6         | 61.4         | https://drive.google.com/drive/folders/1h2UOPP2tNRkV_s6cbKcSfMvTgb8_ZFj9 |
+
+<strong>Important Notes for Training in V2XSet:</strong>
+1. When you train from scratch, please first set `async` and `loc_err` to false to train on perfect setting. Also, set `compression` to 0 at beginning.
+2. After the model on perfect setting converged, set `compression`  to 32 (please change the config yaml in your trained model directory) and continue training on the perfect setting for another 1-2 epoches.
+3. Next, set `async` to true, `async_mode` to 'real', `async_overhead` to 200 or 300, `loc_err` to true, `xyz_std` to 0.2, `rpy_std` to 0.2, and then continue training your model on this noisy setting. Please note that you are free to change these noise setting during training to obtain better performance.
+4. Eventually, use the model fine-tuned on noisy setting as the test model for both perfect and noisy setting.
 
 ## Tutorials
 We have a series of tutorials to help you understand OpenCOOD more. Please check the series of our [tutorials](https://opencood.readthedocs.io/en/latest/md_files/config_tutorial.html).

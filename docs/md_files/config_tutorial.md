@@ -16,11 +16,10 @@ We follow the below style to name config yaml files.
 
 ### A concrete example
 Now let's go through the `point_pillar_intermediate_fusion.yaml` as an example.
-
 ```yaml
 name: point_pillar_intermediate_fusion # this parameter together with the current timestamp will  define the name of the saved folder for the model. 
-root_dir: "opv2v_data_dumping/train" # this is where the training data locate
-validate_dir: "opv2v_data_dumping/validate" # during training, it defines the validation folder. during testing, it defines the testing folder path.
+root_dir: "v2xset/train" # this is where the training data locate. It can be either opv2v/train or v2xset/train
+validate_dir: "v2xset/validate" # during training, it defines the validation folder. during testing, it defines the testing folder path.
 
 yaml_parser: "load_point_pillar_params" # we need specific loading functions for different backbones.
 train_params: # the common training parameters
@@ -29,9 +28,27 @@ train_params: # the common training parameters
   eval_freq: 1
   save_freq: 1
 
+wild_setting: # setting related to noise
+  async: true
+  async_mode: 'sim'
+  async_overhead: 100
+  backbone_delay: 10
+  data_size: 1.06
+  loc_err: true
+  ryp_std: 0.2
+  seed: 25
+  transmission_speed: 27
+  xyz_std: 0.2
+
 fusion:
   core_method: 'IntermediateFusionDataset' # LateFusionDataset, EarlyFusionDataset, and IntermediateFusionDataset are supported
-  args: []
+  args:
+    cur_ego_pose_flag: True
+    # when the cur_ego_pose_flag is set to True, there is no time gap
+    # between  the time when the LiDAR data is captured by connected
+    # agents and when the extracted features are received by
+    # the ego vehicle, which is equal to implement STCM. When set to False,
+    # STCM has to be used. To validate STCM, V2X-ViT will set this as False.
 
 # preprocess-related
 preprocess:
@@ -77,7 +94,7 @@ postprocess:
 
 # model related
 model:
-  core_method: point_pillar_intermediate # trainer will load the corresponding model python file with the same name
+  core_method: point_pillar_opv2v # trainer will load the corresponding model python file with the same name
   args: # detailed parameters of the point pillar model
     voxel_size: *voxel_size 
     lidar_range: *cav_lidar
@@ -98,7 +115,7 @@ model:
       upsample_strides: [1, 2, 4]
       num_upsample_filter: [128, 128, 128]
       compression: 0 # whether to compress the features before fusion to reduce the bandwidth
-
+      backbone_fix: false # whether fix the pointpillar backbone weights during training.
     anchor_num: *achor_num
 
 loss: # loss function

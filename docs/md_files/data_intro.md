@@ -1,6 +1,9 @@
-## Data Preparation
+# Data Preparation
 
 ---
+OpenCOOD support both **OPV2V (ICRA2022)** and **V2XSet (ECCV2022)** dataset.
+
+## OPV2V
 All the data can be downloaded from [google drive](https://drive.google.com/drive/folders/1dkDeHlwOVbmgXcDazZvO6TFEZ6V_7WUu). If you have a good internet, you can directly
 download the complete large zip file such as `train.zip`. In case you suffer from downloading large fiels, we also split each data set into small chunks, which can be found 
 in the directory ending with `_chunks`, such as `train_chunks`. After downloading, please run the following command to each set to merge those chunks together:
@@ -21,10 +24,6 @@ OpenCOOD # root of your OpenCOOD
 
 ```
 
-
-## Data Introduction
-
----
 
 OPV2V data is structured as following:
 
@@ -80,3 +79,65 @@ This yaml file records the simulation configuration to collect the current scena
 the data and enable users to add/modify sensors for new tasks without changing the original events.
 
 To help users collect customized data in CARLA (e.g., different sensor configurations and modalities) with similar data format and structure, we have released our OPV2V data collection code in the `feature/data_collection` branch of [OpenCDA](https://github.com/ucla-mobility/OpenCDA/tree/feature/data_collection). Users can refer to its [documentation](https://opencda-documentation.readthedocs.io/en/latest/md_files/introduction.html) for detailed instructions.
+
+---
+## V2XSet
+The data can be found from [google url](https://drive.google.com/drive/folders/1r5sPiBEvo8Xby-nMaWUTnJIPK6WhY1B6?usp=sharing).  Since the data for train/validate/test
+is very large, we  split each data set into small chunks, which can be found in the directory ending with `_chunks`, such as `train_chunks`. After downloading, please run the following command to each set to merge those chunks together:
+```
+cat train.zip.parta* > train.zip
+unzip train.zip
+```
+
+### 1. Structure
+After downloading is finished, please make the file structured as following:
+
+```sh
+OpenCOOD # root of opencood
+├── v2xset # the downloaded v2xset data
+│   ├── train
+│   ├── validate
+│   ├── test
+├── opencood # the core codebase
+```
+
+### 2. Label format
+V2XSet's data label format is nearly the same with OPV2V, except:
+- OPV2V only has vehicles while V2XSet has infrastructure sensors
+- All the infrastructure sensors' folder is named with negative integer, e.g. `-1`
+
+---
+## Adding Noise to OPV2V and V2XSet
+
+Cooperative perception faces the challenge of GPS error and communication delay. Our OpenCOOD allows users 
+to add realistic GPS error and communication delay to the dataset.
+
+To add noise to both OPV2V and V2XSet, just add the following parameters to the model yaml file:
+```
+wild_setting: # setting related to noise
+  async: true
+  async_mode: 'sim'
+  async_overhead: 100
+  backbone_delay: 10
+  data_size: 1.06
+  loc_err: true
+  ryp_std: 0.2
+  seed: 25
+  transmission_speed: 27
+  xyz_std: 0.2
+```
+`async`: whether add communication delay. <br>
+`aysnc_mode`:  sim or real mode. In sim mode, the delay is a constant while in real mode, the delay has a uniform distribution.
+The major experiment in the paper used sim mode whereas the 'Effects of transmission size' study used real
+ mode. <br>
+`async_overhead`: the communication delay in ms. In sim mode, it represents a constant number. In real mode,
+the systematic async will be a random number from 0 to `aysnc_overhead`. <br>
+`backbone_delay`: an estimate of backbone computation time. Only useful in real mode. <br>
+`data_size`: transmission data size in Mb. Only used in real mode. <br>
+`transmission_speed`: data transmitting speed during communication. By default 27 Mb/s. Only used in real mode. <br>
+`loc_err`: whether to add localization error. <br>
+`xyz_std`: the standard deviation of positional GPS error. <br>
+`ryp_std`: the standard deviation of angular GPS error. <br>
+`seed`: random seed for noise simulation. <strong>please keep it as 25 during testing </strong>.
+
+To see a complete example, refer to [configuration tutorial section](config_tutorial.md)
