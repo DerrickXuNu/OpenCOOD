@@ -147,6 +147,24 @@ can not be considered to employ in practice.
 **Note**: 
 To play with OPV2V camera data, please check here: https://github.com/DerrickXuNu/CoBEVT
 
+### Results of 3D Detection on V2XSet LiDAR-Track
+| Method       | Spconv Version | Backbone    | Perfect AP@0.5 | Perfect AP@0.7 | Noisy AP@0.5 | Noisy AP@0.7 | Download Link                                                            |
+|--------------|----------------|-------------|----------------|----------------|--------------|--------------|--------------------------------------------------------------------------|
+| No Fusion    |       2.0      | PointPillar | 60.6           | 40.2           | 60.6         | 40.2         |                                                                          |
+| Late Fusion  |       2.0      | PointPillar | 72.7           | 62.0           | 54.9         | 30.7         |                                                                          |
+| Early Fusion |       2.0      | PointPillar | 81.9           | 71.0           | 72.0         | 38.4         |                                                                          |
+| [F-Cooper](https://arxiv.org/abs/1909.06459) |       2.0      | PointPillar | 84.0           | 68.0           | 71.5         | 46.9         |                                                                          |
+| [Attentive Fusion](https://arxiv.org/abs/2109.07644)     |       2.0      | PointPillar | 80.7           | 66.4           | 70.9         | 48.7         |                                                                          |
+| [V2VNet](https://arxiv.org/abs/2008.07519)         |       2.0      | PointPillar | 84.5           | 67.7           | 79.1         | 49.3         |                                                                          |
+| [DiscoNet](https://arxiv.org/abs/2109.11615)      |       2.0      | PointPillar | 84.4           | 69.5           | 79.8         | 54.1         |                                                                          |
+| [V2X-ViT](https://arxiv.org/pdf/2203.10638.pdf)      |       2.0      | PointPillar | 88.2           | 71.2           | 83.6         | 61.4         | https://drive.google.com/drive/folders/1h2UOPP2tNRkV_s6cbKcSfMvTgb8_ZFj9 |
+
+<strong>Important Notes for Training in V2XSet:</strong>
+1. When you train from scratch, please first set `async` and `loc_err` to false to train on perfect setting. Also, set `compression` to 0 at beginning.
+2. After the model on perfect setting converged, set `compression`  to 32 (please change the config yaml in your trained model directory) and continue training on the perfect setting for another 1-2 epoches.
+3. Next, set `async` to true, `async_mode` to 'real', `async_overhead` to 200 or 300, `loc_err` to true, `xyz_std` to 0.2, `rpy_std` to 0.2, and then continue training your model on this noisy setting. Please note that you are free to change these noise setting during training to obtain better performance.
+4. Eventually, use the model fine-tuned on noisy setting as the test model for both perfect and noisy setting.
+
 ## Tutorials
 We have a series of tutorials to help you understand OpenCOOD more. Please check the series of our [tutorials](https://opencood.readthedocs.io/en/latest/md_files/config_tutorial.html).
 
