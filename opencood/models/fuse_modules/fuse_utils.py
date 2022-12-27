@@ -39,7 +39,7 @@ def regroup(dense_feature, record_len, max_len):
         feature_shape = split_feature.shape
 
         # the maximum M is 5 as most 5 cavs
-        padding_len = 0
+        padding_len = max_len - feature_shape[0]
         mask.append([1] * feature_shape[0] + [0] * padding_len)
 
         padding_tensor = torch.zeros(padding_len, feature_shape[1],
@@ -60,7 +60,7 @@ def regroup(dense_feature, record_len, max_len):
     # B, L, C, H, W
     regroup_features = rearrange(regroup_features,
                                  'b (l c) h w -> b l c h w',
-                                 l=record_len[0])
+                                 l=max_len)
     mask = torch.from_numpy(np.array(mask)).to(regroup_features.device)
 
     return regroup_features, mask

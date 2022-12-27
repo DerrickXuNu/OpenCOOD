@@ -6,6 +6,7 @@
 import re
 import yaml
 import os
+import math
 
 import numpy as np
 
@@ -124,9 +125,9 @@ def load_point_pillar_params(param):
     anchor_args['vh'] = vh
     anchor_args['vd'] = vd
 
-    anchor_args['W'] = int((cav_lidar_range[3] - cav_lidar_range[0]) / vw)
-    anchor_args['H'] = int((cav_lidar_range[4] - cav_lidar_range[1]) / vh)
-    anchor_args['D'] = int((cav_lidar_range[5] - cav_lidar_range[2]) / vd)
+    anchor_args['W'] = math.ceil((cav_lidar_range[3] - cav_lidar_range[0]) / vw)
+    anchor_args['H'] = math.ceil((cav_lidar_range[4] - cav_lidar_range[1]) / vh)
+    anchor_args['D'] = math.ceil((cav_lidar_range[5] - cav_lidar_range[2]) / vd)
 
     param['postprocess'].update({'anchor_args': anchor_args})
 
