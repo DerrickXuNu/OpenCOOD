@@ -29,7 +29,10 @@ want to explore the tasks that the origin dataset do not support. Check [here](l
   - [x] [OPV2V [ICRA2022]](https://mobility-lab.seas.ucla.edu/opv2v/)
   - [x] [V2XSet [ECCV2022]](https://arxiv.org/pdf/2203.10638.pdf)
   - [ ] [DAIR-V2X [CVPR2022]](https://arxiv.org/abs/2204.05575)
-
+- Provide APIs to allow users use different sensor modalities
+  - [x] LiDAR APIs
+  - [ ] Camera APIs
+  - [ ] Radar APIs
 - Provide multiple SOTA 3D detection backbone:
     - [X] [PointPillar](https://arxiv.org/abs/1812.05784)
     - [X] [Pixor](https://arxiv.org/abs/1902.06326)
@@ -44,8 +47,10 @@ want to explore the tasks that the origin dataset do not support. Check [here](l
     - [x] [F-Cooper [SEC2019]](https://arxiv.org/abs/1909.06459)
     - [x] [V2VNet [ECCV2022]](https://arxiv.org/abs/2008.07519)
     - [x] [FPV-RCNN [RAL2022]](https://arxiv.org/pdf/2109.11615.pdf)
-    - [ ] [DiscoNet [NeurIPS2022]](https://arxiv.org/abs/2111.00643)
-    - [ ] [V2X-ViT [ECCV2022]](https://github.com/DerrickXuNu/v2x-vit)
+    - [ ] [DiscoNet [NeurIPS2021]](https://arxiv.org/abs/2111.00643)
+    - [x] [V2X-ViT [ECCV2022]](https://github.com/DerrickXuNu/v2x-vit)
+    - [ ] [AdaFusion [WACV2023]](https://arxiv.org/abs/2208.00116)  
+    - [ ] [Where2comm [NeurIPS2022]](https://arxiv.org/abs/2209.12836)
 - **Provide a convenient log replay toolbox for OPV2V dataset.** Check [here](logreplay/README.md) to see more details.
 
 ## Data Downloading

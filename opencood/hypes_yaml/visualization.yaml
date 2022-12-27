@@ -2,7 +2,7 @@
 name: visualization
 
 yaml_parser: "load_voxel_params"
-root_dir: "opv2v_data_dumping/test"
+root_dir: "opv2v_data_dumping/train"
 validate_dir: "opv2v_data_dumping/test"
 
 train_params:
