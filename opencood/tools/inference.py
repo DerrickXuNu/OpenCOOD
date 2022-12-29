@@ -70,7 +70,7 @@ def main():
 
     print('Loading Model from checkpoint')
     saved_path = opt.model_dir
-    _, model, _ = train_utils.load_saved_model(saved_path, model)
+    _, model = train_utils.load_saved_model(saved_path, model)
     model.eval()
 
     # Create the dictionary for evaluation

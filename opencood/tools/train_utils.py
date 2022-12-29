@@ -33,6 +33,8 @@ def load_saved_model(saved_path, model):
     assert os.path.exists(saved_path), '{} not found'.format(saved_path)
 
     def findLastCheckpoint(save_dir):
+        if os.path.exists(os.path.join(saved_path, 'latest.pth')):
+            return 10000
         file_list = glob.glob(os.path.join(save_dir, '*epoch*.pth'))
         if file_list:
             epochs_exist = []
@@ -44,20 +46,21 @@ def load_saved_model(saved_path, model):
             initial_epoch_ = 0
         return initial_epoch_
 
-    if os.path.exists(os.path.join(saved_path, 'latest.pth')):
-        state_dict = torch.load(os.path.join(saved_path,
-                                             'latest.pth'))
-        model.load_state_dict(state_dict)
-        return 100, model, state_dict
-
     initial_epoch = findLastCheckpoint(saved_path)
-    state_dict = None
     if initial_epoch > 0:
+        model_file = os.path.join(saved_path,
+                         'net_epoch%d.pth' % initial_epoch) \
+            if initial_epoch != 10000 else os.path.join(saved_path,
+                         'latest.pth')
         print('resuming by loading epoch %d' % initial_epoch)
-        state_dict = torch.load(os.path.join(saved_path,
-                                             'net_epoch%d.pth' % initial_epoch))
-        model.load_state_dict(state_dict)
-    return initial_epoch, model, state_dict
+        checkpoint = torch.load(
+            model_file,
+            map_location='cpu')
+        model.load_state_dict(checkpoint, strict=False)
+
+        del checkpoint
+
+    return initial_epoch, model
 
 
 def setup_train(hypes):
@@ -175,14 +178,18 @@ def setup_optimizer(hypes, model):
     """
     method_dict = hypes['optimizer']
     optimizer_method = getattr(optim, method_dict['core_method'], None)
+    print('optimizer method is: %s' % optimizer_method)
+
     if not optimizer_method:
         raise ValueError('{} is not supported'.format(method_dict['name']))
     if 'args' in method_dict:
-        return optimizer_method(model.parameters(),
+        return optimizer_method(filter(lambda p: p.requires_grad,
+                                       model.parameters()),
                                 lr=method_dict['lr'],
                                 **method_dict['args'])
     else:
-        return optimizer_method(model.parameters(),
+        return optimizer_method(filter(lambda p: p.requires_grad,
+                                       model.parameters()),
                                 lr=method_dict['lr'])
 
 
