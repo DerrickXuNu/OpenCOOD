@@ -84,13 +84,18 @@ def setup_train(hypes):
     full_path = os.path.join(current_path, folder_name)
 
     if not os.path.exists(full_path):
-        os.makedirs(full_path)
+        if not os.path.exists(full_path):
+            try:
+                os.makedirs(full_path)
+            except FileExistsError:
+                pass
         # save the yaml file
         save_name = os.path.join(full_path, 'config.yaml')
         with open(save_name, 'w') as outfile:
             yaml.dump(hypes, outfile)
 
     return full_path
+
 
 
 def create_model(hypes):
