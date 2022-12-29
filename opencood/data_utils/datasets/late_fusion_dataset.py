@@ -241,8 +241,8 @@ class LateFusionDataset(basedataset.BaseDataset):
                 output_dict[cav_id].update({'origin_lidar': origin_lidar})
 
         if self.visualize:
-            projected_lidar_stack = [torch.from_numpy(
-                np.vstack(projected_lidar_list))]
+            projected_lidar_stack = torch.from_numpy(
+                np.vstack(projected_lidar_list))
             output_dict['ego'].update({'origin_lidar': projected_lidar_stack})
 
         return output_dict
