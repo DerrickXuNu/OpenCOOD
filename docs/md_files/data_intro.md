@@ -8,7 +8,7 @@ All the data can be downloaded from [google drive](https://drive.google.com/driv
 download the complete large zip file such as `train.zip`. In case you suffer from downloading large fiels, we also split each data set into small chunks, which can be found 
 in the directory ending with `_chunks`, such as `train_chunks`. After downloading, please run the following command to each set to merge those chunks together:
 ```python
-cat train.zip.parta* > train.zip
+cat train.zip.part* > train.zip
 unzip train.zip
 ```
 After downloading is finished, please make the file structured as following:
@@ -85,7 +85,7 @@ To help users collect customized data in CARLA (e.g., different sensor configura
 The data can be found from [google url](https://drive.google.com/drive/folders/1r5sPiBEvo8Xby-nMaWUTnJIPK6WhY1B6?usp=sharing).  Since the data for train/validate/test
 is very large, we  split each data set into small chunks, which can be found in the directory ending with `_chunks`, such as `train_chunks`. After downloading, please run the following command to each set to merge those chunks together:
 ```
-cat train.zip.parta* > train.zip
+cat train.zip.part* > train.zip
 unzip train.zip
 ```
 
