@@ -204,7 +204,7 @@ Runsheng Xu, Jinlong Li, Xiaoyu Dong, Hongkai Yu, Jiaqi Ma∗<br>
 [[Paper]](https://arxiv.org/pdf/2210.08451.pdf)[[Code]](https://github.com/DerrickXuNu/OpenCOOD)
 
 **Model Agnostic Multi-agent Perception** <br>
-Runsheng Xu, Hao Xiang, Weizhe Chen, Xin Xia, Lantao Liu, Jiaqi Ma∗<br>
+Runsheng Xu, Weizhe Chen, Hao Xiang,  Xin Xia, Lantao Liu, Jiaqi Ma∗<br>
 *ICRA 2023* <br>
 [[Paper]](https://arxiv.org/abs/2203.13168)[[Code]](https://github.com/DerrickXuNu/OpenCOOD)
 
