@@ -52,6 +52,8 @@ want to explore the tasks that the origin dataset do not support. Check [here](l
     - [x] [V2X-ViT [ECCV2022]](https://github.com/DerrickXuNu/v2x-vit)
     - [ ] [AdaFusion [WACV2023]](https://arxiv.org/abs/2208.00116)  
     - [ ] [Where2comm [NeurIPS2022]](https://arxiv.org/abs/2209.12836)
+    - [ ] [Model-Agnostic Multi-agent Perception [ICRA2023]](https://arxiv.org/abs/2203.13168)
+    - [ ] [MPDA [ICRA2023]](https://arxiv.org/pdf/2210.08451.pdf)
 - **Provide a convenient log replay toolbox for OPV2V dataset.** Check [here](logreplay/README.md) to see more details.
 
 ## Data Downloading
@@ -195,6 +197,16 @@ We have a series of tutorials to help you understand OpenCOOD more. Please check
 
 ## Supported Projects
 OpenCOOD has supported several top conference papers in cooperative perception field.
+
+**Bridging the Domain Gap for Multi-Agent Perception** <br>
+Runsheng Xu, Jinlong Li, Xiaoyu Dong, Hongkai Yu, Jiaqi Ma∗<br>
+*ICRA 2023* <br>
+[[Paper]](https://arxiv.org/pdf/2210.08451.pdf)[[Code]](https://github.com/DerrickXuNu/OpenCOOD)
+
+**Model Agnostic Multi-agent Perception** <br>
+Runsheng Xu, Hao Xiang, Weizhe Chen, Xin Xia, Lantao Liu, Jiaqi Ma∗<br>
+*ICRA 2023* <br>
+[[Paper]](https://arxiv.org/abs/2203.13168)[[Code]](https://github.com/DerrickXuNu/OpenCOOD)
 
 **Where2comm: Communication-Efficient Collaborative Perception via Spatial Confidence Maps** <br>
 Yue Hu, Shaoheng Fang, Zixing Lei, Yiqi Zhong, Siheng Chen<br>
