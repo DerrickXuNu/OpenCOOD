@@ -110,8 +110,8 @@ def main():
     # optimizer setup
     optimizer = train_utils.setup_optimizer(hypes, model_without_ddp)
     # lr scheduler setup
-    scheduler = train_utils.setup_lr_schedular(hypes, optimizer)
-
+    num_steps = len(train_loader)
+    scheduler = train_utils.setup_lr_schedular(hypes, optimizer, num_steps)
 
     # record training
     writer = SummaryWriter(saved_path)
@@ -125,8 +125,10 @@ def main():
     # used to help schedule learning rate
 
     for epoch in range(init_epoch, max(epoches, init_epoch)):
-        scheduler.step()
-
+        if hypes['lr_scheduler']['core_method'] != 'cosineannealwarm':
+            scheduler.step(epoch)
+        if hypes['lr_scheduler']['core_method'] == 'cosineannealwarm':
+            scheduler.step_update(epoch * num_steps + 0)
         for param_group in optimizer.param_groups:
             print('learning rate %.7f' % param_group["lr"])
 
@@ -172,6 +174,9 @@ def main():
                 scaler.scale(final_loss).backward()
                 scaler.step(optimizer)
                 scaler.update()
+
+            if hypes['lr_scheduler']['core_method'] == 'cosineannealwarm':
+                scheduler.step_update(epoch * num_steps + i)
 
         if epoch % hypes['train_params']['save_freq'] == 0:
             torch.save(model_without_ddp.state_dict(),
