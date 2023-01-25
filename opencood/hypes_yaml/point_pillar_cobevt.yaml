@@ -19,7 +19,7 @@ train_params:
   epoches: &epoches 90
   eval_freq: 2
   save_freq: 1
-  max_cav: &max_cav 2
+  max_cav: &max_cav 5
 
 fusion:
   core_method: 'IntermediateFusionDataset' # LateFusionDataset, EarlyFusionDataset, IntermediateFusionDataset supported
@@ -35,7 +35,7 @@ preprocess:
     max_voxel_train: 32000
     max_voxel_test: 70000
   # lidar range for each individual cav.
-  cav_lidar_range: &cav_lidar [-140.8, -40, -3, 140.8, 40, 1]
+  cav_lidar_range: &cav_lidar [-140.8, -38.4, -3, 140.8, 38.4, 1]
 
 data_augment:
   - NAME: random_world_flip
