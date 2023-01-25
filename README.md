@@ -50,10 +50,10 @@ want to explore the tasks that the origin dataset do not support. Check [here](l
     - [x] [FPV-RCNN [RAL2022]](https://arxiv.org/pdf/2109.11615.pdf)
     - [ ] [DiscoNet [NeurIPS2021]](https://arxiv.org/abs/2111.00643)
     - [x] [V2X-ViT [ECCV2022]](https://github.com/DerrickXuNu/v2x-vit)
+    - [x] [CoBEVT [CoRL2022]](https://arxiv.org/abs/2207.02202)  
     - [ ] [AdaFusion [WACV2023]](https://arxiv.org/abs/2208.00116)  
     - [ ] [Where2comm [NeurIPS2022]](https://arxiv.org/abs/2209.12836)
-    - [ ] [Model-Agnostic Multi-agent Perception [ICRA2023]](https://arxiv.org/abs/2203.13168)
-    - [ ] [MPDA [ICRA2023]](https://arxiv.org/pdf/2210.08451.pdf)
+
 - **Provide a convenient log replay toolbox for OPV2V dataset.** Check [here](logreplay/README.md) to see more details.
 
 ## Data Downloading
