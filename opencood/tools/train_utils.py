@@ -6,13 +6,14 @@
 import glob
 import importlib
 import yaml
+import sys
 import os
 import re
 from datetime import datetime
 
 import torch
 import torch.optim as optim
-
+import timm
 
 def load_saved_model(saved_path, model):
     """
@@ -198,7 +199,7 @@ def setup_optimizer(hypes, model):
                                 lr=method_dict['lr'])
 
 
-def setup_lr_schedular(hypes, optimizer):
+def setup_lr_schedular(hypes, optimizer, n_iter_per_epoch):
     """
     Set up the learning rate schedular.
 
@@ -225,10 +226,32 @@ def setup_lr_schedular(hypes, optimizer):
                                 milestones=milestones,
                                 gamma=gamma)
 
-    else:
+    elif lr_schedule_config['core_method'] == 'exponential':
+        print('ExponentialLR is chosen for lr scheduler')
         from torch.optim.lr_scheduler import ExponentialLR
         gamma = lr_schedule_config['gamma']
         scheduler = ExponentialLR(optimizer, gamma)
+
+    elif lr_schedule_config['core_method'] == 'cosineannealwarm':
+        print('cosine annealing is chosen for lr scheduler')
+        from timm.scheduler.cosine_lr import CosineLRScheduler
+
+        num_steps = lr_schedule_config['epoches'] * n_iter_per_epoch
+        warmup_lr = lr_schedule_config['warmup_lr']
+        warmup_steps = lr_schedule_config['warmup_epoches'] * n_iter_per_epoch
+        lr_min = lr_schedule_config['lr_min']
+
+        scheduler = CosineLRScheduler(
+            optimizer,
+            t_initial=num_steps,
+            lr_min=lr_min,
+            warmup_lr_init=warmup_lr,
+            warmup_t=warmup_steps,
+            cycle_limit=1,
+            t_in_epochs=False,
+        )
+    else:
+        sys.exit('not supported lr schedular')
 
     return scheduler
 
