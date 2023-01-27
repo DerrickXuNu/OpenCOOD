@@ -1,6 +1,6 @@
 name: point_pillar_where2comm
-root_dir: 'v2xset/train'
-validate_dir: 'v2xset/validate'
+root_dir: '/home/cav/data/v2xset/train'
+validate_dir: '/home/cav/data/v2xset//test'
 
 wild_setting:
   async: false
@@ -103,10 +103,15 @@ model:
       n_head: 8
       dropout_rate: 0
       only_attention: true
+      communication:
+         thre: 0.01
+         gaussian_smooth:
+           k_size: 5
+           c_sigma: 1.0
       agg_operator:
         mode: 'ATTEN'
         feature_dim: 256
-      multi_scale: true
+      multi_scale: false
       layer_nums: *layer_nums
       num_filters: *num_filters
 

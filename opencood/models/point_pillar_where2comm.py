@@ -4,10 +4,11 @@ import torch.nn as nn
 from opencood.models.sub_modules.pillar_vfe import PillarVFE
 from opencood.models.sub_modules.point_pillar_scatter import PointPillarScatter
 from opencood.models.sub_modules.base_bev_backbone import BaseBEVBackbone
-from opencood.models.sub_modules.fuse_utils import regroup
 from opencood.models.sub_modules.downsample_conv import DownsampleConv
 from opencood.models.sub_modules.naive_compress import NaiveCompressor
-from opencood.models.sub_modules.where2comm_attn import Where2comm
+from opencood.models.fuse_modules.fuse_utils import regroup
+from opencood.models.fuse_modules.where2comm_attn import Where2comm
+
 
 class PointPillarWhere2comm(nn.Module):
     def __init__(self, args):
