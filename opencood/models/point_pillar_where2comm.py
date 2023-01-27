@@ -63,10 +63,10 @@ class PointPillarWhere2comm(nn.Module):
             for p in self.shrink_conv.parameters():
                 p.requires_grad = False
 
-        for p in self.cls_head.parameters():
-            p.requires_grad = False
-        for p in self.reg_head.parameters():
-            p.requires_grad = False
+        # for p in self.cls_head.parameters():
+        #     p.requires_grad = False
+        # for p in self.reg_head.parameters():
+        #     p.requires_grad = False
 
     def regroup(self, x, record_len):
         cum_sum_len = torch.cumsum(record_len, dim=0)
