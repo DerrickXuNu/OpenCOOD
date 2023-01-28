@@ -11,7 +11,7 @@ All Rights Reserved 2019-2020.
 #include <assert.h>
 
 
-//#define CHECK_CUDA(x) AT_CHECK(x.type().is_cuda(), #x, " must be a CUDAtensor ")
+//#define CHECK_CUDA(x) AT_CHECK(x.device().is_cuda(), #x, " must be a CUDAtensor ")
 //#define CHECK_CONTIGUOUS(x) AT_CHECK(x.is_contiguous(), #x, " must be contiguous ")
 //#define CHECK_INPUT(x) CHECK_CUDA(x);CHECK_CONTIGUOUS(x)
 
@@ -52,12 +52,12 @@ int roiaware_pool3d_gpu(at::Tensor rois, at::Tensor pts, at::Tensor pts_feature,
     int out_z = pts_idx_of_voxels.size(3);
     assert ((out_x < 256) && (out_y < 256) && (out_z < 256));  // we encode index with 8bit
 
-    const float *rois_data = rois.data<float>();
-    const float *pts_data = pts.data<float>();
-    const float *pts_feature_data = pts_feature.data<float>();
-    int *argmax_data = argmax.data<int>();
-    int *pts_idx_of_voxels_data = pts_idx_of_voxels.data<int>();
-    float *pooled_features_data = pooled_features.data<float>();
+    const float *rois_data = rois.data_ptr<float>();
+    const float *pts_data = pts.data_ptr<float>();
+    const float *pts_feature_data = pts_feature.data_ptr<float>();
+    int *argmax_data = argmax.data_ptr<int>();
+    int *pts_idx_of_voxels_data = pts_idx_of_voxels.data_ptr<int>();
+    float *pooled_features_data = pooled_features.data_ptr<float>();
 
     roiaware_pool3d_launcher(boxes_num, pts_num, channels, max_pts_each_voxel, out_x, out_y, out_z,
         rois_data, pts_data, pts_feature_data, argmax_data, pts_idx_of_voxels_data, pooled_features_data, pool_method);
@@ -84,10 +84,10 @@ int roiaware_pool3d_gpu_backward(at::Tensor pts_idx_of_voxels, at::Tensor argmax
     int max_pts_each_voxel = pts_idx_of_voxels.size(4);  // index 0 is the counter
     int channels = grad_out.size(4);
 
-    const int *pts_idx_of_voxels_data = pts_idx_of_voxels.data<int>();
-    const int *argmax_data = argmax.data<int>();
-    const float *grad_out_data = grad_out.data<float>();
-    float *grad_in_data = grad_in.data<float>();
+    const int *pts_idx_of_voxels_data = pts_idx_of_voxels.data_ptr<int>();
+    const int *argmax_data = argmax.data_ptr<int>();
+    const float *grad_out_data = grad_out.data_ptr<float>();
+    float *grad_in_data = grad_in.data_ptr<float>();
 
     roiaware_pool3d_backward_launcher(boxes_num, out_x, out_y, out_z, channels, max_pts_each_voxel,
         pts_idx_of_voxels_data, argmax_data, grad_out_data, grad_in_data, pool_method);
@@ -108,9 +108,9 @@ int points_in_boxes_gpu(at::Tensor boxes_tensor, at::Tensor pts_tensor, at::Tens
     int boxes_num = boxes_tensor.size(1);
     int pts_num = pts_tensor.size(1);
 
-    const float *boxes = boxes_tensor.data<float>();
-    const float *pts = pts_tensor.data<float>();
-    int *box_idx_of_points = box_idx_of_points_tensor.data<int>();
+    const float *boxes = boxes_tensor.data_ptr<float>();
+    const float *pts = pts_tensor.data_ptr<float>();
+    int *box_idx_of_points = box_idx_of_points_tensor.data_ptr<int>();
 
     points_in_boxes_launcher(batch_size, boxes_num, pts_num, boxes, pts, box_idx_of_points);
 
@@ -152,9 +152,9 @@ int points_in_boxes_cpu(at::Tensor boxes_tensor, at::Tensor pts_tensor, at::Tens
     int boxes_num = boxes_tensor.size(0);
     int pts_num = pts_tensor.size(0);
 
-    const float *boxes = boxes_tensor.data<float>();
-    const float *pts = pts_tensor.data<float>();
-    int *pts_indices = pts_indices_tensor.data<int>();
+    const float *boxes = boxes_tensor.data_ptr<float>();
+    const float *pts = pts_tensor.data_ptr<float>();
+    int *pts_indices = pts_indices_tensor.data_ptr<int>();
 
     float local_x = 0, local_y = 0;
     for (int i = 0; i < boxes_num; i++){

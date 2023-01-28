@@ -12,7 +12,7 @@ All Rights Reserved 2019-2020.
 #include "iou3d_nms.h"
 
 #define CHECK_CUDA(x) do { \
-  if (!x.type().is_cuda()) { \
+  if (!x.device().is_cuda()) { \
     fprintf(stderr, "%s must be CUDA tensor at %s:%d\n", #x, __FILE__, __LINE__); \
     exit(-1); \
   } \
@@ -58,9 +58,9 @@ int boxes_overlap_bev_gpu(at::Tensor boxes_a, at::Tensor boxes_b, at::Tensor ans
     int num_a = boxes_a.size(0);
     int num_b = boxes_b.size(0);
 
-    const float * boxes_a_data = boxes_a.data<float>();
-    const float * boxes_b_data = boxes_b.data<float>();
-    float * ans_overlap_data = ans_overlap.data<float>();
+    const float * boxes_a_data = boxes_a.data_ptr<float>();
+    const float * boxes_b_data = boxes_b.data_ptr<float>();
+    float * ans_overlap_data = ans_overlap.data_ptr<float>();
 
     boxesoverlapLauncher(num_a, boxes_a_data, num_b, boxes_b_data, ans_overlap_data);
 
@@ -78,9 +78,9 @@ int boxes_iou_bev_gpu(at::Tensor boxes_a, at::Tensor boxes_b, at::Tensor ans_iou
     int num_a = boxes_a.size(0);
     int num_b = boxes_b.size(0);
 
-    const float * boxes_a_data = boxes_a.data<float>();
-    const float * boxes_b_data = boxes_b.data<float>();
-    float * ans_iou_data = ans_iou.data<float>();
+    const float * boxes_a_data = boxes_a.data_ptr<float>();
+    const float * boxes_b_data = boxes_b.data_ptr<float>();
+    float * ans_iou_data = ans_iou.data_ptr<float>();
 
     boxesioubevLauncher(num_a, boxes_a_data, num_b, boxes_b_data, ans_iou_data);
 
@@ -94,8 +94,8 @@ int nms_gpu(at::Tensor boxes, at::Tensor keep, float nms_overlap_thresh){
     CHECK_CONTIGUOUS(keep);
 
     int boxes_num = boxes.size(0);
-    const float * boxes_data = boxes.data<float>();
-    long * keep_data = keep.data<long>();
+    const float * boxes_data = boxes.data_ptr<float>();
+    long * keep_data = keep.data_ptr<long>();
 
     const int col_blocks = DIVUP(boxes_num, THREADS_PER_BLOCK_NMS);
 
@@ -144,8 +144,8 @@ int nms_normal_gpu(at::Tensor boxes, at::Tensor keep, float nms_overlap_thresh){
     CHECK_CONTIGUOUS(keep);
 
     int boxes_num = boxes.size(0);
-    const float * boxes_data = boxes.data<float>();
-    long * keep_data = keep.data<long>();
+    const float * boxes_data = boxes.data_ptr<float>();
+    long * keep_data = keep.data_ptr<long>();
 
     const int col_blocks = DIVUP(boxes_num, THREADS_PER_BLOCK_NMS);
 

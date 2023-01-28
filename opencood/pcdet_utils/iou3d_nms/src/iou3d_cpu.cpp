@@ -14,7 +14,7 @@ All Rights Reserved 2020.
 #include "iou3d_cpu.h"
 
 #define CHECK_CUDA(x) do { \
-  if (!x.type().is_cuda()) { \
+  if (!x.device().is_cuda()) { \
     fprintf(stderr, "%s must be CUDA tensor at %s:%d\n", #x, __FILE__, __LINE__); \
     exit(-1); \
   } \
@@ -239,9 +239,9 @@ int boxes_iou_bev_cpu(at::Tensor boxes_a_tensor, at::Tensor boxes_b_tensor, at::
 
     int num_boxes_a = boxes_a_tensor.size(0);
     int num_boxes_b = boxes_b_tensor.size(0);
-    const float *boxes_a = boxes_a_tensor.data<float>();
-    const float *boxes_b = boxes_b_tensor.data<float>();
-    float *ans_iou = ans_iou_tensor.data<float>();
+    const float *boxes_a = boxes_a_tensor.data_ptr<float>();
+    const float *boxes_b = boxes_b_tensor.data_ptr<float>();
+    float *ans_iou = ans_iou_tensor.data_ptr<float>();
 
     for (int i = 0; i < num_boxes_a; i++){
         for (int j = 0; j < num_boxes_b; j++){

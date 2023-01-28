@@ -7,7 +7,7 @@ All Rights Reserved 2019-2020.
 
 #include <torch/serialize/tensor.h>
 #include <vector>
-#include <THC/THC.h>
+#include <ATen/cuda/CUDAEvent.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,10 +15,8 @@ All Rights Reserved 2019-2020.
 #include <cuda_runtime_api.h>
 #include "interpolate_gpu.h"
 
-extern THCState *state;
-
 #define CHECK_CUDA(x) do { \
-  if (!x.type().is_cuda()) { \
+  if (!x.device().is_cuda()) { \
     fprintf(stderr, "%s must be CUDA tensor at %s:%d\n", #x, __FILE__, __LINE__); \
     exit(-1); \
   } \
@@ -52,12 +50,12 @@ void three_nn_wrapper_stack(at::Tensor unknown_tensor,
     int batch_size = unknown_batch_cnt_tensor.size(0);
     int N = unknown_tensor.size(0);
     int M = known_tensor.size(0);
-    const float *unknown = unknown_tensor.data<float>();
-    const int *unknown_batch_cnt = unknown_batch_cnt_tensor.data<int>();
-    const float *known = known_tensor.data<float>();
-    const int *known_batch_cnt = known_batch_cnt_tensor.data<int>();
-    float *dist2 = dist2_tensor.data<float>();
-    int *idx = idx_tensor.data<int>();
+    const float *unknown = unknown_tensor.data_ptr<float>();
+    const int *unknown_batch_cnt = unknown_batch_cnt_tensor.data_ptr<int>();
+    const float *known = known_tensor.data_ptr<float>();
+    const int *known_batch_cnt = known_batch_cnt_tensor.data_ptr<int>();
+    float *dist2 = dist2_tensor.data_ptr<float>();
+    int *idx = idx_tensor.data_ptr<int>();
 
     three_nn_kernel_launcher_stack(batch_size, N, M, unknown, unknown_batch_cnt, known, known_batch_cnt, dist2, idx);
 }
@@ -77,10 +75,10 @@ void three_interpolate_wrapper_stack(at::Tensor features_tensor,
 
     int N = out_tensor.size(0);
     int channels = features_tensor.size(1);
-    const float *features = features_tensor.data<float>();
-    const float *weight = weight_tensor.data<float>();
-    const int *idx = idx_tensor.data<int>();
-    float *out = out_tensor.data<float>();
+    const float *features = features_tensor.data_ptr<float>();
+    const float *weight = weight_tensor.data_ptr<float>();
+    const int *idx = idx_tensor.data_ptr<int>();
+    float *out = out_tensor.data_ptr<float>();
 
     three_interpolate_kernel_launcher_stack(N, channels, features, idx, weight, out);
 }
@@ -100,10 +98,10 @@ void three_interpolate_grad_wrapper_stack(at::Tensor grad_out_tensor, at::Tensor
 
     int N = grad_out_tensor.size(0);
     int channels = grad_out_tensor.size(1);
-    const float *grad_out = grad_out_tensor.data<float>();
-    const float *weight = weight_tensor.data<float>();
-    const int *idx = idx_tensor.data<int>();
-    float *grad_features = grad_features_tensor.data<float>();
+    const float *grad_out = grad_out_tensor.data_ptr<float>();
+    const float *weight = weight_tensor.data_ptr<float>();
+    const int *idx = idx_tensor.data_ptr<int>();
+    float *grad_features = grad_features_tensor.data_ptr<float>();
     
     // printf("N=%d, channels=%d\n", N, channels);
     three_interpolate_grad_kernel_launcher_stack(N, channels, grad_out, idx, weight, grad_features);
