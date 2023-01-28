@@ -52,7 +52,7 @@ want to explore the tasks that the origin dataset do not support. Check [here](l
     - [x] [V2X-ViT [ECCV2022]](https://github.com/DerrickXuNu/v2x-vit)
     - [x] [CoBEVT [CoRL2022]](https://arxiv.org/abs/2207.02202)  
     - [ ] [AdaFusion [WACV2023]](https://arxiv.org/abs/2208.00116)  
-    - [ ] [Where2comm [NeurIPS2022]](https://arxiv.org/abs/2209.12836)
+    - [x] [Where2comm [NeurIPS2022]](https://arxiv.org/abs/2209.12836)
 
 - **Provide a convenient log replay toolbox for OPV2V dataset.** Check [here](logreplay/README.md) to see more details.
 
