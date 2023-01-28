@@ -18,14 +18,12 @@ class SpVoxelPreprocessor(BasePreprocessor):
     def __init__(self, preprocess_params, train):
         super(SpVoxelPreprocessor, self).__init__(preprocess_params,
                                                   train)
-        try:
-            from spconv.utils import VoxelGeneratorV2 as VoxelGenerator
-        except:
-            from spconv.utils import VoxelGenerator
+        from spconv.pytorch.utils import PointToVoxel
 
         self.lidar_range = self.params['cav_lidar_range']
         self.voxel_size = self.params['args']['voxel_size']
         self.max_points_per_voxel = self.params['args']['max_points_per_voxel']
+        self.num_point_features = self.params['args']['num_point_features']
 
         if train:
             self.max_voxels = self.params['args']['max_voxel_train']
@@ -37,16 +35,17 @@ class SpVoxelPreprocessor(BasePreprocessor):
         self.grid_size = np.round(grid_size).astype(np.int64)
 
         # use sparse conv library to generate voxel
-        self.voxel_generator = VoxelGenerator(
-            voxel_size=self.voxel_size,
-            point_cloud_range=self.lidar_range,
-            max_num_points=self.max_points_per_voxel,
-            max_voxels=self.max_voxels
+        self.voxel_generator = PointToVoxel(
+            vsize_xyz=self.voxel_size,
+            coors_range_xyz=self.lidar_range,
+            num_point_features=self.num_point_features,
+            max_num_points_per_voxel=self.max_points_per_voxel,
+            max_num_voxels=self.max_voxels
         )
 
     def preprocess(self, pcd_np):
         data_dict = {}
-        voxel_output = self.voxel_generator.generate(pcd_np)
+        voxel_output = self.voxel_generator(torch.from_numpy(pcd_np), empty_mean=True)
         if isinstance(voxel_output, dict):
             voxels, coordinates, num_points = \
                 voxel_output['voxels'], voxel_output['coordinates'], \

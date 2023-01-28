@@ -1,11 +1,11 @@
 name: fpvrcnn_intermediate_fusion
 
 yaml_parser: "load_voxel_params"
-root_dir: "opv2v_data_dumping/train"
-validate_dir: "opv2v_data_dumping/validate"
+root_dir: "/data/opv2v/train"
+validate_dir: "/data/opv2v/validate"
 
 train_params:
-  batch_size: &batch_size 2
+  batch_size: &batch_size 1
   epoches: 70
   eval_freq: 1
   save_freq: 1
@@ -23,6 +23,7 @@ preprocess:
     max_points_per_voxel: &T 5
     max_voxel_train: 36000
     max_voxel_test: 70000
+    num_point_features: 4
   # lidar range for each individual cav.
   cav_lidar_range: &cav_lidar [-140.8, -41.6, -3, 140.8, 41.6, 1]
   keep_original_lidar: true
@@ -68,7 +69,7 @@ model:
     mean_vfe:
       num_point_features: 4
     spconv:
-      num_features_in: 64
+      num_features_in: 4
       num_features_out: 64
     map2bev:
       feature_num: 128
