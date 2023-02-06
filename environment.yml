@@ -12,7 +12,7 @@ dependencies:
     - cython
     - pygame
     - tensorboardX
-    - shapely
+    - shapely==2.0.0
     - einops
     - cumm
     - timm
