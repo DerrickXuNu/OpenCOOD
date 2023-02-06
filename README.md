@@ -204,12 +204,12 @@ OpenCOOD has supported several top conference papers in cooperative perception f
 **Bridging the Domain Gap for Multi-Agent Perception** <br>
 Runsheng Xu, Jinlong Li, Xiaoyu Dong, Hongkai Yu, Jiaqi Ma∗<br>
 *ICRA 2023* <br>
-[[Paper]](https://arxiv.org/pdf/2210.08451.pdf)[[Code]](https://github.com/DerrickXuNu/OpenCOOD)
+[[Paper]](https://arxiv.org/pdf/2210.08451.pdf)[[Code]](https://github.com/DerrickXuNu/MPDA)
 
 **Model Agnostic Multi-agent Perception** <br>
 Runsheng Xu, Weizhe Chen, Hao Xiang,  Xin Xia, Lantao Liu, Jiaqi Ma∗<br>
 *ICRA 2023* <br>
-[[Paper]](https://arxiv.org/abs/2203.13168)[[Code]](https://github.com/DerrickXuNu/OpenCOOD)
+[[Paper]](https://arxiv.org/abs/2203.13168)[[Code]](https://github.com/DerrickXuNu/model-agnostic)
 
 **Where2comm: Communication-Efficient Collaborative Perception via Spatial Confidence Maps** <br>
 Yue Hu, Shaoheng Fang, Zixing Lei, Yiqi Zhong, Siheng Chen<br>
