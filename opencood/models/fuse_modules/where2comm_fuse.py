@@ -135,6 +135,7 @@ class Where2comm(nn.Module):
             self.fuse_modules = AttentionFusion(args['in_channels'])
 
         self.naive_communication = Communication(args['communication'])
+        self.communication = args['communication']['activate']
 
     def regroup(self, x, record_len):
         cum_sum_len = torch.cumsum(record_len, dim=0)
@@ -165,7 +166,7 @@ class Where2comm(nn.Module):
 
                 # 1. Communication (mask the features)
                 if i == 0:
-                    if not x.requires_grad and not self.fully:
+                    if self.communication:
                         # Prune
                         batch_confidence_maps = self.regroup(psm_single, record_len)
                         communication_masks, communication_rates = self.naive_communication(batch_confidence_maps, B)
@@ -208,7 +209,7 @@ class Where2comm(nn.Module):
             batch_node_features = self.regroup(x, record_len)
 
             # 2. Communication (mask the features)
-            if not x.requires_grad and not self.fully:
+            if self.communication:
                 # Prune
                 batch_confidence_maps = self.regroup(psm_single, record_len)
                 communication_masks, communication_rates = self.naive_communication(batch_confidence_maps, B)
@@ -222,4 +223,5 @@ class Where2comm(nn.Module):
                 neighbor_feature = batch_node_features[b]
                 x_fuse.append(self.fuse_modules(neighbor_feature))
             x_fuse = torch.stack(x_fuse)
+
         return x_fuse, communication_rates

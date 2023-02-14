@@ -1,6 +1,6 @@
 name: point_pillar_where2comm
-root_dir: '/home/cav/data/v2xset/train'
-validate_dir: '/home/cav/data/v2xset//test'
+root_dir: /home/runshengxu/project/OpenCDA/opv2x_data_dumping/train
+validate_dir: /home/runshengxu/project/OpenCDA/opv2x_data_dumping/test
 
 wild_setting:
   async: false
@@ -107,6 +107,7 @@ model:
       layer_nums: *layer_nums
       num_filters: *num_filters
       communication:
+        activate: true
         round: 1
         threshold: 0.01
         gaussian_smooth:
