@@ -15,7 +15,7 @@ wild_setting:
 
 yaml_parser: "load_point_pillar_params"
 train_params:
-  batch_size: &batch_size 4
+  batch_size: &batch_size 1
   epoches: &epoches 90
   eval_freq: 1
   save_freq: 1
@@ -73,49 +73,45 @@ model:
     voxel_size: *voxel_size
     lidar_range: *cav_lidar
     anchor_number: *achor_num
+    head_dim: 256
     max_cav: *max_cav
-    compression: 0 # compression rate
-    backbone_fix: false
+    compression: 0  # Compression rate
+    backbone_fix: False
+    keep_ego: False
+    conf_map: False
     pillar_vfe:
-      use_norm: true
-      with_distance: false
-      use_absolute_xyz: true
-      num_filters: [64]
+      use_norm: True
+      with_distance: False
+      use_absolute_xyz: True
+      num_filters: [ 64 ]
     point_pillar_scatter:
       num_features: 64
-
     base_bev_backbone:
-      layer_nums: &layer_nums [3, 5, 8]
-      layer_strides: [2, 2, 2]
-      num_filters: &num_filters [64, 128, 256]
-      upsample_strides: [1, 2, 4]
-      num_upsample_filter: [128, 128, 128]
+      layer_nums: &layer_nums [ 3, 5, 8 ]
+      layer_strides: [ 2, 2, 2 ]
+      num_filters: &num_filters [ 64, 128, 256 ]
+      upsample_strides: [ 1, 2, 4 ]
+      num_upsample_filter: [ 128, 128, 128 ]
     shrink_header:
-      kernal_size: [3]
-      stride: [2]
-      padding: [1]
-      dim: [256]
-      input_dim: 384 # 128 * 3
-    fusion_args:
+      kernal_size: [ 3 ]
+      stride: [ 2 ]
+      padding: [ 1 ]
+      dim: [ 256 ]
+      input_dim: 384  # 128 * 3
+    where2comm_fusion:
+      fully: True
       voxel_size: *voxel_size
       downsample_rate: 4
       in_channels: 256
-      n_head: 8
-      dropout_rate: 0
-      only_attention: true
-      communication:
-         thre: 0.01
-         gaussian_smooth:
-           k_size: 5
-           c_sigma: 1.0
-      agg_operator:
-        mode: 'ATTEN'
-        feature_dim: 256
-      multi_scale: false
+      multi_scale: True
       layer_nums: *layer_nums
       num_filters: *num_filters
-
-      # add decoder later
+      communication:
+        round: 1
+        threshold: 0.01
+        gaussian_smooth:
+          k_size: 5
+          c_sigma: 1.0
 
 loss:
   core_method: point_pillar_loss
