@@ -27,7 +27,7 @@ class PointPillarWhere2comm(nn.Module):
         else:
             self.shrink_flag = False
 
-        if args['compression'] > 0:
+        if args['compression']:
             self.compression = True
             self.naive_compressor = NaiveCompressor(256, args['compression'])
         else:
@@ -95,17 +95,16 @@ class PointPillarWhere2comm(nn.Module):
 
         # Compressor
         if self.compression:
+            # The ego feature is also compressed
             spatial_features_2d = self.naive_compressor(spatial_features_2d)
 
         if self.multi_scale:
+            # Bypass communication cost, communicate at high resolution, neither shrink nor compress
             fused_feature, communication_rates = self.fusion_net(batch_dict['spatial_features'],
                                                                  psm_single,
                                                                  record_len,
                                                                  pairwise_t_matrix,
                                                                  self.backbone)
-            # Down-sample feature to reduce memory
-            if self.shrink_flag:
-                fused_feature = self.shrink_conv(fused_feature)
         else:
             fused_feature, communication_rates = self.fusion_net(spatial_features_2d,
                                                                  psm_single,

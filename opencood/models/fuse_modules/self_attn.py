@@ -50,16 +50,15 @@ class AttFusion(nn.Module):
 
     def forward(self, x, record_len):
         split_x = self.regroup(x, record_len)
-        batch_size = len(record_len)
         C, W, H = split_x[0].shape[1:]
         out = []
         for xx in split_x:
             cav_num = xx.shape[0]
             xx = xx.view(cav_num, C, -1).permute(2, 0, 1)
             h = self.att(xx, xx, xx)
-            h = h.permute(1, 2, 0).view(cav_num, C, W, H)[0, ...].unsqueeze(0)
+            h = h.permute(1, 2, 0).view(cav_num, C, W, H)[0, ...]
             out.append(h)
-        return torch.cat(out, dim=0)
+        return torch.stack(out)
 
     def regroup(self, x, record_len):
         cum_sum_len = torch.cumsum(record_len, dim=0)
