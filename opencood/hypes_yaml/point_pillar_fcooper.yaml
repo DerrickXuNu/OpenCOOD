@@ -81,7 +81,7 @@ model:
       upsample_strides: [1, 2, 4]
       num_upsample_filter: [128, 128, 128]
     shrink_header:
-      kernal_size: [ 1 ]
+      kernel_size: [ 1 ]
       stride: [ 1 ]
       padding: [ 0 ]
       dim: [ 256 ]
