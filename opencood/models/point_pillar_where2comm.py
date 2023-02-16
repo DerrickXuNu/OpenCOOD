@@ -105,6 +105,8 @@ class PointPillarWhere2comm(nn.Module):
                                                                  record_len,
                                                                  pairwise_t_matrix,
                                                                  self.backbone)
+            if self.shrink_flag:
+                fused_feature = self.shrink_conv(fused_feature)
         else:
             fused_feature, communication_rates = self.fusion_net(spatial_features_2d,
                                                                  psm_single,

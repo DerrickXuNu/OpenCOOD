@@ -1,10 +1,10 @@
 name: point_pillar_where2comm
-root_dir: '/home/cav/data/v2xset/train'
-validate_dir: '/home/cav/data/v2xset/test'
+root_dir: '/data/opv2x/train'
+validate_dir: '/data/opv2x/validate'
 
 
 wild_setting:
-  seed: 42
+  seed: 20
   async: False
   async_mode: 'sim'
   async_overhead: 100
@@ -17,7 +17,7 @@ wild_setting:
 
 yaml_parser: 'load_point_pillar_params'
 train_params:
-  batch_size: &batch_size 5
+  batch_size: &batch_size 1
   epoches: &epoches 50
   eval_freq: 1
   save_freq: 1
@@ -91,7 +91,7 @@ model:
       upsample_strides: [ 1, 2, 4 ]
       num_upsample_filter: [ 128, 128, 128 ]
     shrink_header:
-      kernel_size: [ 3 ]
+      kernal_size: [ 3 ]
       stride: [ 2 ]
       padding: [ 1 ]
       dim: [ 256 ]
