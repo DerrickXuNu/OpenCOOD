@@ -201,6 +201,22 @@ We have a series of tutorials to help you understand OpenCOOD more. Please check
 ## Supported Projects
 OpenCOOD has supported several top conference papers in cooperative perception field.
 
+**V2V4Real: A large-scale real-world dataset for Vehicle-to-Vehicle Cooperative Perception** <br>
+ Runsheng Xu, Xin Xia, Jinlong Li, Hanzhao Li, Shuo Zhang, Zhengzhong Tu, Zonglin Meng, Hao Xiang, Xiaoyu Dong, Rui Song, Hongkai Yu, Bolei Zhou, Jiaqi Ma <br>
+*CVPR 2023* <br>
+[[Paper]]()[[Code]](https://github.com/ucla-mobility/V2V4Real)
+
+**Robust Collaborative 3D Object Detection in Presence of Pose Errors** <br>
+Yifan Lu, Quanhao Li, Baoan Liu, Mehrdad Dianati, Chen Feng, Siheng Chen, Yanfeng Wang <br>
+*ICRA 2023* <br>
+[[Paper]](https://arxiv.org/abs/2211.07214)[[Code]](https://github.com/yifanlu0227/CoAlign)
+
+
+**Analyzing Infrastructure LiDAR Placement with Realistic LiDAR Simulation Library** <br>
+Xinyu Cai, Wentao Jiang, Runsheng Xu, Wenquan Zhao, Jiaqi Ma, Si Liu, Yikang Li <br>
+*ICRA 2023* <br>
+[[Paper]](https://arxiv.org/abs/2211.15975)[[Code]](https://github.com/PJLab-ADG/LiDARSimLib-and-Placement-Evaluation)
+
 **Bridging the Domain Gap for Multi-Agent Perception** <br>
 Runsheng Xu, Jinlong Li, Xiaoyu Dong, Hongkai Yu, Jiaqi Ma∗<br>
 *ICRA 2023* <br>
@@ -209,7 +225,7 @@ Runsheng Xu, Jinlong Li, Xiaoyu Dong, Hongkai Yu, Jiaqi Ma∗<br>
 **Model Agnostic Multi-agent Perception** <br>
 Runsheng Xu, Weizhe Chen, Hao Xiang,  Xin Xia, Lantao Liu, Jiaqi Ma∗<br>
 *ICRA 2023* <br>
-[[Paper]](https://arxiv.org/abs/2203.13168)[[Code]](https://github.com/DerrickXuNu/model-agnostic)
+[[Paper]](https://arxiv.org/abs/2203.13168)[[Code]](https://github.com/DerrickXuNu/model_anostic)
 
 **Where2comm: Communication-Efficient Collaborative Perception via Spatial Confidence Maps** <br>
 Yue Hu, Shaoheng Fang, Zixing Lei, Yiqi Zhong, Siheng Chen<br>
