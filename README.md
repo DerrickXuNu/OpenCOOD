@@ -30,6 +30,7 @@ want to explore the tasks that the origin dataset do not support. Check [here](l
   - [x] [OPV2V [ICRA2022]](https://mobility-lab.seas.ucla.edu/opv2v/)
   - [x] [V2XSet [ECCV2022]](https://arxiv.org/pdf/2203.10638.pdf)
   - [ ] [DAIR-V2X [CVPR2022]](https://arxiv.org/abs/2204.05575)
+  - [ ] [V2V4Real [CVPR2023 Highlight]](https://arxiv.org/abs/2303.07601)
 - Provide APIs to allow users use different sensor modalities
   - [x] LiDAR APIs
   - [ ] Camera APIs
