@@ -754,8 +754,8 @@ def remove_large_pred_bbx(bbx_3d):
     bbx_y_min = torch.min(bbx_3d[:, :, 1], dim=1)[0]
     y_len = bbx_y_max - bbx_y_min
 
-    bbx_z_max = torch.max(bbx_3d[:, :, 1], dim=1)[0]
-    bbx_z_min = torch.min(bbx_3d[:, :, 1], dim=1)[0]
+    bbx_z_max = torch.max(bbx_3d[:, :, 2], dim=1)[0]
+    bbx_z_min = torch.min(bbx_3d[:, :, 2], dim=1)[0]
     z_len = bbx_z_max - bbx_z_min
 
     index = torch.logical_and(x_len <= 6, y_len <= 6)
