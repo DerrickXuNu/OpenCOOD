@@ -1,9 +1,7 @@
 name: point_pillar_intermediate_V2VAM_nocompressionV2
 sub_name: 
-# root_dir: "opv2v_data_dumping/train"
-# validate_dir: "opv2v_data_dumping/validate"
-root_dir: "/home/jinlong/jinlong_NAS/Dataset/3D-detection/opv2v_data_dumping/train"
-validate_dir: "/home/jinlong/jinlong_NAS/Dataset/3D-detection/opv2v_data_dumping/test_culver_city" #validate
+root_dir: "opv2v_data_dumping/train"
+validate_dir: "opv2v_data_dumping/validate"
 
 yaml_parser: "load_point_pillar_params"
 train_params:
