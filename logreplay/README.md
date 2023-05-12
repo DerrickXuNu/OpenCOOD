@@ -38,7 +38,7 @@ Start your CARLA simulator first. Right now we only support version 0.9.12
 Execute the following command:
 ```python
 cd logreplay
-python scenario/scenearios_manager.py
+python scenario/scenarios_manager.py
 ```
 
 
