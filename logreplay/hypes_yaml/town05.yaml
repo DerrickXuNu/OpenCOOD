@@ -1,0 +1,30 @@
+- sensor_list:
+    - id: -41
+    - name: 'lidar'
+      args: &base_lidar
+        upper_fov: 2
+        lower_fov: -25
+        channels: 32
+        rotation_frequency: 20
+        points_per_second: 250000
+        range: 120
+        thresh: 5 # mininum number of points hit to be regarded as visible
+        global_position: [-200, 78, 3, 45]
+    - name: 'camera'
+      args: &base_camera
+        fov: 100
+        image_size_x: 200
+        image_size_y: 150
+        global_position: [-200, 78, 3, 45]
+        relative_pose: front
+- sensor_list:
+    - id: -42
+      name: 'lidar'
+      args: 
+        <<: *base_lidar
+        global_position: [-175, 102, 3, -135]
+    - name: 'camera'
+      args:
+        <<: *base_camera
+        global_position: [-175, 102, 3, -135]
+        relative_pose: front
