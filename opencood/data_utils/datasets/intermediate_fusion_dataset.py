@@ -447,6 +447,8 @@ class IntermediateFusionDataset(basedataset.BaseDataset):
                 for j in range(len(t_list)):
                     # identity matrix to self
                     if i == j:
+                        t_matrix = np.eye(4)
+                        pairwise_t_matrix[i, j] = t_matrix
                         continue
                     # i->j: TiPi=TjPj, Tj^(-1)TiPi = Pj
                     t_matrix = np.dot(np.linalg.inv(t_list[j]), t_list[i])
