@@ -54,6 +54,7 @@ want to explore the tasks that the origin dataset do not support. Check [here](l
     - [x] [CoBEVT [CoRL2022]](https://arxiv.org/abs/2207.02202)  
     - [ ] [AdaFusion [WACV2023]](https://arxiv.org/abs/2208.00116)  
     - [x] [Where2comm [NeurIPS2022]](https://arxiv.org/abs/2209.12836)
+    - [x] [V2VAM [TIV2023]](https://arxiv.org/abs/2212.08273) 
 
 - **Provide a convenient log replay toolbox for OPV2V dataset.** Check [here](logreplay/README.md) to see more details.
 
@@ -129,6 +130,7 @@ The evaluation results  will be dumped in the model directory.
 | [F-Cooper](https://arxiv.org/abs/1909.06459)   | 1.2.1       | PointPillar        | Intermediate  | 72.08/1.12    | 0.790/0.788     | 0.728/0.726        | [url](https://drive.google.com/file/d/1CjXu9Y2ZTzJA6Oo3hnqFhbTqBVKq3mQb/view?usp=sharing)     | 
 | [V2VNet](https://arxiv.org/abs/2008.07519)  | 1.2.1        | PointPillar        | Intermediate  | 72.08/1.12    | **0.822**/0.814     | 0.734/0.729    | [url](https://drive.google.com/file/d/14xl_gNEIHcDw-SvQyO1ioQwyzGym-tKX/view?usp=sharing)     | 
 | [FPV-RCNN](https://arxiv.org/abs/2109.11615)   | 1.2.1       | PV-RCNN        | Intermediate(2 stage)  | 0.24/0.24    | 0.820/0.820     | 0.763/**0.763**    | [url](https://drive.google.com/file/d/1iOVi7holJ-Cu2P3dRv5HmOWlB5lkLukJ/view)     | 
+| [V2VAM](https://arxiv.org/pdf/2212.08273.pdf)  | 1.2.1       | PointPillar      | Intermediate  |  x/x     | **0.860**/**0.860**     | **0.813**/**0.791**   | [url](https://drive.google.com/drive/folders/1gFY6Aedrbi3vLJdPZ3x9abPnfW5w_HKN?usp=sharing)     |
 | [CoBEVT]( https://arxiv.org/pdf/2207.02202.pdf)  | 2.0       | PointPillar      | Intermediate  |  72.08/1.12     | **0.861**/**0.836**     | **0.773**/0.730   | [url](https://drive.google.com/drive/folders/1h5aawoH5l4cjWJBUSdQBVWd9B79nukWK?usp=share_link)     | 
 | Naive Late    | 1.2.1      | VoxelNet        | Late  | **0.024**/**0.024**    | 0.738/0.738          | 0.588/0.588        | [url]()    |
 | Cooper   | 1.2.1  | VoxelNet        | Early   |   7.68/7.68  | 0.758/x        | 0.677/x        | [url](https://drive.google.com/file/d/14WD7iLLyyCJJ3lApbYYdr5KOUM1ACnve/view?usp=sharing)     | 
@@ -227,6 +229,12 @@ Runsheng Xu, Jinlong Li, Xiaoyu Dong, Hongkai Yu, Jiaqi Ma∗<br>
 Runsheng Xu, Weizhe Chen, Hao Xiang,  Xin Xia, Lantao Liu, Jiaqi Ma∗<br>
 *ICRA 2023* <br>
 [[Paper]](https://arxiv.org/abs/2203.13168)[[Code]](https://github.com/DerrickXuNu/model_anostic)
+
+**Learning for Vehicle-to-Vehicle Cooperative Perception under Lossy Communication** <br>
+Jinlong Li, Runsheng Xu, Xinyu Liu, Jin Ma, Zicheng Chi, Jiaqi Ma, Hongkai Yu<br>
+*TIV 2023* <br>
+[[Paper]](https://ieeexplore.ieee.org/document/10077757) [[Code]](https://github.com/jinlong17/V2VLC)
+
 
 **Where2comm: Communication-Efficient Collaborative Perception via Spatial Confidence Maps** <br>
 Yue Hu, Shaoheng Fang, Zixing Lei, Yiqi Zhong, Siheng Chen<br>
