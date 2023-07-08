@@ -434,9 +434,6 @@ class IntermediateFusionDataset(basedataset.BaseDataset):
             # becomes identity
             pairwise_t_matrix[:, :] = np.identity(4)
         else:
-            warnings.warn("Projection later is not supported in "
-                          "the current version. Using it will throw"
-                          "an error.")
             t_list = []
 
             # save all transformation matrix in a list in order first.
