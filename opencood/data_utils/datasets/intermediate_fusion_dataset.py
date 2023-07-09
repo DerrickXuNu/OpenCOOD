@@ -434,9 +434,6 @@ class IntermediateFusionDataset(basedataset.BaseDataset):
             # becomes identity
             pairwise_t_matrix[:, :] = np.identity(4)
         else:
-            warnings.warn("Projection later is not supported in "
-                          "the current version. Using it will throw"
-                          "an error.")
             t_list = []
 
             # save all transformation matrix in a list in order first.
@@ -447,6 +444,8 @@ class IntermediateFusionDataset(basedataset.BaseDataset):
                 for j in range(len(t_list)):
                     # identity matrix to self
                     if i == j:
+                        t_matrix = np.eye(4)
+                        pairwise_t_matrix[i, j] = t_matrix
                         continue
                     # i->j: TiPi=TjPj, Tj^(-1)TiPi = Pj
                     t_matrix = np.dot(np.linalg.inv(t_list[j]), t_list[i])

@@ -48,6 +48,7 @@ want to explore the tasks that the origin dataset do not support. Check [here](l
     - [x] [Cooper [ICDCS]](https://arxiv.org/abs/1905.05265)
     - [x] [F-Cooper [SEC2019]](https://arxiv.org/abs/1909.06459)
     - [x] [V2VNet [ECCV2022]](https://arxiv.org/abs/2008.07519)
+    - [x] [CoAlign (fusion only) [ICRA2023]](https://arxiv.org/abs/2211.07214)
     - [x] [FPV-RCNN [RAL2022]](https://arxiv.org/pdf/2109.11615.pdf)
     - [ ] [DiscoNet [NeurIPS2021]](https://arxiv.org/abs/2111.00643)
     - [x] [V2X-ViT [ECCV2022]](https://github.com/DerrickXuNu/v2x-vit)
@@ -128,7 +129,8 @@ The evaluation results  will be dumped in the model directory.
 | [Cooper](https://arxiv.org/abs/1905.05265)   | 1.2.1     | PointPillar        | Early  |   7.68/7.68   | 0.800/x         | 0.696/x       | [url](https://drive.google.com/file/d/16hVkjpBUGfCByHjSmT8atCSZ2z2KuJBj/view?usp=share_link)     | 
 | [Attentive Fusion](https://arxiv.org/abs/2109.07644)  | 1.2.1        | PointPillar        | Intermediate  | 126.8/1.98   | 0.815/0.810       | 0.735/0.731        | [url](https://drive.google.com/file/d/11pG0kf2uR9N_o_ACBi_zfd7flGCgZt40/view?usp=sharing)     | 
 | [F-Cooper](https://arxiv.org/abs/1909.06459)   | 1.2.1       | PointPillar        | Intermediate  | 72.08/1.12    | 0.790/0.788     | 0.728/0.726        | [url](https://drive.google.com/file/d/1CjXu9Y2ZTzJA6Oo3hnqFhbTqBVKq3mQb/view?usp=sharing)     | 
-| [V2VNet](https://arxiv.org/abs/2008.07519)  | 1.2.1        | PointPillar        | Intermediate  | 72.08/1.12    | **0.822**/0.814     | 0.734/0.729    | [url](https://drive.google.com/file/d/14xl_gNEIHcDw-SvQyO1ioQwyzGym-tKX/view?usp=sharing)     | 
+| [V2VNet](https://arxiv.org/abs/2008.07519)  | 1.2.1        | PointPillar        | Intermediate  | 72.08/1.12    | 0.822/0.814     | 0.734/0.729    | [url](https://drive.google.com/file/d/14xl_gNEIHcDw-SvQyO1ioQwyzGym-tKX/view?usp=sharing)     |
+| [CoAlign](https://arxiv.org/abs/2211.07214) | 1.2.1        | PointPillar        | Intermediate  | 72.08/2.24     |  **0.833**/0.806 | 0.760/ **0.750** | [url](https://drive.google.com/file/d/1mUEI_Dh4tkG6-LG3QcZ05kK7oOGJzCGK/view?usp=sharing)
 | [FPV-RCNN](https://arxiv.org/abs/2109.11615)   | 1.2.1       | PV-RCNN        | Intermediate(2 stage)  | 0.24/0.24    | 0.820/0.820     | 0.763/**0.763**    | [url](https://drive.google.com/file/d/1iOVi7holJ-Cu2P3dRv5HmOWlB5lkLukJ/view)     | 
 | [V2VAM](https://arxiv.org/pdf/2212.08273.pdf)  | 1.2.1       | PointPillar      | Intermediate  |  x/x     | **0.860**/**0.860**     | **0.813**/**0.791**   | [url](https://drive.google.com/drive/folders/1gFY6Aedrbi3vLJdPZ3x9abPnfW5w_HKN?usp=sharing)     |
 | [CoBEVT]( https://arxiv.org/pdf/2207.02202.pdf)  | 2.0       | PointPillar      | Intermediate  |  72.08/1.12     | **0.861**/**0.836**     | **0.773**/0.730   | [url](https://drive.google.com/drive/folders/1h5aawoH5l4cjWJBUSdQBVWd9B79nukWK?usp=share_link)     | 
