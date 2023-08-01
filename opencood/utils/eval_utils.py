@@ -110,16 +110,9 @@ def calculate_ap(result_stat, iou):
 
     gt_total = iou_5['gt']
 
-    cumsum = 0
-    for idx, val in enumerate(fp):
-        fp[idx] += cumsum
-        cumsum += val
-
-    cumsum = 0
-    for idx, val in enumerate(tp):
-        tp[idx] += cumsum
-        cumsum += val
-
+    fp = np.cumsum(fp)
+    tp = np.cumsum(tp)
+    
     rec = tp[:]
     for idx, val in enumerate(tp):
         rec[idx] = float(tp[idx]) / gt_total
