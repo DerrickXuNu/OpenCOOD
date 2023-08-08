@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Author: Runsheng Xu <rxx3386@ucla.edu>, Hao Xiang <haxiang@g.ucla.edu>,
+# Author: Runsheng Xu <rxx3386@ucla.edu>, Hao Xiang <haxiang@g.ucla.edu>, Yifan Lu <yifan_lu@sjtu.edu.cn>
 # License: TDG-Attribution-NonCommercial-NoDistrib
 
 
@@ -37,6 +37,10 @@ def test_parser():
     parser.add_argument('--save_npy', action='store_true',
                         help='whether to save prediction and gt result'
                              'in npy_test file')
+    parser.add_argument('--global_sort_detections', action='store_true',
+                        help='whether to globally sort detections by confidence score.'
+                             'If set to True, it is the mainstream AP computing method,'
+                             'but would increase the tolerance for FP (False Positives).')
     opt = parser.parse_args()
     return opt
 
@@ -73,10 +77,11 @@ def main():
     _, model = train_utils.load_saved_model(saved_path, model)
     model.eval()
 
-    # Create the dictionary for evaluation
-    result_stat = {0.3: {'tp': [], 'fp': [], 'gt': 0},
-                   0.5: {'tp': [], 'fp': [], 'gt': 0},
-                   0.7: {'tp': [], 'fp': [], 'gt': 0}}
+    # Create the dictionary for evaluation.
+    # also store the confidence score for each prediction
+    result_stat = {0.3: {'tp': [], 'fp': [], 'gt': 0, 'score': []},                
+                   0.5: {'tp': [], 'fp': [], 'gt': 0, 'score': []},                
+                   0.7: {'tp': [], 'fp': [], 'gt': 0, 'score': []}}
 
     if opt.show_sequence:
         vis = o3d.visualization.Visualizer()
@@ -193,7 +198,8 @@ def main():
                 time.sleep(0.001)
 
     eval_utils.eval_final_results(result_stat,
-                                  opt.model_dir)
+                                  opt.model_dir,
+                                  opt.global_sort_detections)
     if opt.show_sequence:
         vis.destroy_window()
 
