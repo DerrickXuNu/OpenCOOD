@@ -394,7 +394,7 @@ def mask_boxes_outside_range_numpy(boxes, limit_range, order,
 
     new_boxes = boxes.copy()
     if boxes.shape[1] == 7:
-        new_boxes = boxes_to_corners_3d(new_boxes, order)
+        new_boxes = boxes_to_corners_3d(new_boxes, order).astype(int)
 
     mask = ((new_boxes >= limit_range[0:3]) &
             (new_boxes <= limit_range[3:6])).all(axis=2)
