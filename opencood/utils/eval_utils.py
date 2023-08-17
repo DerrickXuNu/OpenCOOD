@@ -32,9 +32,7 @@ def voc_ap(rec, prec):
         if mrec[i] != mrec[i - 1]:
             i_list.append(i)
 
-    ap = 0.0
-    for i in i_list:
-        ap += ((mrec[i] - mrec[i - 1]) * mpre[i])
+    ap = np.dot([mrec[i] - mrec[i - 1] for i in i_list], [mrec[i] for i in i_list])
     return ap, mrec, mpre
 
 
