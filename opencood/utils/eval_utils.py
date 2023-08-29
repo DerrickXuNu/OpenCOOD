@@ -27,10 +27,7 @@ def voc_ap(rec, prec):
     for i in range(len(mpre) - 2, -1, -1):
         mpre[i] = max(mpre[i], mpre[i + 1])
 
-    i_list = []
-    for i in range(1, len(mrec)):
-        if mrec[i] != mrec[i - 1]:
-            i_list.append(i)
+    i_list = [i for i in range(1, len(mrec)) if mrec[i] != mrec[i - 1]]
 
     ap = np.dot([mrec[i] - mrec[i - 1] for i in i_list], [mrec[i] for i in i_list])
     return ap, mrec, mpre
