@@ -27,14 +27,9 @@ def voc_ap(rec, prec):
     for i in range(len(mpre) - 2, -1, -1):
         mpre[i] = max(mpre[i], mpre[i + 1])
 
-    i_list = []
-    for i in range(1, len(mrec)):
-        if mrec[i] != mrec[i - 1]:
-            i_list.append(i)
+    i_list = [i for i in range(1, len(mrec)) if mrec[i] != mrec[i - 1]]
 
-    ap = 0.0
-    for i in i_list:
-        ap += ((mrec[i] - mrec[i - 1]) * mpre[i])
+    ap = np.dot([mrec[i] - mrec[i - 1] for i in i_list], [mrec[i] for i in i_list])
     return ap, mrec, mpre
 
 
@@ -129,16 +124,9 @@ def calculate_ap(result_stat, iou, global_sort_detections):
 
     gt_total = iou_5['gt']
 
-    cumsum = 0
-    for idx, val in enumerate(fp):
-        fp[idx] += cumsum
-        cumsum += val
-
-    cumsum = 0
-    for idx, val in enumerate(tp):
-        tp[idx] += cumsum
-        cumsum += val
-
+    fp = np.cumsum(fp)
+    tp = np.cumsum(tp)
+    
     rec = tp[:]
     for idx, val in enumerate(tp):
         rec[idx] = float(tp[idx]) / gt_total

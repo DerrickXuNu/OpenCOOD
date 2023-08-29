@@ -130,11 +130,10 @@ class SemanticLidar(BaseSensor):
         vehicle_idx = self.obj_idx[self.obj_tag == 10]
         # each individual instance id
         vehicle_unique_id = list(np.unique(vehicle_idx))
-        vehicle_id_filter = []
-
-        for veh_id in vehicle_unique_id:
-            if vehicle_idx[vehicle_idx == veh_id].shape[0] > self.thresh:
-                vehicle_id_filter.append(veh_id)
-
+        vehicle_id_filter = [
+            veh_id for veh_id in vehicle_unique_id 
+            if vehicle_idx[vehicle_idx == veh_id].shape[0] > self.thresh
+        ]
+        
         # these are the ids that are visible
         return vehicle_id_filter
