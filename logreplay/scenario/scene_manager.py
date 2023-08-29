@@ -81,6 +81,7 @@ class SceneManager:
 
         # this is used to dynamically save all information of the objects
         self.veh_dict = OrderedDict()
+        self.rsu_list = []
         # used to count timestamp
         self.cur_count = 0
         # used for HDMap
@@ -163,7 +164,7 @@ class SceneManager:
             # spawn the sensor on each cav
             if 'sensor_manager' not in self.veh_dict[cav_id]:
                 self.veh_dict[cav_id]['sensor_manager'] = \
-                    SensorManager(cav_id, self.veh_dict[cav_id],
+                    SensorManager(cav_id, self.veh_dict[cav_id]['actor'],
                                   self.world, self.scenario_params['sensor'],
                                   self.output_root)
 
@@ -190,9 +191,22 @@ class SceneManager:
                                       self.structure_transform_bg_veh(
                                           bg_veh_content['location'],
                                           bg_veh_content['angle']))
-        # remove the vehicles that are not in any cav's scope
-        self.destroy_vehicle(cur_timestamp)
+        
+        if not self.rsu_list:
+            # currently supports town_name.yaml e.g. Town05.yaml, this can also be changed to scene-specific e.g. 2021_08_21_21_35_56.yaml
+            rsu_yml = load_yaml(f'../hypes_yaml/replay.yaml/{self.town_name}.yaml') 
+            for sensor_instance in rsu_yml:
+                rsu_id = str(sensor_instance['sensor_list'][0]['id'])
+                sm = SensorManager(rsu_id, None,
+                                    self.world, sensor_instance,
+                                    self.output_root)
+                self.rsu_list.append(sm)
 
+        '''
+        self.destroy_vehicle(cur_timestamp) is not used
+        since vehicles may be inside rsu sensor area even though they are outside of cav's scope 
+        '''
+        
         self.cur_count += 1
         self.world.tick()
 
@@ -217,6 +231,10 @@ class SceneManager:
         for veh_id, veh_content in self.veh_dict.items():
             if 'sensor_manager' in veh_content:
                 veh_content['sensor_manager'].run_step(cur_timestamp)
+
+        if self.rsu_list is not None:
+            for rsu_sensor in self.rsu_list:
+                rsu_sensor.run_step(cur_timestamp)
 
     def spawn_cav(self, cav_id, cav_content, cur_timestamp):
         """
@@ -344,9 +362,6 @@ class SceneManager:
 
     def close(self):
         self.world.apply_settings(self.origin_settings)
-        actor_list = self.world.get_actors()
-        for actor in actor_list:
-            actor.destroy()
         self.map_manager.destroy()
         self.sensor_destory()
 
@@ -354,6 +369,9 @@ class SceneManager:
         for veh_id, veh_content in self.veh_dict.items():
             if 'sensor_manager' in veh_content:
                 veh_content['sensor_manager'].destroy()
+        if self.rsu_list is not None:
+            for rsu_sensor in self.rsu_list:
+                rsu_sensor.destroy()
 
     def destroy_vehicle(self, cur_timestamp):
         """

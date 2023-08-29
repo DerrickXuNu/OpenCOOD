@@ -41,7 +41,7 @@ class SensorManager:
 
         self.agent_id = agent_id
         self.output_root = output_root
-        self.vehicle = vehicle_content['actor']
+        self.vehicle = vehicle_content
         self.world = world
         self.sensor_list = []
         # this is used to gather the meta information return from sensors
@@ -66,12 +66,16 @@ class SensorManager:
                                        'same as the file name. e.g. ' \
                                        'bev_semantic_camera -> ' \
                                        'BevSemanticCamera'
-            # todo: rsu is not considered yet
+
+            global_position = None
+            if 'global_position' in sensor_content['args']:
+                global_position = sensor_content['args']['global_position']
+
             sensor_instance = sensor(self.agent_id,
                                      self.vehicle,
                                      self.world,
                                      sensor_content['args'],
-                                     None)
+                                     global_position)
             self.sensor_list.append(sensor_instance)
 
     def run_step(self, cur_timestamp):
@@ -84,7 +88,7 @@ class SensorManager:
 
             # for data dumping
             output_folder = os.path.join(self.output_root,
-                                         self.agent_id)
+                                         str(self.agent_id))
             if not os.path.exists(output_folder):
                 os.makedirs(output_folder)
             sensor_instance.data_dump(output_folder,
