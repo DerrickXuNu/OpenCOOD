@@ -199,7 +199,7 @@ def setup_optimizer(hypes, model):
                                 lr=method_dict['lr'])
 
 
-def setup_lr_schedular(hypes, optimizer, n_iter_per_epoch):
+def setup_lr_scheduler(hypes, optimizer, n_iter_per_epoch):
     """
     Set up the learning rate schedular.
 

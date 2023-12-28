@@ -111,7 +111,7 @@ def main():
     optimizer = train_utils.setup_optimizer(hypes, model_without_ddp)
     # lr scheduler setup
     num_steps = len(train_loader)
-    scheduler = train_utils.setup_lr_schedular(hypes, optimizer, num_steps)
+    scheduler = train_utils.setup_lr_scheduler(hypes, optimizer, num_steps)
 
     # record training
     writer = SummaryWriter(saved_path)
