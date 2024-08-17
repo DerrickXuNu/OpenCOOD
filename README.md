@@ -165,7 +165,7 @@ can not be considered to employ in practice.
 | [V2VNet](https://arxiv.org/abs/2008.07519)         | CVT        | Intermediate  | 53.5     | 60.2     | 47.5   | [None]()     | 
 | [DiscoNet](https://arxiv.org/abs/2109.11615)         | CVT       | Intermediate  | 52.9   |  60.7   | 45.8    | [None]()     | 
 | [FuseBEVT](https://arxiv.org/pdf/2207.02202.pdf)        | CVT        | Intermediate  | 59.0     | 62.1        | 49.2      | [url]()    |
-| [CoBEVT](https://arxiv.org/pdf/2207.02202.pdf)        | SinBEVT        | Intermediate  | **60.4**     | **63.0**          | **53.0**      | [url](https://drive.google.com/drive/folders/1NLzyvMFxuv8Qy52q_OzcNsugTS5JacAT)    |
+| [CoBEVT](https://arxiv.org/pdf/2207.02202.pdf)        | SinBEVT        | Intermediate  | **60.4**     | **63.0**          | **53.0**      | [url](https://ucla.app.box.com/v/UCLA-MobilityLab-OPV2V/folder/280139287054)    |
 
 **Note**: 
 To play with OPV2V camera data, please check here: https://github.com/DerrickXuNu/CoBEVT
@@ -180,9 +180,9 @@ To play with OPV2V camera data, please check here: https://github.com/DerrickXuN
 | [Attentive Fusion](https://arxiv.org/abs/2109.07644)     |       2.0      | PointPillar | 80.7           | 66.4           | 70.9         | 48.7         |                                                                          |
 | [V2VNet](https://arxiv.org/abs/2008.07519)         |       2.0      | PointPillar | 84.5           | 67.7           | 79.1         | 49.3         |                                                                          |
 | [DiscoNet](https://arxiv.org/abs/2109.11615)      |       2.0      | PointPillar | 84.4           | 69.5           | 79.8         | 54.1         |                
-| [CoBEVT](https://arxiv.org/abs/2207.02202)      |       2.0      | PointPillar |    84.9      |  66.0   | 81.1   | 54.3  | [url](https://drive.google.com/file/d/1aNL2L779C5PBYIA5AjVWWNmld1tulens) ||
-| [Where2Comm](https://arxiv.org/abs/2209.12836)     |       2.0      | PointPillar |   85.5 | 65.4 | 82.0| 53.4 | [url](https://drive.google.com/file/d/1IAcnfLCSPIt9pyfiZcF1RnKOTkbIfUcJ/view?usp=share_link) ||
-| [V2X-ViT](https://arxiv.org/pdf/2203.10638.pdf)      |       2.0      | PointPillar | **88.2**           | **71.2**           | **83.6**         | **61.4**         | [url](https://drive.google.com/drive/folders/1h2UOPP2tNRkV_s6cbKcSfMvTgb8_ZFj9) |
+| [CoBEVT](https://arxiv.org/abs/2207.02202)      |       2.0      | PointPillar |    84.9      |  66.0   | 81.1   | 54.3  | [url](https://ucla.app.box.com/v/UCLA-MobilityLab-V2XVIT/file/1622754822466) ||
+| [Where2Comm](https://arxiv.org/abs/2209.12836)     |       2.0      | PointPillar |   85.5 | 65.4 | 82.0| 53.4 | [URL](https://ucla.app.box.com/v/UCLA-MobilityLab-OPV2V/file/1621122986293) ||
+| [V2X-ViT](https://arxiv.org/pdf/2203.10638.pdf)      |       2.0      | PointPillar | **88.2**           | **71.2**           | **83.6**         | **61.4**         | [url](https://ucla.app.box.com/v/UCLA-MobilityLab-V2XVIT/folder/280421221519) |
 
 <strong>Important Notes for Training in V2XSet:</strong>
 1. When you train from scratch, please first set `async` and `loc_err` to false to train on perfect setting. Also, set `compression` to 0 at beginning.
