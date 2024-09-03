@@ -71,8 +71,8 @@ class ScenariosManager:
 if __name__ == '__main__':
     from opencood.hypes_yaml.yaml_utils import load_yaml
     scene_params = load_yaml('../hypes_yaml/replay.yaml')
-    scenarion_manager = ScenariosManager(scenario_params=scene_params)
-    scenarion_manager.tick()
+    scenario_manager = ScenariosManager(scenario_params=scene_params)
+    scenario_manager.tick()
     print('test passed')
 
 
