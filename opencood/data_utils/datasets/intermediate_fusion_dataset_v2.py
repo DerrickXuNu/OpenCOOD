@@ -378,7 +378,8 @@ class IntermediateFusionDatasetV2(basedataset.BaseDataset):
                          pcd,
                          show_vis,
                          save_path,
-                         dataset=None):
+                         dataset=None,
+                         mode='constant'):
         # we need to convert the pcd from [n, 5] -> [n, 4]
         pcd = pcd[:, 1:]
         # visualize the model output
@@ -387,4 +388,5 @@ class IntermediateFusionDatasetV2(basedataset.BaseDataset):
                                       pcd,
                                       show_vis,
                                       save_path,
-                                      dataset=dataset)
+                                      dataset=dataset,
+                                      mode=mode)

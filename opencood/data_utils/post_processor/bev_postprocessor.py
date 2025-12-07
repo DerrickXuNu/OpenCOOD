@@ -416,7 +416,7 @@ class BevPostprocessor(BasePostprocessor):
 
     @staticmethod
     def visualize(pred_box_tensor, gt_tensor, pcd, show_vis, save_path,
-                  dataset=None):
+                  dataset=None, mode='constant'):
         """
         Visualize the BEV 2D prediction, ground truth with point cloud together.
 
@@ -439,6 +439,9 @@ class BevPostprocessor(BasePostprocessor):
 
         dataset : BaseDataset
             opencood dataset object.
+
+        mode : str
+            Color encoding mode: 'constant', 'intensity', or 'z-value'.
         """
         assert dataset is not None, "dataset argument can't be None"
         vis_utils.visualize_single_sample_output_bev(pred_box_tensor,
@@ -446,4 +449,5 @@ class BevPostprocessor(BasePostprocessor):
                                                      pcd,
                                                      dataset,
                                                      show_vis,
-                                                     save_path)
+                                                     save_path,
+                                                     mode=mode)

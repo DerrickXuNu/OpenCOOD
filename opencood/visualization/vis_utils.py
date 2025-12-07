@@ -251,7 +251,8 @@ def visualize_single_sample_output_gt(pred_tensor,
                                       pcd,
                                       show_vis=True,
                                       save_path='',
-                                      mode='constant'):
+                                      mode='constant',
+                                      dataset=None):
     """
     Visualize the prediction, groundtruth with point cloud together.
 
@@ -274,6 +275,9 @@ def visualize_single_sample_output_gt(pred_tensor,
 
     mode : str
         Color rendering mode.
+    
+    dataset : object
+        Dataset object with params. Used for headless visualization.
     """
 
     def custom_draw_geometry(pcd, pred, gt):
@@ -302,7 +306,7 @@ def visualize_single_sample_output_gt(pred_tensor,
     origin_lidar_intcolor = \
         color_encoding(origin_lidar[:, -1] if mode == 'intensity'
                        else origin_lidar[:, 2], mode=mode)
-    # left -> right hand
+    # left -> right hand coordinate system conversion
     origin_lidar[:, :1] = -origin_lidar[:, :1]
 
     o3d_pcd = o3d.geometry.PointCloud()
@@ -316,6 +320,7 @@ def visualize_single_sample_output_gt(pred_tensor,
     if show_vis:
         custom_draw_geometry(o3d_pcd, oabbs_pred, oabbs_gt)
     if save_path:
+        # Force Open3D capture; no matplotlib fallback.
         save_o3d_visualization(visualize_elements, save_path)
 
 
@@ -568,27 +573,57 @@ def visualize_sequence_dataloader(dataloader, order, color_mode='constant'):
 
 
 def save_o3d_visualization(element, save_path):
-    """
-    Save the open3d drawing to folder.
+    """Save a list of Open3D geometries to an image file.
 
-    Parameters
-    ----------
-    element : list
-        List of o3d.geometry objects.
-
-    save_path : str
-        The save path.
+    We run the visualizer headlessly, fit the camera to the combined
+    geometry bounds, and use a top-down view to avoid empty/black frames
+    when running without an interactive window.
     """
+    if not element:
+        return
+
+    # Check if DISPLAY is available (not headless)
+    import os
+    if not os.environ.get('DISPLAY'):
+        raise RuntimeError("No DISPLAY available, cannot use Open3D visualization")
+
     vis = o3d.visualization.Visualizer()
-    vis.create_window()
-    for i in range(len(element)):
-        vis.add_geometry(element[i])
-        vis.update_geometry(element[i])
+    # Keep window visible so the framebuffer is properly rendered; size can be tuned if needed.
+    vis.create_window(visible=True, width=1920, height=1080)
+
+    for geo in element:
+        vis.add_geometry(geo)
+        vis.update_geometry(geo)
+
+    # Fit camera to all geometries to prevent a default camera pointing
+    # to an empty region (which produces black images).
+    bounds = element[0].get_axis_aligned_bounding_box()
+    for geo in element[1:]:
+        try:
+            bounds += geo.get_axis_aligned_bounding_box()
+        except Exception:
+            pass
+
+    center = bounds.get_center()
+    extent = max(bounds.get_extent().tolist() + [1.0])
+
+    ctr = vis.get_view_control()
+    ctr.set_lookat(center)
+    ctr.set_front([0, -1, 0])  # look from +y to -y (top-down-ish)
+    ctr.set_up([0, 0, 1])
+    # Zoom is relative; smaller value means further away.
+    # Clamp to keep everything in view even if extent is tiny.
+    zoom = 0.35 if extent < 10 else 0.5
+    ctr.set_zoom(zoom)
+
+    opt = vis.get_render_option()
+    opt.background_color = [0, 0, 0]
+    opt.point_size = 1.0
 
     vis.poll_events()
     vis.update_renderer()
-
-    vis.capture_screen_image(save_path)
+    # do_render=True ensures a render pass before capture to avoid black frames.
+    vis.capture_screen_image(save_path, do_render=True)
     vis.destroy_window()
 
 

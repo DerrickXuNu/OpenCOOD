@@ -401,7 +401,7 @@ class VoxelPostprocessor(BasePostprocessor):
         return boxes3d
 
     @staticmethod
-    def visualize(pred_box_tensor, gt_tensor, pcd, show_vis, save_path, dataset=None):
+    def visualize(pred_box_tensor, gt_tensor, pcd, show_vis, save_path, dataset=None, mode='constant'):
         """
         Visualize the prediction, ground truth with point cloud together.
 
@@ -425,9 +425,14 @@ class VoxelPostprocessor(BasePostprocessor):
         dataset : BaseDataset
             opencood dataset object.
 
+        mode : str
+            Color encoding mode: 'constant', 'intensity', or 'z-value'.
+
         """
         vis_utils.visualize_single_sample_output_gt(pred_box_tensor,
                                                     gt_tensor,
                                                     pcd,
                                                     show_vis,
-                                                    save_path)
+                                                    save_path,
+                                                    dataset=dataset,
+                                                    mode=mode)

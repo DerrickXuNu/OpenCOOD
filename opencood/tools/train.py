@@ -43,6 +43,9 @@ def main():
     opencood_train_dataset = build_dataset(hypes, visualize=False, train=True)
     opencood_validate_dataset = build_dataset(hypes, visualize=False, train=False)
 
+    num_workers = hypes['train_params'].get('num_workers', 8)
+    pin_memory = hypes['train_params'].get('pin_memory', False)
+
     if opt.distributed:
         sampler_train = DistributedSampler(opencood_train_dataset)
         sampler_val = DistributedSampler(opencood_validate_dataset,
@@ -53,27 +56,27 @@ def main():
 
         train_loader = DataLoader(opencood_train_dataset,
                                   batch_sampler=batch_sampler_train,
-                                  num_workers=8,
+                                                                    num_workers=num_workers,
                                   collate_fn=opencood_train_dataset.collate_batch_train)
         val_loader = DataLoader(opencood_validate_dataset,
                                 sampler=sampler_val,
-                                num_workers=8,
+                                                                num_workers=num_workers,
                                 collate_fn=opencood_train_dataset.collate_batch_train,
                                 drop_last=False)
     else:
         train_loader = DataLoader(opencood_train_dataset,
                                   batch_size=hypes['train_params']['batch_size'],
-                                  num_workers=8,
+                                                                    num_workers=num_workers,
                                   collate_fn=opencood_train_dataset.collate_batch_train,
                                   shuffle=True,
-                                  pin_memory=False,
+                                                                    pin_memory=pin_memory,
                                   drop_last=True)
         val_loader = DataLoader(opencood_validate_dataset,
                                 batch_size=hypes['train_params']['batch_size'],
-                                num_workers=8,
+                                                                num_workers=num_workers,
                                 collate_fn=opencood_train_dataset.collate_batch_train,
                                 shuffle=False,
-                                pin_memory=False,
+                                                                pin_memory=pin_memory,
                                 drop_last=True)
 
     print('---------------Creating Model------------------')

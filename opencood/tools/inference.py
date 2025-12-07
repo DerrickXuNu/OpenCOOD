@@ -34,6 +34,13 @@ def test_parser():
                              'it can note be set true with show_vis together ')
     parser.add_argument('--save_vis', action='store_true',
                         help='whether to save visualization result')
+    parser.add_argument('--vis_dir', type=str, default=None,
+                        help='custom directory to save visualization results. '
+                             'if not specified, will save to model_dir/vis')
+    parser.add_argument('--color_mode', type=str, default='constant',
+                        choices=['constant', 'intensity', 'z-value'],
+                        help='point cloud coloring mode: '
+                             'constant (white), intensity (color gradient), z-value (height-based)')
     parser.add_argument('--save_npy', action='store_true',
                         help='whether to save prediction and gt result'
                              'in npy_test file')
@@ -152,7 +159,11 @@ def main():
             if opt.show_vis or opt.save_vis:
                 vis_save_path = ''
                 if opt.save_vis:
-                    vis_save_path = os.path.join(opt.model_dir, 'vis')
+                    # Use custom directory if specified, otherwise use model_dir/vis
+                    if opt.vis_dir:
+                        vis_save_path = opt.vis_dir
+                    else:
+                        vis_save_path = os.path.join(opt.model_dir, 'vis')
                     if not os.path.exists(vis_save_path):
                         os.makedirs(vis_save_path)
                     vis_save_path = os.path.join(vis_save_path, '%05d.png' % i)
@@ -163,7 +174,8 @@ def main():
                                                       'origin_lidar'],
                                                   opt.show_vis,
                                                   vis_save_path,
-                                                  dataset=opencood_dataset)
+                                                  dataset=opencood_dataset,
+                                                  mode=opt.color_mode)
 
             if opt.show_sequence:
                 pcd, pred_o3d_box, gt_o3d_box = \
@@ -172,7 +184,7 @@ def main():
                         gt_box_tensor,
                         batch_data['ego']['origin_lidar'],
                         vis_pcd,
-                        mode='constant'
+                        mode=opt.color_mode
                         )
                 if i == 0:
                     vis.add_geometry(pcd)

@@ -609,11 +609,13 @@ class BaseDataset(Dataset):
                          pcd,
                          show_vis,
                          save_path,
-                         dataset=None):
+                         dataset=None,
+                         mode='constant'):
         # visualize the model output
         self.post_processor.visualize(pred_box_tensor,
                                       gt_tensor,
                                       pcd,
                                       show_vis,
                                       save_path,
-                                      dataset=dataset)
+                                      dataset=dataset,
+                                      mode=mode)
