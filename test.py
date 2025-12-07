@@ -6,3 +6,4 @@ print(torch.version.cuda)
 print(torch.backends.cudnn.enabled)
 print(torch.backends.cudnn.version())
 
+print("试试")
