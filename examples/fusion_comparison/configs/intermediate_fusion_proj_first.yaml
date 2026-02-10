@@ -1,0 +1,143 @@
+# Intermediate Fusion Configuration (Transform-before-send)
+# ==========================================================
+# Each vehicle extracts deep features and transmits them to the ego vehicle
+# for fusion. Uses F-Cooper's max pooling fusion strategy.
+#
+# Bandwidth: ~72.08 Mbps without compression, ~1.12 Mbps with compression
+# Pros: Richer information sharing, can resolve occlusions
+# Cons: Higher bandwidth requirement
+#
+# Based on: opencood/hypes_yaml/point_pillar_fcooper.yaml
+
+name: intermediate_fusion_proj_first_comparison
+
+# IMPORTANT: Update these paths to your OPV2V data location
+root_dir: "opv2v_data_dumping/train"
+validate_dir: "opv2v_data_dumping/validate"
+
+yaml_parser: "load_point_pillar_params"
+
+train_params:
+  batch_size: &batch_size 2
+  epoches: 15
+  eval_freq: 1
+  save_freq: 1
+  max_cav: &max_cav 5
+
+fusion:
+  core_method: 'IntermediateFusionDataset'
+  args:
+    # ================================================================
+    # KEY PARAMETER: proj_first (Transform-before-send)
+    # ================================================================
+    # proj_first: true (Transform-before-send)
+    #   - Each CAV's point cloud is projected to ego coordinate frame
+    #     BEFORE feature extraction
+    #   - Features are already spatially aligned in ego frame
+    #   - pairwise_t_matrix becomes identity (no feature warping needed)
+    #   - Used by: F-Cooper, basic intermediate fusion
+    #
+    # proj_first: false (Send-before-transform)
+    #   - Features are extracted in each CAV's local frame
+    #   - pairwise_t_matrix used to warp features during fusion
+    #   - Enables spatial correction for time-delayed data
+    #   - Used by: V2VNet, V2X-ViT, CoAlign
+    #
+    # See: opencood/data_utils/datasets/intermediate_fusion_dataset.py
+    # ================================================================
+    proj_first: true
+
+preprocess:
+  core_method: 'SpVoxelPreprocessor'
+  args:
+    voxel_size: &voxel_size [0.4, 0.4, 4]
+    max_points_per_voxel: 32
+    max_voxel_train: 32000
+    max_voxel_test: 70000
+  # Larger range for cooperative perception (vehicles share coverage)
+  cav_lidar_range: &cav_lidar [-140.8, -40, -3, 140.8, 40, 1]
+
+# Data augmentation for training (ignored during inference)
+data_augment:
+  - NAME: random_world_flip
+    ALONG_AXIS_LIST: [ 'x' ]
+  - NAME: random_world_rotation
+    WORLD_ROT_ANGLE: [ -0.78539816, 0.78539816 ]
+  - NAME: random_world_scaling
+    WORLD_SCALE_RANGE: [ 0.95, 1.05 ]
+
+postprocess:
+  core_method: 'VoxelPostprocessor'
+  anchor_args:
+    cav_lidar_range: *cav_lidar
+    l: 3.9
+    w: 1.6
+    h: 1.56
+    r: [0, 90]
+    feature_stride: 2
+    num: &achor_num 2
+  target_args:
+    pos_threshold: 0.6
+    neg_threshold: 0.45
+    score_threshold: 0.20
+  order: 'hwl'
+  max_num: 100
+  nms_thresh: 0.15
+
+model:
+  # F-Cooper: Feature-level fusion with max pooling
+  core_method: point_pillar_fcooper
+  args:
+    voxel_size: *voxel_size
+    lidar_range: *cav_lidar
+    anchor_number: *achor_num
+    max_cav: *max_cav
+    # ================================================================
+    # BANDWIDTH CONTROL: compression parameter
+    # ================================================================
+    # compression: 0  -> No compression, ~72.08 Mbps bandwidth
+    # compression: 32 -> 32x compression, ~2.25 Mbps bandwidth
+    # compression: 64 -> 64x compression, ~1.12 Mbps bandwidth
+    #
+    # For real-time V2V (27 Mbps @ 10Hz LiDAR), need < 2.7 Mbps
+    # ================================================================
+    compression: 0
+    backbone_fix: false
+
+    pillar_vfe:
+      use_norm: true
+      with_distance: false
+      use_absolute_xyz: true
+      num_filters: [64]
+    point_pillar_scatter:
+      num_features: 64
+    base_bev_backbone:
+      layer_nums: [3, 5, 8]
+      layer_strides: [2, 2, 2]
+      num_filters: [64, 128, 256]
+      upsample_strides: [1, 2, 4]
+      num_upsample_filter: [128, 128, 128]
+    shrink_header:
+      kernal_size: [ 1 ]
+      stride: [ 1 ]
+      padding: [ 0 ]
+      dim: [ 256 ]
+      input_dim: 384
+
+loss:
+  core_method: point_pillar_loss
+  args:
+    cls_weight: 1.0
+    reg: 2.0
+
+optimizer:
+  core_method: Adam
+  lr: 0.001
+  args:
+    eps: 1e-10
+    weight_decay: 1e-4
+
+lr_scheduler:
+  core_method: multistep
+  gamma: 0.1
+  step_size: [10, 15]
