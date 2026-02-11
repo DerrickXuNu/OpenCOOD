@@ -193,6 +193,11 @@ To play with OPV2V camera data, please check here: https://github.com/DerrickXuN
 ## Tutorials
 We have a series of tutorials to help you understand OpenCOOD more. Please check the series of our [tutorials](https://opencood.readthedocs.io/en/latest/md_files/config_tutorial.html).
 
+## Examples
+We provide reproducible experiment examples to help you get started:
+
+- **[Fusion Strategy Comparison](examples/fusion_comparison/)**: Compare Late Fusion vs Intermediate Fusion performance and bandwidth tradeoffs. Learn about the `proj_first` parameter (transform-before-send vs send-before-transform).
+
 
 ## Citation
  If you are using our OpenCOOD framework or OPV2V dataset for your research, please cite the following paper:

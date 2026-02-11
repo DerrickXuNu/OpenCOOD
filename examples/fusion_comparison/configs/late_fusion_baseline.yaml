@@ -1,0 +1,105 @@
+# Late Fusion Baseline Configuration
+# ==================================
+# Each vehicle performs independent 3D object detection, then detection
+# results (bounding boxes) are merged at the ego vehicle.
+#
+# Bandwidth: ~0.024 Mbps (only transmitting detection outputs)
+# Pros: Minimal communication overhead
+# Cons: Limited by per-agent detection quality, cannot resolve occlusions
+#
+# Based on: opencood/hypes_yaml/point_pillar_late_fusion.yaml
+
+name: late_fusion_comparison_baseline
+
+# IMPORTANT: Update these paths to your OPV2V data location
+root_dir: "opv2v_data_dumping/train"
+validate_dir: "opv2v_data_dumping/validate"
+
+yaml_parser: "load_point_pillar_params"
+
+train_params:
+  batch_size: &batch_size 2
+  epoches: 15
+  eval_freq: 1
+  save_freq: 1
+
+fusion:
+  # Late Fusion: Each CAV runs detection independently, then merge results
+  # No proj_first needed - each vehicle uses its own coordinate frame
+  core_method: 'LateFusionDataset'
+  args: []
+
+preprocess:
+  core_method: 'SpVoxelPreprocessor'
+  args:
+    voxel_size: &voxel_size [0.4, 0.4, 4]
+    max_points_per_voxel: 32
+    max_voxel_train: 16000
+    max_voxel_test: 40000
+  cav_lidar_range: &cav_lidar [-70.4, -40, -3, 70.4, 40, 1]
+
+# Data augmentation for training (ignored during inference)
+data_augment:
+  - NAME: random_world_flip
+    ALONG_AXIS_LIST: [ 'x' ]
+  - NAME: random_world_rotation
+    WORLD_ROT_ANGLE: [ -0.78539816, 0.78539816 ]
+  - NAME: random_world_scaling
+    WORLD_SCALE_RANGE: [ 0.95, 1.05 ]
+
+postprocess:
+  core_method: 'VoxelPostprocessor'
+  anchor_args:
+    cav_lidar_range: *cav_lidar
+    l: 3.9
+    w: 1.6
+    h: 1.56
+    r: [0, 90]
+    num: &achor_num 2
+  target_args:
+    pos_threshold: 0.6
+    neg_threshold: 0.45
+    score_threshold: 0.20
+  order: 'hwl'
+  max_num: 100
+  nms_thresh: 0.15
+
+model:
+  # Standard PointPillar backbone - no fusion module needed
+  core_method: point_pillar
+  args:
+    voxel_size: *voxel_size
+    lidar_range: *cav_lidar
+    anchor_number: *achor_num
+    pillar_vfe:
+      use_norm: true
+      with_distance: false
+      use_absolute_xyz: true
+      num_filters: [64]
+    point_pillar_scatter:
+      num_features: 64
+    base_bev_backbone:
+      layer_nums: [3, 5, 8]
+      layer_strides: [2, 2, 2]
+      num_filters: [64, 128, 256]
+      upsample_strides: [1, 2, 4]
+      num_upsample_filter: [128, 128, 128]
+    anchor_num: *achor_num
+
+loss:
+  core_method: point_pillar_loss
+  args:
+    cls_weight: 1.0
+    reg: 2.0
+
+optimizer:
+  core_method: Adam
+  lr: 0.002
+  args:
+    eps: 1e-10
+    weight_decay: 1e-4
+
+lr_scheduler:
+  core_method: multistep
+  gamma: 0.1
+  step_size: [10, 15]
