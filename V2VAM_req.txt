@@ -1,0 +1,25 @@
+# -------- Core build & utilities --------
+cmake==3.22
+cython==0.29.36
+easydict==1.9
+tqdm==4.64
+PyYAML==6.0.1
+
+# -------- Scientific & vision --------
+numpy==1.26.4
+scipy==1.11.4
+
+scikit-image==0.22
+opencv-python==4.8.0.76
+open3d==0.19.0
+
+# -------- Logging & visualization --------
+tensorboardX==2.6
+
+# -------- V2VAM dependencies --------
+einops==0.7
+timm==0.9
+
+#pip install --only-binary=:all: shapely==2.0.2 matplotlib==3.7.3
+
+#pip install spconv-cu118

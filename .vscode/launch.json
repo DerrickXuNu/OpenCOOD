@@ -1,0 +1,18 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    
+    {
+      "name": "Train_Debuger",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "src.tools.train",
+      "justMyCode": false,
+      "args": [
+        "--hypes_yaml","src/hypes_yaml/point_pillar_intermediate_V2VAM.yaml"
+
+      ]
+      ,"python": "C:\\Users\\mohammed.amirifard\\miniforge3\\envs\\V2VAM\\python.exe"
+    }
+  ]
+}

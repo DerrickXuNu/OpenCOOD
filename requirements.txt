@@ -1,4 +1,5 @@
 cmake
+torchviz
 easydict~=1.9
 numpy
 numba==0.49.0

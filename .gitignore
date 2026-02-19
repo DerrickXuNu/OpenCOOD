@@ -1,3 +1,6 @@
+training_data
+validating_data
+testing_data
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -133,8 +136,10 @@ logs/
 *.c
 *.so
 .idea
-
+sample_data/    
 opv2v_data_dumping
 checkpoints
 DCOS.md
+training_data
+validating_data
 spconv/

@@ -1,4 +1,4 @@
-name: opencood
+name: V2V
 channels:
   - defaults
 dependencies:
